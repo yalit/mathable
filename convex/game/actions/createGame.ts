@@ -9,9 +9,9 @@ import {
   createValueCell,
 } from "../../../src/context/factories/cellFactory";
 import { GAME_SIZE } from "../../../src/context/model/game";
-import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import type { Tile } from "../../../src/context/model/tile";
+import { createTile } from "../../../src/context/factories/tileFactory";
 
 export default mutation({
   args: { gameName: v.string(), playerName: v.string() },
@@ -22,6 +22,8 @@ export default mutation({
       token: UUID(),
       status: "waiting",
     });
+    const game = await ctx.db.get(gameId);
+
     // create playerName
     const playerId = await ctx.db.insert("players", {
       gameId: gameId,
@@ -30,6 +32,8 @@ export default mutation({
       current: false,
       score: 0,
     });
+    const player = await ctx.db.get(playerId);
+
     // create Cells
     let boardCells = getBoardCells();
     boardCells = await Promise.all(
@@ -52,16 +56,6 @@ export default mutation({
       }),
     );
 
-    // create cellImpacts
-    const cellImpacts = getBoardCellImpacts(boardCells);
-    cellImpacts.forEach((ci) =>
-      ctx.db.insert("cellImpacts", {
-        direction: ci.direction,
-        impactedCellId: ci.impactedCell.id as Id<"cells">,
-        impactingCellId: ci.impactingCell.id as Id<"cells">,
-      }),
-    );
-
     // generate allowedValues
     await ctx.runMutation(
       internal.game.actions.computeAllowedValues.computeAllAllowedValues,
@@ -79,7 +73,7 @@ export default mutation({
       });
     });
 
-    return { gameId, playerId };
+    return { gameToken: game?.token ?? "", playerToken: player?.token ?? "" };
   },
 });
 
@@ -128,7 +122,7 @@ const getBoardCells = (): Cell[] => {
   cells.push(createOperatorCell(9, 6, "+"));
   cells.push(createOperatorCell(10, 7, "+"));
 
-  // - Operators
+  //, Operators
   cells.push(createOperatorCell(2, 5, "-"));
   cells.push(createOperatorCell(2, 8, "-"));
   cells.push(createOperatorCell(5, 2, "-"));
@@ -181,65 +175,17 @@ const getBoardCells = (): Cell[] => {
   return cells;
 };
 
-type BoardCellImpact = {
-  direction: "up" | "down" | "left" | "right";
-  impactedCell: Cell;
-  impactingCell: Cell;
-};
-const getBoardCellImpacts = (cells: Cell[]): BoardCellImpact[] => {
-  const impacts: BoardCellImpact[] = [];
-
-  cells.forEach((impactedCell) => {
-    // left
-    let impactingCells = cells.filter(
-      (c) =>
-        c.column >= 0 &&
-        c.row === impactedCell.row &&
-        c.column >= impactedCell.column - 2,
-    );
-    impactingCells.forEach((impactingCell) => {
-      impacts.push({ direction: "left", impactedCell, impactingCell });
-    });
-
-    // right
-    impactingCells = cells.filter(
-      (c) =>
-        c.column < GAME_SIZE &&
-        c.row === impactedCell.row &&
-        c.column <= impactedCell.column + 2,
-    );
-    impactingCells.forEach((impactingCell) => {
-      impacts.push({ direction: "right", impactedCell, impactingCell });
-    });
-
-    // down
-    impactingCells = cells.filter(
-      (c) =>
-        c.row < GAME_SIZE &&
-        c.column === impactedCell.column &&
-        c.row <= impactedCell.row + 2,
-    );
-    impactingCells.forEach((impactingCell) => {
-      impacts.push({ direction: "down", impactedCell, impactingCell });
-    });
-
-    // down
-    impactingCells = cells.filter(
-      (c) =>
-        c.row >= 0 &&
-        c.column === impactedCell.column &&
-        c.row >= impactedCell.row - 2,
-    );
-    impactingCells.forEach((impactingCell) => {
-      impacts.push({ direction: "down", impactedCell, impactingCell });
-    });
-  });
-
-  return impacts;
-};
-
 const getGameTiles = (): Tile[] => {
   const tiles: Tile[] = [];
 
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach((v) => {
+    for (let n = 1; n <= 7; n++) {
+      tiles.push(createTile(v));
+    }
+  });
+  [
+    0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 27, 28, 30, 32, 35,
+    36, 40, 42, 45, 48, 49, 50, 54, 56, 60, 63, 64, 70, 72, 80, 81, 90,
+  ].forEach((n) => tiles.push(createTile(n)));
   return tiles;
 };

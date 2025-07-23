@@ -2,14 +2,15 @@ import { internalMutation } from "../../_generated/server";
 import { internal } from "../../_generated/api";
 import { v } from "convex/values";
 import type { Doc } from "../../_generated/dataModel";
+import { getNumericValue } from "../../helpers/cell";
+import { getImpactingCellsByDirection } from "../../helpers/cellImpacts";
 
-const impactingDirections = ["left", "right", "up", "down"];
 export const computeAllAllowedValues = internalMutation({
   args: { gameId: v.id("games") },
   handler: async (ctx, args) => {
     const cells = await ctx.db
       .query("cells")
-      .withIndex("by_game_row_number", (q) => q.eq("gameId", args.gameId))
+      .withIndex("by_game_row_column", (q) => q.eq("gameId", args.gameId))
       .collect();
 
     cells.forEach(
@@ -25,33 +26,24 @@ export const computeAllAllowedValues = internalMutation({
 
 export const computeAllowedValuesFromUpdatedCell = internalMutation({
   args: { cellId: v.id("cells") },
-  handler: (ctx, args) => {
-    impactingDirections.forEach(async (direction) => {
-      const impacts: Doc<"cellImpacts">[] = await ctx.db
-        .query("cellImpacts")
-        .withIndex("by_direction_impacting_cell", (q) =>
-          q.eq("direction", direction).eq("impactingCellId", args.cellId),
-        )
-        .collect();
+  handler: async (ctx, args) => {
+    const cell: null | Doc<"cells"> = await ctx.db.get(args.cellId);
+    if (!cell) {
+      return;
+    }
 
-      const impactedCells: Doc<"cells">[] = [];
+    const impactingDirections = await getImpactingCellsByDirection(cell, ctx);
 
-      impacts.forEach(async (ci) => {
-        const cell = await ctx.db.get(ci.impactedCellId);
-        if (cell) {
-          impactedCells.push(cell);
-        }
-      });
-
-      impactedCells.forEach(
+    impactingDirections.forEach(async (arr) =>
+      arr.forEach(
         async (c) =>
           await ctx.runMutation(
             internal.game.actions.computeAllowedValues
               .computeAllowedValuesForCell,
             { cellId: c._id },
           ),
-      );
-    });
+      ),
+    );
   },
 });
 
@@ -60,64 +52,27 @@ export const computeAllowedValuesForCell = internalMutation({
   handler: async (ctx, args) => {
     const cell: null | Doc<"cells"> = await ctx.db.get(args.cellId);
     if (!cell) {
-      console.log(args.cellId, "No cell");
       return;
     }
 
-    if (!hasValue(cell)) {
-      await ctx.db.patch(cell._id, { allowedValues: [] });
-      console.log(args.cellId, "Cell not a value or not has a tile");
+    if (cell.type === "value") {
       return;
     }
 
     const allowedValues: Set<number> = new Set();
 
+    const impactingDirections = await getImpactingCellsByDirection(cell, ctx);
+
     await Promise.all(
-      impactingDirections.map(async (direction) => {
-        const impacts: Doc<"cellImpacts">[] = await ctx.db
-          .query("cellImpacts")
-          .withIndex("by_direction_impacted_cell", (q) =>
-            q.eq("direction", direction).eq("impactedCellId", args.cellId),
-          )
-          .collect();
-
-        // get impacting cells
-        const impactingCells: Doc<"cells">[] = [];
-        impacts.forEach(async (ci: Doc<"cellImpacts">) => {
-          const cell = await ctx.db.get(ci.impactingCellId);
-          if (cell && (cell.value || cell.tileId)) {
-            // only impacting if there is a value in it
-            impactingCells.push(cell);
-          }
-        });
-
+      impactingDirections.map(async (impactingCells) => {
         if (impactingCells.length !== 2) {
-          console.log(
-            cell.row,
-            cell.column,
-            direction,
-            "not enough impacting cells",
-          );
+          // this direction not to be considered as not enough cells impacting
           return;
         }
 
-        const value = async (c: Doc<"cells">): Promise<number> => {
-          if (c.value) {
-            return c.value;
-          }
-          if (c.tileId) {
-            const tile = await ctx.db.get(c.tileId);
-            if (!tile) {
-              throw new Error("Tile is not existing");
-            }
-            return tile.value;
-          }
-          throw new Error("No value for the cell");
-        };
-        const first: number = await value(impactingCells[0]);
-        const second: number = await value(impactingCells[1]);
+        const first: number = await getNumericValue(impactingCells[0], ctx);
+        const second: number = await getNumericValue(impactingCells[1], ctx);
 
-        console.log("Values", cell.row, cell.column, direction, first, second);
         const add = [first + second];
         const sub = [first - second];
         const mult = [first * second];
@@ -145,7 +100,12 @@ export const computeAllowedValuesForCell = internalMutation({
               break;
           }
         } else {
-          add.concat(sub, mult, div).forEach(allowedValues.add);
+          add
+            .concat(sub, mult, div)
+            .filter((n) => Number.isInteger(n) && n >= 0)
+            .forEach((n) => {
+              allowedValues.add(n);
+            });
         }
       }),
     );
@@ -154,6 +114,5 @@ export const computeAllowedValuesForCell = internalMutation({
     await ctx.db.patch(cell._id, {
       allowedValues: Array.from(allowedValues),
     });
-    console.log(cell.row, cell.column, allowedValues);
   },
 });

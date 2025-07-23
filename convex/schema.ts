@@ -24,7 +24,9 @@ export default defineSchema({
     multiplier: v.union(v.number(), v.null()),
     operator: v.union(v.string(), v.null()),
     tileId: v.union(v.id("tiles"), v.null()),
-  }).index("by_game_row_number", ["gameId", "row", "column"]),
+  })
+    .index("by_game_row_column", ["gameId", "row", "column"])
+    .index("by_game_column_row", ["gameId", "column", "row"]),
   tiles: defineTable({
     gameId: v.id("games"),
     playerId: v.union(v.id("players"), v.null()),
@@ -32,11 +34,4 @@ export default defineSchema({
     value: v.number(),
     location: v.string(),
   }),
-  cellImpacts: defineTable({
-    direction: v.string(),
-    impactedCellId: v.id("cells"),
-    impactingCellId: v.id("cells"),
-  })
-    .index("by_direction_impacted_cell", ["direction", "impactedCellId"])
-    .index("by_direction_impacting_cell", ["direction", "impactingCellId"]),
 });

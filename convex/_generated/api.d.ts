@@ -14,11 +14,9 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as game_actions_computeAllowedValues from "../game/actions/computeAllowedValues.js";
-import type * as game_actions_computeAllowedValues from "../game/actions/computeAllowedValues.js";
-import type * as game_actions_createGame from "../game/actions/createGame.js";
 import type * as game_actions_createGame from "../game/actions/createGame.js";
 import type * as helpers_cell from "../helpers/cell.js";
-import type * as helpers_cell from "../helpers/cell.js";
+import type * as helpers_cellImpacts from "../helpers/cellImpacts.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,11 +28,9 @@ import type * as helpers_cell from "../helpers/cell.js";
  */
 declare const fullApi: ApiFromModules<{
   "game/actions/computeAllowedValues": typeof game_actions_computeAllowedValues;
-  "game/actions/computeAllowedValues": typeof game_actions_computeAllowedValues;
-  "game/actions/createGame": typeof game_actions_createGame;
   "game/actions/createGame": typeof game_actions_createGame;
   "helpers/cell": typeof helpers_cell;
-  "helpers/cell": typeof helpers_cell;
+  "helpers/cellImpacts": typeof helpers_cellImpacts;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
