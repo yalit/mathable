@@ -20,6 +20,7 @@ import type * as helpers_player from "../helpers/player.js";
 import type * as middleware_sessions from "../middleware/sessions.js";
 import type * as mutations_internal_cell from "../mutations/internal/cell.js";
 import type * as mutations_internal_player from "../mutations/internal/player.js";
+import type * as mutations_internal_user from "../mutations/internal/user.js";
 import type * as mutations_public_game from "../mutations/public/game.js";
 import type * as queries_game from "../queries/game.js";
 import type * as queries_player from "../queries/player.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "middleware/sessions": typeof middleware_sessions;
   "mutations/internal/cell": typeof mutations_internal_cell;
   "mutations/internal/player": typeof mutations_internal_player;
+  "mutations/internal/user": typeof mutations_internal_user;
   "mutations/public/game": typeof mutations_public_game;
   "queries/game": typeof queries_game;
   "queries/player": typeof queries_player;

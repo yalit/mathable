@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { vSessionId } from "convex-helpers/server/sessions";
 
 export default defineSchema({
   games: defineTable({
@@ -14,6 +15,8 @@ export default defineSchema({
     current: v.boolean(),
     score: v.number(),
     owner: v.boolean(),
+    order: v.union(v.null(), v.number()),
+    userId: v.id("users"),
   })
     .index("by_token", ["token"])
     .index("by_game", ["gameId"]),
@@ -37,4 +40,10 @@ export default defineSchema({
     value: v.number(),
     location: v.string(),
   }).index("by_player", ["playerId", "location", "value"]),
+  users: defineTable({
+    // Note: make sure not to leak this to clients. See this post for more info:
+    // https://stack.convex.dev/track-sessions-without-cookies
+    sessionId: vSessionId,
+    name: v.string(),
+  }).index("by_sessionId", ["sessionId"]),
 });

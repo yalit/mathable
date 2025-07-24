@@ -11,9 +11,10 @@ import type { Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
 import { v } from "convex/values";
 import { getPlayer } from "../../helpers/player";
+import { vSessionId } from "convex-helpers/server/sessions";
 
 export const create = mutation({
-  args: { gameName: v.string(), playerName: v.string() },
+  args: { gameName: v.string(), playerName: v.string(), sessionId: vSessionId },
   handler: async (ctx, args) => {
     // create Game
     const gameId = await ctx.db.insert("games", {
@@ -26,7 +27,7 @@ export const create = mutation({
     // create playerName
     const playerId: Id<"players"> = await ctx.runMutation(
       internal.mutations.internal.player.create,
-      { gameId, name: args.playerName },
+      { gameId, name: args.playerName, sessionId: args.sessionId },
     );
     // set the user as owner
     await ctx.db.patch(playerId, { owner: true });
@@ -56,8 +57,7 @@ export const create = mutation({
 
     // generate allowedValues
     await ctx.runMutation(
-      internal.game.actions.internal.computeAllowedValues
-        .computeAllAllowedValues,
+      internal.mutations.internal.cell.computeAllAllowedValues,
       { gameId },
     );
 
@@ -77,7 +77,11 @@ export const create = mutation({
 });
 
 export const join = mutation({
-  args: { gameId: v.id("games"), playerName: v.string() },
+  args: {
+    gameId: v.id("games"),
+    playerName: v.string(),
+    sessionId: vSessionId,
+  },
   handler: async (ctx, args): Promise<{ success: boolean; token: string }> => {
     const game = await ctx.db.get(args.gameId);
     if (!game) {
@@ -92,7 +96,7 @@ export const join = mutation({
 
     const playerId = await ctx.runMutation(
       internal.mutations.internal.player.create,
-      { gameId: args.gameId, name: args.playerName },
+      { gameId: args.gameId, name: args.playerName, sessionId: args.sessionId },
     );
 
     const player = await getPlayer(playerId, ctx);

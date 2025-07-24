@@ -1,10 +1,12 @@
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
 import { useGame } from "@hooks/context/useGame";
+import { useSessionId } from "convex-helpers/react/sessions";
 import { useMutation } from "convex/react";
 import { useMemo, useState, type FormEvent } from "react";
 
 export default function RequestToPlay() {
+  const [sessionId] = useSessionId();
   const game = useGame();
   const joinGame = useMutation(api.mutations.public.game.join);
 
@@ -12,10 +14,11 @@ export default function RequestToPlay() {
 
   const requestToPlay = async (e: FormEvent) => {
     e.preventDefault();
-    if (game && game._id) {
+    if (game && game._id && sessionId) {
       const result = await joinGame({
         gameId: game._id as Id<"games">,
         playerName,
+        sessionId,
       });
 
       if (!result.success) {

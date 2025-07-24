@@ -1,8 +1,10 @@
 import { useMutation } from "convex/react";
 import { useState, type FormEvent } from "react";
 import { api } from "../convex/_generated/api";
+import { useSessionId } from "convex-helpers/react/sessions";
 
 function Home() {
+  const [sessionId] = useSessionId();
   const [clicked, setClicked] = useState<boolean>();
   const [gameName, setGameName] = useState<string>("");
   const [playerName, setPlayerName] = useState<string>("");
@@ -15,9 +17,14 @@ function Home() {
       return;
     }
 
+    if (!sessionId) {
+      return;
+    }
+
     const { gameToken, playerToken } = await createGame({
       gameName,
       playerName,
+      sessionId,
     });
     if (gameToken && gameToken !== "" && playerToken && playerToken !== "") {
       document.location = `/game/${gameToken}/player/${playerToken}`;
