@@ -1,11 +1,11 @@
-import { useParams } from "react-router-dom";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { Board } from "@components/board";
 
 export default function Game() {
-  const { gameToken, playerToken } = useParams();
-
   return (
-    <div>
-      Showing the game... {gameToken} for the player {playerToken}
-    </div>
+    <DndProvider backend={HTML5Backend}>
+      <Board />
+    </DndProvider>
   );
 }

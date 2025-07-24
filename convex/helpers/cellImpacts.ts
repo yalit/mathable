@@ -1,5 +1,5 @@
 import { GAME_SIZE } from "../../src/context/model/game";
-import type { Doc, Id } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { hasValue } from "./cell";
 

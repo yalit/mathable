@@ -2,7 +2,7 @@ import z from "zod";
 import { tileSchema } from "./tile";
 
 export const playerSchema = z.object({
-  id: z.string().nullable(),
+  _id: z.string().nullable(),
   name: z.string(),
   token: z.string(),
   current: z.boolean(),

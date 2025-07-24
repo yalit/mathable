@@ -1,5 +1,4 @@
 import z from "zod";
-import { GAME_SIZE } from "./game";
 import { tileSchema } from "./tile";
 
 const cellTypeSchema = z.enum(["empty", "value", "operator", "multiplier"]);
@@ -8,21 +7,25 @@ export type CellType = z.infer<typeof cellTypeSchema>;
 const cellOperatorSchema = z.enum(["+", "-", "*", "/"]);
 export type CellOperator = z.infer<typeof cellOperatorSchema>;
 
-export const cellSchema = z.object({
-  id: z.string().nullable(),
-  row: z
-    .number()
-    .min(0)
-    .max(GAME_SIZE - 1),
-  column: z
-    .number()
-    .min(0)
-    .max(GAME_SIZE - 1),
+const baseCellSchema = z.object({
+  _id: z.string().nullable(),
+  row: z.number(),
+  column: z.number(),
   allowedValues: z.array(z.number()),
   type: cellTypeSchema,
-  operator: cellOperatorSchema.optional().nullable(),
-  value: z.number().optional().nullable(),
-  multiplier: z.number().optional().nullable(),
   tile: tileSchema.optional().nullable(),
 });
+
+export const cellSchema = z.discriminatedUnion("type", [
+  baseCellSchema.extend({ type: z.literal("empty") }),
+  baseCellSchema.extend({ type: z.literal("value"), value: z.number() }),
+  baseCellSchema.extend({
+    type: z.literal("operator"),
+    operator: z.enum(["+", "-", "*", "/"]),
+  }),
+  baseCellSchema.extend({
+    type: z.literal("multiplier"),
+    multiplier: z.number(),
+  }),
+]);
 export type Cell = z.infer<typeof cellSchema>;

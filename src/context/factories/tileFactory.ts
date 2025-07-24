@@ -5,7 +5,7 @@ export const createTile = (
   location: TileLocation = "in_bag",
 ): Tile => {
   return {
-    id: null,
+    _id: null,
     value,
     location,
   };

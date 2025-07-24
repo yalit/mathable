@@ -4,7 +4,7 @@ import { UUID } from "./uuidFactory";
 
 export const createGame = (gameName: string, firstPlayerName: string): Game => {
   return {
-    id: null,
+    _id: null,
     name: gameName,
     token: UUID(),
     status: "waiting",

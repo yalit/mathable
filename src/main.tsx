@@ -1,11 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import Home from "./Home.tsx";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Game from "./Game.tsx";
-import RequestToPlay from "./RequestToPlay.tsx";
+import Home from "./Home";
+import RequestToPlay from "./RequestToPlay";
+import Game from "./Game";
+
+import "./index.css";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 

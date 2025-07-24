@@ -7,7 +7,7 @@ export const createPlayer = (
   score: number = 0,
 ): Player => {
   return {
-    id: null,
+    _id: null,
     name,
     token: UUID(),
     current,

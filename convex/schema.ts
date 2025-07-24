@@ -13,7 +13,9 @@ export default defineSchema({
     token: v.string(),
     current: v.boolean(),
     score: v.number(),
-  }).index("by_token", ["token"]),
+  })
+    .index("by_token", ["token"])
+    .index("by_game", ["gameId"]),
   cells: defineTable({
     gameId: v.id("games"),
     row: v.number(),
@@ -33,5 +35,5 @@ export default defineSchema({
     cellId: v.union(v.id("cells"), v.null()),
     value: v.number(),
     location: v.string(),
-  }),
+  }).index("by_player", ["playerId", "location", "value"]),
 });

@@ -2,7 +2,7 @@ import type { Cell, CellOperator } from "../model/cell";
 
 const baseCell = (row: number, column: number): Cell => {
   return {
-    id: null,
+    _id: null,
     type: "empty",
     row,
     column,

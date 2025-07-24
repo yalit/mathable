@@ -17,3 +17,30 @@ html,
 body {
   box-sizing: border-box;
 }
+
+.board {
+  max-width: 80vw;
+  max-height: 80vh;
+  aspect-ratio: 1/1;
+  height: 100vw;
+
+  .board__plate {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: repeat(14, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+
+    .board__cell {
+      svg {
+        height: 100%;
+        &.tile {
+          height: 60%;
+        }
+        &.small {
+          height: 50%;
+        }
+      }
+    }
+  }
+}
