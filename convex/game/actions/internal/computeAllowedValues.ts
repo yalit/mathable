@@ -1,9 +1,9 @@
-import { internalMutation } from "../../_generated/server";
-import { internal } from "../../_generated/api";
+import { internalMutation } from "../../../_generated/server";
+import { internal } from "../../../_generated/api";
 import { v } from "convex/values";
-import type { Doc } from "../../_generated/dataModel";
-import { getNumericValue } from "../../helpers/cell";
-import { getImpactingCellsByDirection } from "../../helpers/cellImpacts";
+import type { Doc } from "../../../_generated/dataModel";
+import { getNumericValue } from "../../../helpers/cell";
+import { getImpactingCellsByDirection } from "../../../helpers/cellImpacts";
 
 export const computeAllAllowedValues = internalMutation({
   args: { gameId: v.id("games") },
@@ -16,7 +16,7 @@ export const computeAllAllowedValues = internalMutation({
     cells.forEach(
       async (cell) =>
         await ctx.runMutation(
-          internal.game.actions.computeAllowedValues
+          internal.game.actions.internal.computeAllowedValues
             .computeAllowedValuesForCell,
           { cellId: cell._id },
         ),
@@ -38,7 +38,7 @@ export const computeAllowedValuesFromUpdatedCell = internalMutation({
       arr.forEach(
         async (c) =>
           await ctx.runMutation(
-            internal.game.actions.computeAllowedValues
+            internal.game.actions.internal.computeAllowedValues
               .computeAllowedValuesForCell,
             { cellId: c._id },
           ),

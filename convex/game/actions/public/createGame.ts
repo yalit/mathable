@@ -1,17 +1,18 @@
-import { mutation } from "../../_generated/server";
+import { mutation } from "../../../_generated/server";
 import { v } from "convex/values";
-import { UUID } from "../../../src/context/factories/uuidFactory";
-import type { Cell } from "../../../src/context/model/cell";
+import { UUID } from "../../../../src/context/factories/uuidFactory";
+import type { Cell } from "../../../../src/context/model/cell";
 import {
   createMultiplierCell,
   createOperatorCell,
   createEmptyCell,
   createValueCell,
-} from "../../../src/context/factories/cellFactory";
-import { GAME_SIZE } from "../../../src/context/model/game";
-import { internal } from "../../_generated/api";
-import type { Tile } from "../../../src/context/model/tile";
-import { createTile } from "../../../src/context/factories/tileFactory";
+} from "../../../../src/context/factories/cellFactory";
+import { GAME_SIZE } from "../../../../src/context/model/game";
+import { internal } from "../../../_generated/api";
+import type { Tile } from "../../../../src/context/model/tile";
+import { createTile } from "../../../../src/context/factories/tileFactory";
+import type { Id } from "@cvx/_generated/dataModel";
 
 export default mutation({
   args: { gameName: v.string(), playerName: v.string() },
@@ -25,28 +26,27 @@ export default mutation({
     const game = await ctx.db.get(gameId);
 
     // create playerName
-    const playerId = await ctx.db.insert("players", {
-      gameId: gameId,
-      name: args.playerName,
-      token: UUID(),
-      current: false,
-      score: 0,
-    });
+    const playerId: Id<"players"> = await ctx.runMutation(
+      internal.game.actions.internal.createPlayer.default,
+      { gameId, name: args.playerName },
+    );
+    // set the user as owner
+    await ctx.db.patch(playerId, { owner: true });
     const player = await ctx.db.get(playerId);
 
     // create Cells
     let boardCells = getBoardCells();
     boardCells = await Promise.all(
-      boardCells.map(async (c) => {
+      boardCells.map(async (c: Cell) => {
         const cellId = await ctx.db.insert("cells", {
           gameId,
           row: c.row,
           column: c.column,
           allowedValues: [],
           type: c.type,
-          value: c.value ?? null,
-          multiplier: c.multiplier ?? null,
-          operator: c.operator ?? null,
+          value: c.type === "value" ? c.value : null,
+          multiplier: c.type === "multiplier" ? c.multiplier : null,
+          operator: c.type === "operator" ? c.operator : null,
           tileId: null,
         });
         return {
@@ -58,7 +58,8 @@ export default mutation({
 
     // generate allowedValues
     await ctx.runMutation(
-      internal.game.actions.computeAllowedValues.computeAllAllowedValues,
+      internal.game.actions.internal.computeAllowedValues
+        .computeAllAllowedValues,
       { gameId },
     );
 

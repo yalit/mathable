@@ -14,16 +14,14 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ConvexProvider client={convex}>
       <BrowserRouter>
-        <div className="w-screen h-screen flex items-center justify-center">
-          <Routes>
-            <Route index element={<Home />} />
-            <Route path="/game/:gameToken" element={<RequestToPlay />} />
-            <Route
-              path="/game/:gameToken/player/:playerToken"
-              element={<Game />}
-            />
-          </Routes>
-        </div>
+        <Routes>
+          <Route index element={<Home />} />
+          <Route path="/game/:gameToken" element={<RequestToPlay />} />
+          <Route
+            path="/game/:gameToken/player/:playerToken"
+            element={<Game />}
+          />
+        </Routes>
       </BrowserRouter>
     </ConvexProvider>
   </StrictMode>,

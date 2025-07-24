@@ -13,6 +13,7 @@ export default defineSchema({
     token: v.string(),
     current: v.boolean(),
     score: v.number(),
+    owner: v.boolean(),
   })
     .index("by_token", ["token"])
     .index("by_game", ["gameId"]),

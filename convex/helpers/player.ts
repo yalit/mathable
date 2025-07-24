@@ -1,6 +1,13 @@
 import { tileSchema, type Tile } from "../../src/context/model/tile";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+
+export const getPlayer = async (
+  id: Id<"players">,
+  ctx: QueryCtx,
+): Promise<Doc<"players"> | null> => {
+  return await ctx.db.get(id);
+};
 
 export const getPlayerTiles = async (
   player: Doc<"players">,
