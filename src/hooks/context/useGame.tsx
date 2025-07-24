@@ -5,7 +5,7 @@ import type { Game } from "@context/model/game";
 
 export function useGame(): Game | null {
   const { gameToken } = useParams();
-  const game: Game | null = useQuery(api.game.queries.getGame.default, {
+  const game: Game | null = useQuery(api.queries.game.get, {
     gameToken: gameToken as string,
   });
 

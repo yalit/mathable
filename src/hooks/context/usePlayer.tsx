@@ -5,8 +5,7 @@ import { useParams } from "react-router-dom";
 
 export function usePlayer(): Player | null {
   const { playerToken } = useParams();
-  console.log("playerToken");
-  const player: Player | null = useQuery(api.game.queries.getPlayer.default, {
+  const player: Player | null = useQuery(api.queries.player.get, {
     playerToken: playerToken ?? "",
   });
 

@@ -13,16 +13,16 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as game_actions_internal_computeAllowedValues from "../game/actions/internal/computeAllowedValues.js";
-import type * as game_actions_internal_createPlayer from "../game/actions/internal/createPlayer.js";
-import type * as game_actions_public_createGame from "../game/actions/public/createGame.js";
-import type * as game_actions_public_joinGame from "../game/actions/public/joinGame.js";
-import type * as game_queries_getGame from "../game/queries/getGame.js";
-import type * as game_queries_getPlayer from "../game/queries/getPlayer.js";
 import type * as helpers_cell from "../helpers/cell.js";
 import type * as helpers_cellImpacts from "../helpers/cellImpacts.js";
 import type * as helpers_game from "../helpers/game.js";
 import type * as helpers_player from "../helpers/player.js";
+import type * as middleware_sessions from "../middleware/sessions.js";
+import type * as mutations_internal_cell from "../mutations/internal/cell.js";
+import type * as mutations_internal_player from "../mutations/internal/player.js";
+import type * as mutations_public_game from "../mutations/public/game.js";
+import type * as queries_game from "../queries/game.js";
+import type * as queries_player from "../queries/player.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -33,16 +33,16 @@ import type * as helpers_player from "../helpers/player.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "game/actions/internal/computeAllowedValues": typeof game_actions_internal_computeAllowedValues;
-  "game/actions/internal/createPlayer": typeof game_actions_internal_createPlayer;
-  "game/actions/public/createGame": typeof game_actions_public_createGame;
-  "game/actions/public/joinGame": typeof game_actions_public_joinGame;
-  "game/queries/getGame": typeof game_queries_getGame;
-  "game/queries/getPlayer": typeof game_queries_getPlayer;
   "helpers/cell": typeof helpers_cell;
   "helpers/cellImpacts": typeof helpers_cellImpacts;
   "helpers/game": typeof helpers_game;
   "helpers/player": typeof helpers_player;
+  "middleware/sessions": typeof middleware_sessions;
+  "mutations/internal/cell": typeof mutations_internal_cell;
+  "mutations/internal/player": typeof mutations_internal_player;
+  "mutations/public/game": typeof mutations_public_game;
+  "queries/game": typeof queries_game;
+  "queries/player": typeof queries_player;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

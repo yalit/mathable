@@ -6,7 +6,7 @@ function Home() {
   const [clicked, setClicked] = useState<boolean>();
   const [gameName, setGameName] = useState<string>("");
   const [playerName, setPlayerName] = useState<string>("");
-  const createGame = useMutation(api.game.actions.public.createGame.default);
+  const createGame = useMutation(api.mutations.public.game.create);
 
   const handleClickOnCreate = async (e: FormEvent) => {
     e.preventDefault();

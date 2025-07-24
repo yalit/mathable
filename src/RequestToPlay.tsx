@@ -6,7 +6,7 @@ import { useMemo, useState, type FormEvent } from "react";
 
 export default function RequestToPlay() {
   const game = useGame();
-  const joinGame = useMutation(api.game.actions.public.joinGame.default);
+  const joinGame = useMutation(api.mutations.public.game.join);
 
   const [playerName, setPlayerName] = useState<string>("");
 

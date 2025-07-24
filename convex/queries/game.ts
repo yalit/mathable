@@ -1,10 +1,11 @@
+import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { query } from "../../_generated/server";
-import { gameSchema, type Game } from "../../../src/context/model/game";
-import type { Doc } from "../../_generated/dataModel";
-import { getGameCells, getGamePlayers } from "../../helpers/game";
+import type { Game } from "../../src/context/model/game.ts";
+import type { Doc } from "../_generated/dataModel";
+import { getGameCells, getGamePlayers } from "../helpers/game.ts";
+import { gameSchema } from "../../src/context/model/game.ts";
 
-export default query({
+export const get = query({
   args: { gameToken: v.string() },
   handler: async (ctx, args): Promise<Game | null> => {
     const game: Doc<"games"> | null = await ctx.db

@@ -1,9 +1,9 @@
-import { playerSchema, type Player } from "../../../src/context/model/player";
-import { query } from "../../_generated/server";
-import { getPlayerTiles } from "../../helpers/player";
+import { playerSchema, type Player } from "../../src/context/model/player";
+import { query } from "../_generated/server";
+import { getPlayerTiles } from "../helpers/player";
 import { v } from "convex/values";
 
-export default query({
+export const get = query({
   args: { playerToken: v.string() },
   handler: async (ctx, args): Promise<Player | null> => {
     const player = await ctx.db
@@ -11,7 +11,6 @@ export default query({
       .withIndex("by_token", (q) => q.eq("token", args.playerToken))
       .unique();
 
-    console.log("found player", player);
     if (!player) {
       return null;
     }

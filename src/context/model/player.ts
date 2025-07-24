@@ -9,5 +9,6 @@ export const playerSchema = z.object({
   tiles: z.array(tileSchema),
   score: z.number(),
   owner: z.boolean(),
+  order: z.number().nullable(),
 });
 export type Player = z.infer<typeof playerSchema>;
