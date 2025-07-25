@@ -53,6 +53,20 @@ export const getGamePlayers = async (
   );
 };
 
+export const getGameCurrentPlayer = async (
+  game: Doc<"games">,
+  ctx: QueryCtx,
+): Promise<Player | null> => {
+  const players = await getGamePlayers(game, ctx);
+  const current = players.filter((p) => p.current);
+
+  if (current.length !== 1) {
+    return null;
+  }
+
+  return current[0];
+};
+
 export const getGameTiles = async (
   game: Doc<"games">,
   ctx: QueryCtx,
@@ -67,4 +81,17 @@ export const getGameTiles = async (
       return tileSchema.parse(t);
     }),
   );
+};
+
+export const getGameCurrentTurnMoves = async (
+  game: Doc<"games">,
+  ctx: QueryCtx,
+): Promise<Doc<"moves">[]> => {
+  return await ctx.db
+    .query("moves")
+    .withIndex("by_turn", (q) =>
+      q.eq("gameId", game._id).eq("turn", game.currentTurn),
+    )
+    .order("desc")
+    .collect();
 };

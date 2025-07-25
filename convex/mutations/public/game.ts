@@ -1,4 +1,10 @@
-import { getGame, getGamePlayers, getGameTiles } from "../../helpers/game";
+import {
+  getGame,
+  getGameCurrentPlayer,
+  getGameCurrentTurnMoves,
+  getGamePlayers,
+  getGameTiles,
+} from "../../helpers/game";
 import {
   getBoardCells,
   getInitialGameTiles,
@@ -14,6 +20,7 @@ import { getPlayer } from "../../helpers/player";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { mutationWithSession } from "../../middleware/sessions";
 import type { Player } from "../../../src/context/model/player";
+import { MoveType } from "../internal/move";
 
 export const create = mutation({
   args: { gameName: v.string(), playerName: v.string(), sessionId: vSessionId },
@@ -23,6 +30,7 @@ export const create = mutation({
       name: args.gameName,
       token: UUID(),
       status: "waiting",
+      currentTurn: 0,
     });
     const game = await ctx.db.get(gameId);
 
@@ -126,8 +134,8 @@ export const start = mutationWithSession({
       return;
     }
 
-    // change the status
-    await ctx.db.patch(gameId, { status: "ongoing" });
+    // change the status & setup the currentTurn
+    await ctx.db.patch(gameId, { status: "ongoing", currentTurn: 1 });
 
     // set the random order for the players
     // set the current player to the player with order 1
@@ -153,6 +161,51 @@ export const start = mutationWithSession({
             playerId: p._id as Id<"players">,
           });
         });
+    });
+  },
+});
+
+export const resetTurn = mutationWithSession({
+  args: { gameId: v.id("games") },
+  handler: async (ctx, { gameId }) => {
+    const game = await ctx.db.get(gameId);
+    if (!game) {
+      return;
+    }
+    if (!ctx.user) {
+      return;
+    }
+
+    const player = await getGameCurrentPlayer(game, ctx);
+    if (!player || player.userId !== ctx.user._id) {
+      return;
+    }
+
+    const moves = await getGameCurrentTurnMoves(game, ctx);
+    moves.forEach(async (m) => {
+      if (m.type === MoveType.PLAYER_TO_CELL) {
+        if (!(m.cellId && m.tileId && m.playerId)) {
+          return;
+        }
+        await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
+          tileId: m.tileId,
+          playerId: m.playerId,
+        });
+        await ctx.runMutation(
+          internal.mutations.internal.cell.computeAllowedValuesFromUpdatedCell,
+          { cellId: m.cellId },
+        );
+      }
+      if (m.type === MoveType.BAG_TO_PLAYER) {
+        if (!m.tileId) {
+          return;
+        }
+        await ctx.runMutation(internal.mutations.internal.tile.moveToBag, {
+          tileId: m.tileId,
+        });
+      }
+
+      await ctx.db.delete(m._id);
     });
   },
 });

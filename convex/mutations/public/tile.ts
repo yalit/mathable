@@ -4,6 +4,7 @@ import { getGameTiles } from "../../helpers/game";
 import { mutationWithSession } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
+import { MoveType } from "../internal/move";
 
 export const playToCell = mutationWithSession({
   args: {
@@ -40,21 +41,19 @@ export const playToCell = mutationWithSession({
       return;
     }
 
-    // remove playerId and add cellId to the tile and change location of tile
-    await ctx.db.patch(tileId, {
-      playerId: null,
+    await ctx.runMutation(internal.mutations.internal.tile.moveToCell, {
+      tileId,
       cellId,
-      location: "on_board",
     });
 
-    // add tileId to cell
-    await ctx.db.patch(cellId, { tileId });
-
-    // update score for player
-    await ctx.db.patch(playerId, {
-      score:
-        player.score +
-        (cell.multiplier ? tile.value * cell.multiplier : tile.value),
+    await ctx.runMutation(internal.mutations.internal.move.createMove, {
+      gameId: game._id,
+      type: MoveType.PLAYER_TO_CELL,
+      turn: game.currentTurn,
+      cellId: cellId,
+      tileId: tileId,
+      playerId: playerId,
+      moveScore: cell.multiplier ? cell.multiplier * tile.value : tile.value,
     });
 
     // if cell is an operator one, draw a new tile for the player
@@ -64,9 +63,21 @@ export const playToCell = mutationWithSession({
         gameTiles
           .sort(() => Math.random() - 0.5)
           .filter((t) => t.location === "in_bag");
+
+        const movedTile = gameTiles[0];
         await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-          tileId: gameTiles[0]._id as Id<"tiles">,
+          tileId: movedTile._id as Id<"tiles">,
           playerId,
+        });
+
+        await ctx.runMutation(internal.mutations.internal.move.createMove, {
+          gameId: game._id,
+          type: MoveType.BAG_TO_PLAYER,
+          turn: game.currentTurn,
+          cellId: null,
+          tileId: movedTile._id as Id<"tiles">,
+          playerId: playerId,
+          moveScore: 0,
         });
       }
     }

@@ -35,7 +35,8 @@ body {
       svg {
         height: 100%;
         &.tile {
-          height: 60%;
+          height: 1.3em;
+          transform: translateX(-0.1em);
         }
         &.small {
           height: 50%;

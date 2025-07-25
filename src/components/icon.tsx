@@ -1,5 +1,7 @@
+import { classnames } from "@libraries/helpers/dom";
+
 type NumberIconProps = {
-  icon: number; //0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+  icon: number;
   className?: string;
 };
 export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
@@ -8,7 +10,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="0"
-        className="svg-inline--fa fa-0 "
+        className={classnames("svg-inline--fa fa-0 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -22,7 +24,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="1"
-        className="svg-inline--fa fa-1 "
+        className={classnames("svg-inline--fa fa-1 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -36,7 +38,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="2"
-        className="svg-inline--fa fa-2 "
+        className={classnames("svg-inline--fa fa-2 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -50,7 +52,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="3"
-        className="svg-inline--fa fa-3 "
+        className={classnames("svg-inline--fa fa-3 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -64,7 +66,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="4"
-        className="svg-inline--fa fa-4 "
+        className={classnames("svg-inline--fa fa-4 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -78,7 +80,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="5"
-        className="svg-inline--fa fa-5 "
+        className={classnames("svg-inline--fa fa-5 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -92,7 +94,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="6"
-        className="svg-inline--fa fa-6 "
+        className={classnames("svg-inline--fa fa-6 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -106,7 +108,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="7"
-        className="svg-inline--fa fa-7 "
+        className={classnames("svg-inline--fa fa-7 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -120,7 +122,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="8"
-        className="svg-inline--fa fa-8 "
+        className={classnames("svg-inline--fa fa-8 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >
@@ -134,7 +136,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
       <svg
         data-prefix="fas"
         data-icon="9"
-        className="svg-inline--fa fa-9 "
+        className={classnames("svg-inline--fa fa-9 ", className)}
         role="img"
         viewBox="0 0 256 512"
       >

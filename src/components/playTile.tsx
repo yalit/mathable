@@ -32,7 +32,7 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
   return (
     <div
       className={classnames(
-        "bg-sky-800 text-white rounded-sm flex justify-center items-center gap-1 aspect-square h-14 max-h-[90%]",
+        "bg-sky-800 text-white rounded-sm flex justify-center items-center gap-1 aspect-square h-14 max-h-[90%] ",
         tileClass,
       )}
       ref={drag}

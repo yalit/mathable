@@ -14,6 +14,7 @@ export const gameSchema = z.object({
   status: gameStatusSchema.default("waiting"),
   players: z.array(playerSchema),
   cells: z.array(cellSchema),
+  currentTurn: z.number(),
 });
 
 export type Game = z.infer<typeof gameSchema>;

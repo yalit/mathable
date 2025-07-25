@@ -19,6 +19,7 @@ export const createGame = (gameName: string, firstPlayerName: string): Game => {
     status: "waiting",
     players: [createPlayer(firstPlayerName)],
     cells: [],
+    currentTurn: 0,
   };
 };
 

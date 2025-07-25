@@ -7,6 +7,7 @@ export default defineSchema({
     name: v.string(),
     token: v.string(),
     status: v.string(),
+    currentTurn: v.number(),
   }).index("by_token", ["token"]),
   players: defineTable({
     gameId: v.id("games"),
@@ -43,6 +44,15 @@ export default defineSchema({
   })
     .index("by_player", ["playerId", "location", "value"])
     .index("by_game", ["gameId"]),
+  moves: defineTable({
+    gameId: v.id("games"),
+    type: v.string(),
+    turn: v.number(),
+    moveScore: v.number(),
+    cellId: v.optional(v.union(v.null(), v.id("cells"))),
+    tileId: v.union(v.null(), v.id("tiles")),
+    playerId: v.optional(v.union(v.null(), v.id("players"))),
+  }).index("by_turn", ["gameId", "turn"]),
   users: defineTable({
     // Note: make sure not to leak this to clients. See this post for more info:
     // https://stack.convex.dev/track-sessions-without-cookies
