@@ -4,6 +4,7 @@ import { playerSchema, type Player } from "../../src/context/model/player";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { getPlayerTiles } from "./player";
+import type { e164 } from "zod";
 
 export const getGame = async (
   gameId: Id<"games">,
@@ -65,6 +66,25 @@ export const getGameCurrentPlayer = async (
   }
 
   return current[0];
+};
+
+export const getGameNextPlayer = async (
+  game: Doc<"games">,
+  ctx: QueryCtx,
+): Promise<Player | null> => {
+  const current = await getGameCurrentPlayer(game, ctx);
+  if (!current) {
+    return null;
+  }
+  const players = await getGamePlayers(game, ctx);
+
+  const nextOrder = current.order < players.length ? current.order + 1 : 1;
+  const next = players.filter((p) => p.order === nextOrder);
+
+  if (next.length !== 1) {
+    return null;
+  }
+  return next[0];
 };
 
 export const getGameTiles = async (

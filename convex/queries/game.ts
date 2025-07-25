@@ -2,14 +2,8 @@ import { query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Game } from "../../src/context/model/game.ts";
 import type { Doc } from "../_generated/dataModel";
-import {
-  getGame,
-  getGameCells,
-  getGameCurrentTurnMoves,
-  getGamePlayers,
-} from "../helpers/game.ts";
+import { getGameCells, getGamePlayers } from "../helpers/game.ts";
 import { gameSchema } from "../../src/context/model/game.ts";
-import { queryWithSession } from "../middleware/sessions.ts";
 
 export const get = query({
   args: { gameToken: v.string() },
@@ -31,18 +25,5 @@ export const get = query({
       cells: gameCells,
       players: gamePlayers,
     });
-  },
-});
-
-export const getCurrentTurnScore = queryWithSession({
-  args: { gameId: v.id("games") },
-  handler: async (ctx, { gameId }): Promise<number> => {
-    const game = await getGame(gameId, ctx);
-    if (!game) {
-      return 0;
-    }
-
-    const moves = await getGameCurrentTurnMoves(game, ctx);
-    return moves.reduce((score, m) => score + m.moveScore, 0);
   },
 });

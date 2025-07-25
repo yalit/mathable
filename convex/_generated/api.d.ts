@@ -24,8 +24,10 @@ import type * as mutations_internal_player from "../mutations/internal/player.js
 import type * as mutations_internal_tile from "../mutations/internal/tile.js";
 import type * as mutations_internal_user from "../mutations/internal/user.js";
 import type * as mutations_public_game from "../mutations/public/game.js";
+import type * as mutations_public_play from "../mutations/public/play.js";
 import type * as mutations_public_tile from "../mutations/public/tile.js";
 import type * as queries_game from "../queries/game.js";
+import type * as queries_play from "../queries/play.js";
 import type * as queries_player from "../queries/player.js";
 
 /**
@@ -48,8 +50,10 @@ declare const fullApi: ApiFromModules<{
   "mutations/internal/tile": typeof mutations_internal_tile;
   "mutations/internal/user": typeof mutations_internal_user;
   "mutations/public/game": typeof mutations_public_game;
+  "mutations/public/play": typeof mutations_public_play;
   "mutations/public/tile": typeof mutations_public_tile;
   "queries/game": typeof queries_game;
+  "queries/play": typeof queries_play;
   "queries/player": typeof queries_player;
 }>;
 export declare const api: FilterApi<

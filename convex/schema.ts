@@ -16,11 +16,12 @@ export default defineSchema({
     current: v.boolean(),
     score: v.number(),
     owner: v.boolean(),
-    order: v.union(v.null(), v.number()),
+    order: v.number(),
     userId: v.id("users"),
   })
     .index("by_token", ["token"])
-    .index("by_game", ["gameId"]),
+    .index("by_game", ["gameId"])
+    .index("by_game_order", ["gameId", "order"]),
   cells: defineTable({
     gameId: v.id("games"),
     row: v.number(),

@@ -60,11 +60,11 @@ export const playToCell = mutationWithSession({
     if (cell.type === "operator") {
       const gameTiles = await getGameTiles(game, ctx);
       if (gameTiles.length > 0) {
-        gameTiles
+        const bagTiles = gameTiles
           .sort(() => Math.random() - 0.5)
           .filter((t) => t.location === "in_bag");
 
-        const movedTile = gameTiles[0];
+        const movedTile = bagTiles[0];
         await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
           tileId: movedTile._id as Id<"tiles">,
           playerId,
