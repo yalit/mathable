@@ -10,5 +10,6 @@ export const playerSchema = z.object({
   score: z.number(),
   owner: z.boolean(),
   order: z.number().nullable(),
+  userId: z.string(),
 });
 export type Player = z.infer<typeof playerSchema>;

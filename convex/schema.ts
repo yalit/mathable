@@ -32,14 +32,17 @@ export default defineSchema({
     tileId: v.union(v.id("tiles"), v.null()),
   })
     .index("by_game_row_column", ["gameId", "row", "column"])
-    .index("by_game_column_row", ["gameId", "column", "row"]),
+    .index("by_game_column_row", ["gameId", "column", "row"])
+    .index("by_tile", ["tileId"]),
   tiles: defineTable({
     gameId: v.id("games"),
     playerId: v.union(v.id("players"), v.null()),
     cellId: v.union(v.id("cells"), v.null()),
     value: v.number(),
     location: v.string(),
-  }).index("by_player", ["playerId", "location", "value"]),
+  })
+    .index("by_player", ["playerId", "location", "value"])
+    .index("by_game", ["gameId"]),
   users: defineTable({
     // Note: make sure not to leak this to clients. See this post for more info:
     // https://stack.convex.dev/track-sessions-without-cookies

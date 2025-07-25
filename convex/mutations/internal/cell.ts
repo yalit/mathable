@@ -2,7 +2,10 @@ import { internal } from "../../_generated/api";
 import type { Doc } from "../../_generated/dataModel";
 import { internalMutation } from "../../_generated/server";
 import { getNumericValue } from "../../helpers/cell";
-import { getImpactingCellsByDirection } from "../../helpers/cellImpacts";
+import {
+  getCellsByDirectionTwoFromCell,
+  getImpactingCellsByDirection,
+} from "../../helpers/cellImpacts";
 import { v } from "convex/values";
 
 export const computeAllAllowedValues = internalMutation({
@@ -31,16 +34,15 @@ export const computeAllowedValuesFromUpdatedCell = internalMutation({
       return;
     }
 
-    const impactingDirections = await getImpactingCellsByDirection(cell, ctx);
+    const impactingDirections = await getCellsByDirectionTwoFromCell(cell, ctx);
 
     impactingDirections.forEach(async (arr) =>
-      arr.forEach(
-        async (c) =>
-          await ctx.runMutation(
-            internal.mutations.internal.cell.computeAllowedValuesForCell,
-            { cellId: c._id },
-          ),
-      ),
+      arr.forEach(async (c) => {
+        await ctx.runMutation(
+          internal.mutations.internal.cell.computeAllowedValuesForCell,
+          { cellId: c._id },
+        );
+      }),
     );
   },
 });
@@ -72,7 +74,7 @@ export const computeAllowedValuesForCell = internalMutation({
         const second: number = await getNumericValue(impactingCells[1], ctx);
 
         const add = [first + second];
-        const sub = [first - second];
+        const sub = [first - second, second - first];
         const mult = [first * second];
         const div = [];
         if (second !== 0 && Number.isInteger(first / second)) {

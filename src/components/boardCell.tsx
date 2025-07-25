@@ -8,18 +8,33 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Cell } from "@context/model/cell";
 import { classnames } from "@libraries/helpers/dom";
-import { numberIcons, PlayTile } from "./playTile";
+import { PlayTile } from "./playTile";
 import { useDrop } from "react-dnd";
 import { DragItemTypes } from "@context/draganddrop/constants";
 import type { Tile } from "@context/model/tile";
+import { NumberIcon } from "./icon";
+import { usePlayer } from "@hooks/context/usePlayer";
+import { useSessionMutation } from "convex-helpers/react/sessions";
+import { api } from "@cvx/_generated/api";
+import type { Id } from "@cvx/_generated/dataModel";
 
 export function BoardCell({ cell }: { cell: Cell }) {
+  const player = usePlayer();
+  const playTileToCell = useSessionMutation(
+    api.mutations.public.tile.playToCell,
+  );
+
   const [{ isOver, canDrop }, drop] = useDrop(() => {
     return {
       accept: DragItemTypes.TILE,
-      drop: (item: Tile) => console.log(item),
+      drop: (item: Tile) =>
+        playTileToCell({
+          tileId: item._id as Id<"tiles">,
+          cellId: cell._id as Id<"cells">,
+          playerId: player?._id as Id<"players">,
+        }),
       canDrop: (item: Tile) => {
-        return cell.allowedValues.includes(item.value);
+        return player?.current && cell.allowedValues.includes(item.value);
       },
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
@@ -33,7 +48,8 @@ export function BoardCell({ cell }: { cell: Cell }) {
     }
 
     if (cell.type === "value") {
-      return <FontAwesomeIcon icon={numberIcons[cell.value]} />;
+      // return <FontAwesomeIcon icon={numberIcons[cell.value]} />;
+      return <NumberIcon icon={cell.value} />;
     }
 
     if (cell.type === "multiplier") {
@@ -41,14 +57,14 @@ export function BoardCell({ cell }: { cell: Cell }) {
         case 2:
           return (
             <>
-              <FontAwesomeIcon icon={numberIcons[2]} />
+              <NumberIcon icon={2} />
               <FontAwesomeIcon icon={faXmark} className="small" />
             </>
           );
         case 3:
           return (
             <>
-              <FontAwesomeIcon icon={numberIcons[3]} />
+              <NumberIcon icon={3} />
               <FontAwesomeIcon icon={faXmark} className="small" />
             </>
           );
@@ -79,7 +95,7 @@ export function BoardCell({ cell }: { cell: Cell }) {
 
   return (
     <div className={cellClass} ref={drop}>
-      <div className="relative flex items-end h-[70%]">{cellContent}</div>
+      <div className="relative flex items-end gap-1 h-[70%]">{cellContent}</div>
       {cell.tile && (
         <PlayTile tile={cell.tile} tileClass="absolute inset-0.5" />
       )}

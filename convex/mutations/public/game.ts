@@ -1,17 +1,19 @@
-import { getGamePlayers } from "../../helpers/game";
+import { getGame, getGamePlayers, getGameTiles } from "../../helpers/game";
 import {
   getBoardCells,
-  getGameTiles,
+  getInitialGameTiles,
 } from "../../../src/context/factories/gameFactory";
 import { UUID } from "../../../src/context/factories/uuidFactory";
 import type { Cell } from "../../../src/context/model/cell";
 import type { Tile } from "../../../src/context/model/tile";
 import { internal } from "../../_generated/api";
-import type { Id } from "../../_generated/dataModel";
+import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation } from "../../_generated/server";
 import { v } from "convex/values";
 import { getPlayer } from "../../helpers/player";
 import { vSessionId } from "convex-helpers/server/sessions";
+import { mutationWithSession } from "../../middleware/sessions";
+import type { Player } from "../../../src/context/model/player";
 
 export const create = mutation({
   args: { gameName: v.string(), playerName: v.string(), sessionId: vSessionId },
@@ -62,7 +64,7 @@ export const create = mutation({
     );
 
     // create Tiles
-    getGameTiles().forEach(async (t: Tile) => {
+    getInitialGameTiles().forEach(async (t: Tile) => {
       await ctx.db.insert("tiles", {
         gameId,
         value: t.value,
@@ -102,5 +104,55 @@ export const join = mutation({
     const player = await getPlayer(playerId, ctx);
 
     return { success: player !== null, token: player?.token ?? "" };
+  },
+});
+
+export const start = mutationWithSession({
+  args: { gameId: v.id("games") },
+  handler: async (ctx, { gameId }) => {
+    const game: Doc<"games"> | null = await getGame(gameId, ctx);
+
+    if (!game) {
+      return;
+    }
+
+    if (!ctx.user) {
+      return;
+    }
+
+    const players = await getGamePlayers(game, ctx);
+    const owner = players.filter((p: Player) => p.owner);
+    if (owner.length === 0 || owner[0].userId !== ctx.user._id) {
+      return;
+    }
+
+    // change the status
+    await ctx.db.patch(gameId, { status: "ongoing" });
+
+    // set the random order for the players
+    // set the current player to the player with order 1
+    // randomize the order
+    players.sort(() => Math.random() - 0.5);
+    players.forEach(async (p, idx) => {
+      await ctx.db.patch(p._id as Id<"players">, {
+        order: idx + 1,
+        current: idx === 0,
+      });
+    });
+
+    // set the tiles for each users
+    players.forEach(async (p) => {
+      const tiles = await getGameTiles(game, ctx);
+      tiles.sort(() => Math.random() - 0.5);
+      tiles
+        .filter((t) => t.location === "in_bag")
+        .slice(0, 7)
+        .forEach(async (t) => {
+          await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
+            tileId: t._id as Id<"tiles">,
+            playerId: p._id as Id<"players">,
+          });
+        });
+    });
   },
 });

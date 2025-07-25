@@ -7,7 +7,7 @@ export const impactingDirections = ["left", "right", "up", "down"];
 
 export type ImpactingCells = Doc<"cells">[][];
 
-export const getImpactingCellsByDirection = async (
+export const getCellsByDirectionTwoFromCell = async (
   cell: Doc<"cells">,
   ctx: QueryCtx,
 ): Promise<ImpactingCells> => {
@@ -55,10 +55,19 @@ export const getImpactingCellsByDirection = async (
     )
     .collect();
 
+  return [left, right, up, down];
+};
+
+export const getImpactingCellsByDirection = async (
+  cell: Doc<"cells">,
+  ctx: QueryCtx,
+): Promise<ImpactingCells> => {
+  const cells = await getCellsByDirectionTwoFromCell(cell, ctx);
+
   return [
-    left.filter((c) => hasValue(c)),
-    right.filter((c) => hasValue(c)),
-    up.filter((c) => hasValue(c)),
-    down.filter((c) => hasValue(c)),
+    cells[0].filter((c) => hasValue(c)),
+    cells[1].filter((c) => hasValue(c)),
+    cells[2].filter((c) => hasValue(c)),
+    cells[3].filter((c) => hasValue(c)),
   ];
 };

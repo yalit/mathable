@@ -17,7 +17,6 @@ export const create = internalMutationWithSession({
         sessionId: ctx.sessionId,
       });
     }
-    console.log("userId", ctx.user, userId);
     return await ctx.db.insert("players", {
       gameId: gameId,
       token: UUID(),

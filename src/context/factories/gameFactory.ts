@@ -120,7 +120,7 @@ export const getBoardCells = (): Cell[] => {
   return cells;
 };
 
-export const getGameTiles = (): Tile[] => {
+export const getInitialGameTiles = (): Tile[] => {
   const tiles: Tile[] = [];
 
   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach((v) => {
