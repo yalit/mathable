@@ -1,6 +1,6 @@
 import type { Id } from "@cvx/_generated/dataModel";
 import { internal } from "../../_generated/api";
-import { getGameTiles } from "../../helpers/game";
+import { getGameBagTiles } from "../../helpers/game";
 import { mutationWithSession } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
@@ -58,13 +58,11 @@ export const playToCell = mutationWithSession({
 
     // if cell is an operator one, draw a new tile for the player
     if (cell.type === "operator") {
-      const gameTiles = await getGameTiles(game, ctx);
+      const gameTiles = await getGameBagTiles(game, ctx);
       if (gameTiles.length > 0) {
-        const bagTiles = gameTiles
-          .sort(() => Math.random() - 0.5)
-          .filter((t) => t.location === "in_bag");
+        gameTiles.sort(() => Math.random() - 0.5);
 
-        const movedTile = bagTiles[0];
+        const movedTile = gameTiles[0];
         await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
           tileId: movedTile._id as Id<"tiles">,
           playerId,

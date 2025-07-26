@@ -1,4 +1,4 @@
-import { getGame, getGamePlayers, getGameTiles } from "../../helpers/game";
+import { getGame, getGamePlayers, getGameBagTiles } from "../../helpers/game";
 import {
   getBoardCells,
   getInitialGameTiles,
@@ -122,7 +122,7 @@ export const start = mutationWithSession({
     }
 
     const players = await getGamePlayers(game, ctx);
-    const owner = players.filter((p: Player) => p.owner);
+    const owner = players.filter((p) => p.owner);
     if (owner.length === 0 || owner[0].userId !== ctx.user._id) {
       return;
     }
@@ -143,17 +143,14 @@ export const start = mutationWithSession({
 
     // set the tiles for each users
     players.forEach(async (p) => {
-      const tiles = await getGameTiles(game, ctx);
+      const tiles = await getGameBagTiles(game, ctx);
       tiles.sort(() => Math.random() - 0.5);
-      tiles
-        .filter((t) => t.location === "in_bag")
-        .slice(0, 7)
-        .forEach(async (t) => {
-          await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-            tileId: t._id as Id<"tiles">,
-            playerId: p._id as Id<"players">,
-          });
+      tiles.slice(0, 7).forEach(async (t) => {
+        await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
+          tileId: t._id as Id<"tiles">,
+          playerId: p._id as Id<"players">,
         });
+      });
     });
   },
 });

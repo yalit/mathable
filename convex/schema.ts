@@ -44,7 +44,8 @@ export default defineSchema({
     location: v.string(),
   })
     .index("by_player", ["playerId", "location", "value"])
-    .index("by_game", ["gameId"]),
+    .index("by_game", ["gameId"])
+    .index("by_game_location", ["gameId", "location"]),
   moves: defineTable({
     gameId: v.id("games"),
     type: v.string(),

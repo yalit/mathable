@@ -1,8 +1,6 @@
-import { tileSchema, type Tile } from "../../src/context/model/tile";
-import { playerSchema, type Player } from "../../src/context/model/player";
+import { tileSchema } from "../../src/context/model/tile";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { getPlayerTiles } from "./player";
 
 export const getGame = async (
   gameId: Id<"games">,
@@ -24,24 +22,17 @@ export const getGameCells = async (
 export const getGamePlayers = async (
   game: Doc<"games">,
   ctx: QueryCtx,
-): Promise<Player[]> => {
-  const gamePlayers = await ctx.db
+): Promise<Doc<"players">[]> => {
+  return await ctx.db
     .query("players")
     .withIndex("by_game", (q) => q.eq("gameId", game._id))
     .collect();
-
-  return Promise.all(
-    gamePlayers.map(async (p) => {
-      const tiles = await getPlayerTiles(p, ctx);
-      return playerSchema.parse({ ...p, tiles });
-    }),
-  );
 };
 
 export const getGameCurrentPlayer = async (
   game: Doc<"games">,
   ctx: QueryCtx,
-): Promise<Player | null> => {
+): Promise<Doc<"players"> | null> => {
   const players = await getGamePlayers(game, ctx);
   const current = players.filter((p) => p.current);
 
@@ -55,7 +46,7 @@ export const getGameCurrentPlayer = async (
 export const getGameNextPlayer = async (
   game: Doc<"games">,
   ctx: QueryCtx,
-): Promise<Player | null> => {
+): Promise<Doc<"players"> | null> => {
   const current = await getGameCurrentPlayer(game, ctx);
   if (!current) {
     return null;
@@ -71,20 +62,16 @@ export const getGameNextPlayer = async (
   return next[0];
 };
 
-export const getGameTiles = async (
+export const getGameBagTiles = async (
   game: Doc<"games">,
   ctx: QueryCtx,
-): Promise<Tile[]> => {
-  const gameTiles = await ctx.db
+): Promise<Doc<"tiles">[]> => {
+  return await ctx.db
     .query("tiles")
-    .withIndex("by_game", (q) => q.eq("gameId", game._id))
+    .withIndex("by_game_location", (q) =>
+      q.eq("gameId", game._id).eq("location", "in_bag"),
+    )
     .collect();
-
-  return Promise.all(
-    gameTiles.map(async (t) => {
-      return tileSchema.parse(t);
-    }),
-  );
 };
 
 export const getGameCurrentTurnMoves = async (

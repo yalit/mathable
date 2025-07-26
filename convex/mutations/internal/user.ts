@@ -1,4 +1,4 @@
-import type { Id } from "@cvx/_generated/dataModel";
+import type { Id } from "../../_generated/dataModel";
 import { internalMutationWithSession } from "../../middleware/sessions";
 import { v } from "convex/values";
 

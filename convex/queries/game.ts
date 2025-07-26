@@ -5,6 +5,7 @@ import type { Doc } from "../_generated/dataModel";
 import { getGameCells, getGamePlayers } from "../helpers/game.ts";
 import { gameSchema } from "../../src/context/model/game.ts";
 import { cellSchema } from "../../src/context/model/cell.ts";
+import { api } from "../_generated/api.js";
 
 export const get = query({
   args: { gameToken: v.string() },
@@ -30,11 +31,18 @@ export const get = query({
     );
 
     const gamePlayers = await getGamePlayers(game, ctx);
+    const players = await Promise.all(
+      gamePlayers.map(async (p) => {
+        return await ctx.runQuery(api.queries.player.get, {
+          playerToken: p.token,
+        });
+      }),
+    );
 
     return gameSchema.parse({
       ...game,
       cells: cells,
-      players: gamePlayers,
+      players: players,
     });
   },
 });

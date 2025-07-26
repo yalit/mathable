@@ -2,7 +2,7 @@ import {
   getGameCurrentPlayer,
   getGameCurrentTurnMoves,
   getGameNextPlayer,
-  getGameTiles,
+  getGameBagTiles,
 } from "../../helpers/game";
 import { mutationWithSession } from "../../middleware/sessions";
 import { v } from "convex/values";
@@ -84,15 +84,13 @@ export const endTurn = mutationWithSession({
     await ctx.db.patch(nextPlayer._id as Id<"players">, { current: true });
 
     // add the needed tiles to the current player
-    // @ts-ignore
     const currentTiles = await getPlayerTiles(currentPlayer, ctx);
     const neededTiles = 7 - currentTiles.length;
 
     for (let i = 0; i < neededTiles; i++) {
-      const tiles = await getGameTiles(game, ctx);
+      const tiles = await getGameBagTiles(game, ctx);
       tiles
         .sort(() => Math.random() - 0.5)
-        .filter((t) => t.location === "in_bag")
         .slice(0, 1)
         .forEach(async (t) => {
           await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
@@ -103,7 +101,6 @@ export const endTurn = mutationWithSession({
     }
 
     // update the score of the current playerId
-    console.log("New score", turnScore, currentPlayer.score + turnScore);
     await ctx.db.patch(currentPlayer._id as Id<"players">, {
       current: false,
       score: currentPlayer.score + turnScore,
