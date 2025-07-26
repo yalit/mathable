@@ -157,3 +157,6 @@ export const start = mutationWithSession({
     });
   },
 });
+
+//TODO : implement endGame
+export const endGame = {};
