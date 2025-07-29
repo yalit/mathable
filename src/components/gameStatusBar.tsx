@@ -1,8 +1,6 @@
 import type { Player } from "@context/model/player";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
-import { useGame } from "@hooks/context/useGame";
-import { usePlayer } from "@hooks/context/usePlayer";
 import { classnames } from "@libraries/helpers/dom";
 import {
   useSessionMutation,
@@ -10,6 +8,7 @@ import {
 } from "convex-helpers/react/sessions";
 import { useCallback } from "react";
 import type { Game } from "@context/model/game";
+import { useGame, usePlayer } from "@context/hooks";
 
 export function GameStatusBar() {
   const game = useGame();

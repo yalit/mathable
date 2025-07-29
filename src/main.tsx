@@ -9,6 +9,7 @@ import { SessionProvider } from "convex-helpers/react/sessions";
 import { useLocalStorage } from "usehooks-ts";
 
 import "./index.css";
+import { GameProvider } from "@context/gameProvider";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -19,10 +20,21 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <Routes>
             <Route index element={<Home />} />
-            <Route path="/game/:gameToken" element={<RequestToPlay />} />
+            <Route
+              path="/game/:gameToken"
+              element={
+                <GameProvider>
+                  <RequestToPlay />
+                </GameProvider>
+              }
+            />
             <Route
               path="/game/:gameToken/player/:playerToken"
-              element={<Game />}
+              element={
+                <GameProvider>
+                  <Game />
+                </GameProvider>
+              }
             />
           </Routes>
         </BrowserRouter>

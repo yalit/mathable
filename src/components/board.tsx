@@ -1,6 +1,6 @@
 import type { Cell } from "@context/model/cell";
-import { useGame } from "@hooks/context/useGame";
 import { BoardCell } from "./boardCell";
+import { useGame } from "@context/hooks";
 
 export function Board() {
   const game = useGame();

@@ -13,10 +13,10 @@ import { useDrop } from "react-dnd";
 import { DragItemTypes } from "@context/draganddrop/constants";
 import type { Tile } from "@context/model/tile";
 import { NumberIcon } from "./icon";
-import { usePlayer } from "@hooks/context/usePlayer";
 import { useSessionMutation } from "convex-helpers/react/sessions";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
+import { usePlayer } from "@context/hooks";
 
 export function BoardCell({ cell }: { cell: Cell }) {
   const player = usePlayer();

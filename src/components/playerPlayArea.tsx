@@ -1,6 +1,6 @@
 import type { Tile } from "@context/model/tile";
-import { usePlayer } from "@hooks/context/usePlayer";
 import { PlayTile } from "./playTile";
+import { usePlayer } from "@context/hooks";
 
 export function PlayerPlayArea() {
   const player = usePlayer();

@@ -1,10 +1,10 @@
 import type { Tile } from "@context/model/tile";
-import { usePlayer } from "@hooks/context/usePlayer";
 import { useMemo } from "react";
 import { useDrag } from "react-dnd";
 import { DragItemTypes } from "@context/draganddrop/constants";
 import { classnames } from "@libraries/helpers/dom";
 import { NumberIcon } from "./icon";
+import { usePlayer } from "@context/hooks";
 
 type TileProps = { tile: Tile; tileClass?: string };
 
