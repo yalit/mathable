@@ -36,7 +36,9 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
   const endTurn = useSessionMutation(api.mutations.public.play.endTurn);
 
   const handleStartGame = () => {
-    startGame({ gameId: game._id as Id<"games"> });
+    if (game.players.length >= 2) {
+      startGame({ gameId: game._id as Id<"games"> });
+    }
   };
 
   const handleResetTurn = () => {
@@ -46,6 +48,7 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
   const handleEndTurn = () => {
     endTurn({ gameId: game._id as Id<"games"> });
   };
+
   return (
     <div className="flex justify-center items-center gap-3">
       {game.status === "waiting" && player.owner && (
