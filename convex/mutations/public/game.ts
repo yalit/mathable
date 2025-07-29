@@ -13,14 +13,12 @@ import { v } from "convex/values";
 import { getPlayer } from "../../helpers/player";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { mutationWithSession } from "../../middleware/sessions";
-import type { Player } from "../../../src/context/model/player";
 
 export const create = mutation({
-  args: { gameName: v.string(), playerName: v.string(), sessionId: vSessionId },
+  args: { playerName: v.string(), sessionId: vSessionId },
   handler: async (ctx, args) => {
     // create Game
     const gameId = await ctx.db.insert("games", {
-      name: args.gameName,
       token: UUID(),
       status: "waiting",
       currentTurn: 0,

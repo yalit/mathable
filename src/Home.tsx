@@ -6,14 +6,13 @@ import { useSessionId } from "convex-helpers/react/sessions";
 function Home() {
   const [sessionId] = useSessionId();
   const [clicked, setClicked] = useState<boolean>();
-  const [gameName, setGameName] = useState<string>("");
   const [playerName, setPlayerName] = useState<string>("");
   const createGame = useMutation(api.mutations.public.game.create);
 
   const handleClickOnCreate = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (gameName === "" || playerName === "") {
+    if (playerName === "") {
       return;
     }
 
@@ -22,7 +21,6 @@ function Home() {
     }
 
     const { gameToken, playerToken } = await createGame({
-      gameName,
       playerName,
       sessionId,
     });
@@ -39,17 +37,6 @@ function Home() {
             className="p-5 flex flex-col gap-5"
             onSubmit={handleClickOnCreate}
           >
-            <div className="flex gap-2 flex-col">
-              <label htmlFor="game_name">Game Name</label>
-              <input
-                className="focus:outline-none font-normal text-lg border-b border-inherit pb-1"
-                id="game_name"
-                name="game_name"
-                placeholder="Name your game..."
-                value={gameName}
-                onChange={(e) => setGameName(e.target.value)}
-              />
-            </div>
             <div className="flex gap-2 flex-col">
               <label htmlFor="player_name">Player Name</label>
               <input

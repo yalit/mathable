@@ -4,7 +4,6 @@ import { vSessionId } from "convex-helpers/server/sessions";
 
 export default defineSchema({
   games: defineTable({
-    name: v.string(),
     token: v.string(),
     status: v.string(),
     currentTurn: v.number(),

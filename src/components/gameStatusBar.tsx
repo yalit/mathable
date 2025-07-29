@@ -31,10 +31,8 @@ type StatusBarPartProps = {
   game: Game;
   player: Player;
 };
-const MainTitle = ({ game, player }: StatusBarPartProps) => (
-  <div className="font-xl font-semibold">
-    Mathable : {game?.name ?? ""} : {player?.name ?? ""}
-  </div>
+const MainTitle = ({ player }: StatusBarPartProps) => (
+  <div className="font-xl font-semibold">Mathable : {player?.name ?? ""}</div>
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
