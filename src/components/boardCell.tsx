@@ -31,10 +31,10 @@ export function BoardCell({ cell }: { cell: Cell }) {
         playTileToCell({
           tileId: item._id as Id<"tiles">,
           cellId: cell._id as Id<"cells">,
-          playerId: player?._id as Id<"players">,
+          playerId: player._id as Id<"players">,
         }),
       canDrop: (item: Tile) => {
-        return player?.current && cell.allowedValues.includes(item.value);
+        return player.current && cell.allowedValues.includes(item.value);
       },
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),

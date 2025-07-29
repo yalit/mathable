@@ -15,13 +15,9 @@ export function GameStatusBar() {
   const player = usePlayer();
   return (
     <nav className="w-screen shadow p-5 grid grid-cols-3 items-center">
-      {game && player && (
-        <>
-          <MainTitle game={game} player={player} />
-          <GameActions game={game} player={player} />
-          <GameInformation game={game} player={player} />
-        </>
-      )}
+      <MainTitle game={game} player={player} />
+      <GameActions game={game} player={player} />
+      <GameInformation game={game} player={player} />
     </nav>
   );
 }
@@ -31,7 +27,7 @@ type StatusBarPartProps = {
   player: Player;
 };
 const MainTitle = ({ player }: StatusBarPartProps) => (
-  <div className="font-xl font-semibold">Mathable : {player?.name ?? ""}</div>
+  <div className="font-xl font-semibold">Mathable : {player.name}</div>
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
