@@ -28,7 +28,11 @@ export const resetTurn = mutationWithSession({
     }
 
     const moves = await getGameCurrentTurnMoves(game, ctx);
+    let canContinue = true;
     moves.forEach(async (m) => {
+      if (!canContinue) {
+        return;
+      }
       if (m.type === MoveType.PLAYER_TO_CELL) {
         if (!(m.cellId && m.tileId && m.playerId)) {
           return;
@@ -46,9 +50,10 @@ export const resetTurn = mutationWithSession({
         if (!m.tileId) {
           return;
         }
-        await ctx.runMutation(internal.mutations.internal.tile.moveToBag, {
-          tileId: m.tileId,
-        });
+        // if a tile is moved from the bag to the player during a turn it means that the player played on an operator cell and so fetched a new tile
+        // in that case stop the reset as it would contrevene the randomness of the game
+        canContinue = false;
+        return;
       }
 
       await ctx.db.delete(m._id);
