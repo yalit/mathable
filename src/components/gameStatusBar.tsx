@@ -31,15 +31,8 @@ const MainTitle = ({ player }: StatusBarPartProps) => (
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
-  const startGame = useSessionMutation(api.mutations.public.game.start);
   const resetTurn = useSessionMutation(api.mutations.public.play.resetTurn);
   const endTurn = useSessionMutation(api.mutations.public.play.endTurn);
-
-  const handleStartGame = () => {
-    if (game.players.length >= 2) {
-      startGame({ gameId: game._id as Id<"games"> });
-    }
-  };
 
   const handleResetTurn = () => {
     resetTurn({ gameId: game._id as Id<"games"> });
@@ -51,14 +44,6 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
 
   return (
     <div className="flex justify-center items-center gap-3">
-      {game.status === "waiting" && player.owner && (
-        <button
-          className="cursor-pointer font-semibold text-lg"
-          onClick={handleStartGame}
-        >
-          Start game
-        </button>
-      )}
       {game.status === "ongoing" && !player.current && (
         <div className="font-semibold">Match ongoing...</div>
       )}
