@@ -83,6 +83,16 @@ export const endTurn = mutationWithSession({
 
     await ctx.db.patch(nextPlayer._id as Id<"players">, { current: true });
 
+    // update the score of the current playerId
+    const currentPlayerTiles = await getPlayerTiles(currentPlayer, ctx);
+    const additionalScoreForEmptyHand =
+      currentPlayerTiles.length === 0 ? 50 : 0;
+
+    await ctx.db.patch(currentPlayer._id as Id<"players">, {
+      current: false,
+      score: currentPlayer.score + turnScore + additionalScoreForEmptyHand,
+    });
+
     // add the needed tiles to the current player
     const currentTiles = await getPlayerTiles(currentPlayer, ctx);
     const neededTiles = 7 - currentTiles.length;
@@ -99,12 +109,6 @@ export const endTurn = mutationWithSession({
           });
         });
     }
-
-    // update the score of the current playerId
-    await ctx.db.patch(currentPlayer._id as Id<"players">, {
-      current: false,
-      score: currentPlayer.score + turnScore,
-    });
 
     // update the current turn to + 1
     await ctx.db.patch(gameId, { currentTurn: game.currentTurn + 1 });
