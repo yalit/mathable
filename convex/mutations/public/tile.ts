@@ -5,6 +5,7 @@ import { mutationWithSession } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
 import { MoveType } from "../internal/move";
+import { useSessionMutation } from "convex-helpers/react/sessions";
 
 export const playToCell = mutationWithSession({
   args: {
@@ -56,34 +57,60 @@ export const playToCell = mutationWithSession({
       moveScore: cell.multiplier ? cell.multiplier * tile.value : tile.value,
     });
 
-    // if cell is an operator one, draw a new tile for the player
-    if (cell.type === "operator") {
-      const gameTiles = await getGameBagTiles(game, ctx);
-      if (gameTiles.length > 0) {
-        gameTiles.sort(() => Math.random() - 0.5);
-
-        const movedTile = gameTiles[0];
-        await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-          tileId: movedTile._id as Id<"tiles">,
-          playerId,
-        });
-
-        await ctx.runMutation(internal.mutations.internal.move.createMove, {
-          gameId: game._id,
-          type: MoveType.BAG_TO_PLAYER,
-          turn: game.currentTurn,
-          cellId: null,
-          tileId: movedTile._id as Id<"tiles">,
-          playerId: playerId,
-          moveScore: 0,
-        });
-      }
-    }
-
     // recompute values due to cell change
     await ctx.runMutation(
       internal.mutations.internal.cell.computeAllowedValuesFromUpdatedCell,
       { cellId },
     );
+  },
+});
+
+export const pick = mutationWithSession({
+  args: {
+    playerId: v.id("players"),
+    sessionId: vSessionId,
+  },
+  handler: async (ctx, { playerId }) => {
+    const player = await ctx.db.get(playerId);
+
+    if (!player) {
+      return;
+    }
+
+    const game = await ctx.db.get(player.gameId);
+
+    if (!game) {
+      return;
+    }
+
+    if (!ctx.user) {
+      return;
+    }
+
+    // check that the ctx user is the same as the current game user
+    if (ctx.user._id !== player.userId) {
+      return;
+    }
+
+    const gameTiles = await getGameBagTiles(game, ctx);
+    if (gameTiles.length > 0) {
+      gameTiles.sort(() => Math.random() - 0.5);
+
+      const movedTile = gameTiles[0];
+      await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
+        tileId: movedTile._id as Id<"tiles">,
+        playerId,
+      });
+
+      await ctx.runMutation(internal.mutations.internal.move.createMove, {
+        gameId: game._id,
+        type: MoveType.BAG_TO_PLAYER,
+        turn: game.currentTurn,
+        cellId: null,
+        tileId: movedTile._id as Id<"tiles">,
+        playerId: playerId,
+        moveScore: 0,
+      });
+    }
   },
 });

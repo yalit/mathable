@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDivide,
@@ -17,22 +17,31 @@ import { useSessionMutation } from "convex-helpers/react/sessions";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
 import { usePlayer } from "@context/hooks";
+import { PickATileModal } from "./pickATileModal";
 
 export function BoardCell({ cell }: { cell: Cell }) {
   const player = usePlayer();
   const playTileToCell = useSessionMutation(
     api.mutations.public.tile.playToCell,
   );
+  const [displayPickModal, setDisplayPickModal] = useState<boolean>(false);
+
+  const handleDropTile = (item: Tile) => {
+    playTileToCell({
+      tileId: item._id as Id<"tiles">,
+      cellId: cell._id as Id<"cells">,
+      playerId: player._id as Id<"players">,
+    });
+    //TODO : check if the game has still available tile
+    if (cell.type === "operator") {
+      setDisplayPickModal(true);
+    }
+  };
 
   const [{ isOver, canDrop }, drop] = useDrop(() => {
     return {
       accept: DragItemTypes.TILE,
-      drop: (item: Tile) =>
-        playTileToCell({
-          tileId: item._id as Id<"tiles">,
-          cellId: cell._id as Id<"cells">,
-          playerId: player._id as Id<"players">,
-        }),
+      drop: handleDropTile,
       canDrop: (item: Tile) => {
         return player.current && cell.allowedValues.includes(item.value);
       },
@@ -42,6 +51,7 @@ export function BoardCell({ cell }: { cell: Cell }) {
       }),
     };
   }, [cell, cell.allowedValues]);
+
   const cellContent = useMemo(() => {
     if (cell.type === "empty") {
       return null;
@@ -106,6 +116,9 @@ export function BoardCell({ cell }: { cell: Cell }) {
             canDrop && "bg-green-300/50!",
           )}
         ></div>
+      )}
+      {displayPickModal && (
+        <PickATileModal closeModal={() => setDisplayPickModal(false)} />
       )}
     </div>
   );
