@@ -1,44 +1,24 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home";
 import RequestToPlay from "./RequestToPlay";
 import Game from "./Game";
-import { SessionProvider } from "convex-helpers/react/sessions";
-import { useLocalStorage } from "usehooks-ts";
-
-import "./index.css";
-import { GameProvider } from "@context/gameProvider";
-
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ConvexProvider client={convex}>
-      <SessionProvider useStorage={useLocalStorage}>
-        <BrowserRouter>
-          <Routes>
-            <Route index element={<Home />} />
-            <Route
-              path="/game/:gameToken"
-              element={
-                <GameProvider>
-                  <RequestToPlay />
-                </GameProvider>
-              }
-            />
-            <Route
-              path="/game/:gameToken/player/:playerToken"
-              element={
-                <GameProvider>
-                  <Game />
-                </GameProvider>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </SessionProvider>
-    </ConvexProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<Home />} />
+          <Route path="/game/:gameToken" element={<RequestToPlay />} />
+          <Route
+            path="/game/:gameToken/player/:playerToken"
+            element={<Game />}
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 );
