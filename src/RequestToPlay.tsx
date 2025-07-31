@@ -1,4 +1,4 @@
-import { RequestToPlayForm } from "@components/requestToPlayForm";
+import { RequestToPlayForm } from "@components/joinGame/requestToPlayForm";
 import { useGameLoaded } from "@context/hooks";
 
 export default function RequestToPlay() {

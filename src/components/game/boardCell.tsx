@@ -8,16 +8,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Cell } from "@context/model/cell";
 import { classnames } from "@libraries/helpers/dom";
-import { PlayTile } from "./playTile";
+import { PlayTile } from "@components/game/playTile";
 import { useDrop } from "react-dnd";
 import { DragItemTypes } from "@context/draganddrop/constants";
 import type { Tile } from "@context/model/tile";
-import { NumberIcon } from "./icon";
 import { useSessionMutation } from "convex-helpers/react/sessions";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
 import { usePlayer } from "@context/hooks";
 import { PickATileModal } from "./pickATileModal";
+import { NumberIcon } from "@components/includes/icon";
 
 export function BoardCell({ cell }: { cell: Cell }) {
   const player = usePlayer();

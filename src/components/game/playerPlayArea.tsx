@@ -1,5 +1,5 @@
 import type { Tile } from "@context/model/tile";
-import { PlayTile } from "./playTile";
+import { PlayTile } from "@components/game/playTile";
 import { usePlayer } from "@context/hooks";
 
 export function PlayerPlayArea() {

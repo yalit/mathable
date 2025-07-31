@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Modal } from "./includes/modal";
+import { Modal } from "@components/includes/modal";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@hooks/useTranslation";
 import { useSessionMutation } from "convex-helpers/react/sessions";

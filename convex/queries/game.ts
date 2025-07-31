@@ -2,10 +2,16 @@ import { query } from "../_generated/server";
 import { v } from "convex/values";
 import type { Game } from "../../src/context/model/game.ts";
 import type { Doc } from "../_generated/dataModel";
-import { getGameCells, getGamePlayers } from "../helpers/game.ts";
+import {
+  getGameCells,
+  getGamePlayers,
+  getGamesForSessionId,
+} from "../helpers/game.ts";
 import { gameSchema } from "../../src/context/model/game.ts";
 import { cellSchema } from "../../src/context/model/cell.ts";
 import { api } from "../_generated/api.js";
+import { queryWithSession } from "../middleware/sessions.ts";
+import { vSessionId } from "convex-helpers/server/sessions";
 
 export const get = query({
   args: { gameToken: v.string() },
@@ -44,5 +50,26 @@ export const get = query({
       cells: cells,
       players: players,
     });
+  },
+});
+
+export const getForSession = queryWithSession({
+  args: { sessionId: vSessionId },
+  handler: async (ctx, _): Promise<Game[]> => {
+    const convexGames = await getGamesForSessionId(ctx.sessionId, ctx);
+
+    const games: Game[] = [];
+    await Promise.all(
+      convexGames.map(async (g) => {
+        const game = await ctx.runQuery(api.queries.game.get, {
+          gameToken: g.token,
+        });
+        if (game !== null) {
+          games.push(game);
+        }
+      }),
+    );
+
+    return games;
   },
 });

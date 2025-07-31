@@ -1,5 +1,5 @@
 import { useTranslation } from "@hooks/useTranslation";
-import { Modal } from "./includes/modal";
+import { Modal } from "@components/includes/modal";
 import { useGame, usePlayer } from "@context/hooks";
 import { useMemo } from "react";
 import { classnames } from "@libraries/helpers/dom";

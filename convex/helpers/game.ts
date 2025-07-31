@@ -1,4 +1,4 @@
-import { tileSchema } from "../../src/context/model/tile";
+import type { SessionId } from "convex-helpers/server/sessions";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 
@@ -7,6 +7,39 @@ export const getGame = async (
   ctx: QueryCtx,
 ): Promise<Doc<"games"> | null> => {
   return await ctx.db.get(gameId);
+};
+
+export const getGamesForSessionId = async (
+  sessionId: SessionId,
+  ctx: QueryCtx,
+): Promise<Doc<"games">[]> => {
+  const userWithSession: Doc<"users"> | null = await ctx.db
+    .query("users")
+    .withIndex("by_sessionId", (q) => q.eq("sessionId", sessionId))
+    .unique();
+
+  if (!userWithSession) {
+    return [];
+  }
+  const playersWithSession: Doc<"players">[] = await ctx.db
+    .query("players")
+    .withIndex("by_user", (q) => q.eq("userId", userWithSession._id))
+    .collect();
+
+  const gamesID: Set<Id<"games">> = new Set();
+  playersWithSession.forEach((p) => gamesID.add(p.gameId));
+
+  const games: Doc<"games">[] = [];
+  await Promise.all(
+    Array.from(gamesID).map(async (id: Id<"games">) => {
+      const game = await ctx.db.get(id);
+
+      if (game !== null) {
+        games.push(game);
+      }
+    }),
+  );
+  return games;
 };
 
 export const getGameCells = async (

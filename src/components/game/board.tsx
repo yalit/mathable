@@ -1,5 +1,5 @@
 import type { Cell } from "@context/model/cell";
-import { BoardCell } from "./boardCell";
+import { BoardCell } from "@components/game/boardCell";
 import { useGame } from "@context/hooks";
 
 export function Board() {
