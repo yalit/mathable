@@ -29,6 +29,7 @@ import type * as mutations_public_tile from "../mutations/public/tile.js";
 import type * as queries_game from "../queries/game.js";
 import type * as queries_play from "../queries/play.js";
 import type * as queries_player from "../queries/player.js";
+import type * as queries_user from "../queries/user.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "queries/game": typeof queries_game;
   "queries/play": typeof queries_play;
   "queries/player": typeof queries_player;
+  "queries/user": typeof queries_user;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

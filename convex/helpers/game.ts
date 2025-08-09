@@ -9,7 +9,7 @@ export const getGame = async (
   return await ctx.db.get(gameId);
 };
 
-export const getGamesForSessionId = async (
+export const getNonFinishedGamesForSessionId = async (
   sessionId: SessionId,
   ctx: QueryCtx,
 ): Promise<Doc<"games">[]> => {
@@ -34,7 +34,7 @@ export const getGamesForSessionId = async (
     Array.from(gamesID).map(async (id: Id<"games">) => {
       const game = await ctx.db.get(id);
 
-      if (game !== null) {
+      if (game !== null && game.status !== "ended") {
         games.push(game);
       }
     }),

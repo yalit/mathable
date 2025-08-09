@@ -5,7 +5,7 @@ import type { Doc } from "../_generated/dataModel";
 import {
   getGameCells,
   getGamePlayers,
-  getGamesForSessionId,
+  getNonFinishedGamesForSessionId,
 } from "../helpers/game.ts";
 import { gameSchema } from "../../src/context/model/game.ts";
 import { cellSchema } from "../../src/context/model/cell.ts";
@@ -53,10 +53,13 @@ export const get = query({
   },
 });
 
-export const getForSession = queryWithSession({
+export const getNonFinishedForSession = queryWithSession({
   args: { sessionId: vSessionId },
   handler: async (ctx, _): Promise<Game[]> => {
-    const convexGames = await getGamesForSessionId(ctx.sessionId, ctx);
+    const convexGames = await getNonFinishedGamesForSessionId(
+      ctx.sessionId,
+      ctx,
+    );
 
     const games: Game[] = [];
     await Promise.all(
