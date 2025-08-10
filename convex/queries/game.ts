@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import type { Game } from "../../src/context/model/game.ts";
 import type { Doc } from "../_generated/dataModel";
 import {
+  getAllGameTiles,
+  getGameBagTiles,
   getGameCells,
   getGamePlayers,
   getNonFinishedGamesForSessionId,
@@ -45,10 +47,13 @@ export const get = query({
       }),
     );
 
+    const tiles = await getAllGameTiles(game, ctx);
+
     return gameSchema.parse({
       ...game,
-      cells: cells,
-      players: players,
+      cells,
+      players,
+      tiles,
     });
   },
 });

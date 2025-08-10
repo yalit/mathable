@@ -6,9 +6,10 @@ import {
   useSessionMutation,
   useSessionQuery,
 } from "convex-helpers/react/sessions";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { Game } from "@context/model/game";
 import { useGame, usePlayer } from "@context/hooks";
+import type { Tile } from "@context/model/tile";
 
 export function GameStatusBar() {
   const game = useGame();
@@ -42,6 +43,11 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
     endTurn({ gameId: game._id as Id<"games"> });
   };
 
+  const remainingTiles = useMemo(
+    () => game.tiles.filter((t: Tile) => t.location === "in_bag"),
+    [game.tiles],
+  );
+
   return (
     <div className="flex justify-center items-center gap-3">
       {game.status === "ongoing" && !player.current && (
@@ -64,6 +70,7 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
           </button>
         </>
       )}
+      <div className="">Remaining tiles : {remainingTiles.length}</div>
     </div>
   );
 };

@@ -107,6 +107,16 @@ export const getGameBagTiles = async (
     .collect();
 };
 
+export const getAllGameTiles = async (
+  game: Doc<"games">,
+  ctx: QueryCtx,
+): Promise<Doc<"tiles">[]> => {
+  return await ctx.db
+    .query("tiles")
+    .withIndex("by_game", (q) => q.eq("gameId", game._id))
+    .collect();
+};
+
 export const getGameCurrentTurnMoves = async (
   game: Doc<"games">,
   ctx: QueryCtx,
