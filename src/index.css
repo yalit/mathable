@@ -49,3 +49,31 @@ body {
     }
   }
 }
+
+.rules {
+  h2 {
+    @apply font-semibold text-xl my-3;
+
+    &:first-child {
+      @apply mt-0;
+    }
+  }
+
+  h3 {
+    @apply font-semibold text-lg my-2;
+
+    &:first-child {
+      @apply mt-0;
+    }
+  }
+  .onetab {
+    @apply ml-2;
+  }
+
+  .twotab {
+    @apply ml-4;
+  }
+  li {
+    @apply list-disc;
+  }
+}

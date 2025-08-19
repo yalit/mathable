@@ -6,10 +6,12 @@ import {
   useSessionMutation,
   useSessionQuery,
 } from "convex-helpers/react/sessions";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Game } from "@context/model/game";
 import { useGame, usePlayer } from "@context/hooks";
 import type { Tile } from "@context/model/tile";
+import type { Modal } from "@components/includes/modal";
+import { Rules } from "@components/global/rules";
 
 export function GameStatusBar() {
   const game = useGame();
@@ -34,6 +36,7 @@ const MainTitle = ({ player }: StatusBarPartProps) => (
 const GameActions = ({ game, player }: StatusBarPartProps) => {
   const resetTurn = useSessionMutation(api.mutations.public.play.resetTurn);
   const endTurn = useSessionMutation(api.mutations.public.play.endTurn);
+  const [showRules, setShowRules] = useState<boolean>(false);
 
   const handleResetTurn = () => {
     resetTurn({ gameId: game._id as Id<"games"> });
@@ -62,15 +65,23 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
           >
             End turn
           </button>
-          <button
+          {/*<button
             className="p-2 border rounded border-red-200 cursor-pointer bg-red-100/20"
             onClick={handleResetTurn}
           >
             Reset turn
           </button>
+		  */}
         </>
       )}
+      <button
+        className="p-2 border rounded border-gray-200 cursor-pointer bg-gray-100/20"
+        onClick={() => setShowRules(true)}
+      >
+        Show rules
+      </button>
       <div className="">Remaining tiles : {remainingTiles.length}</div>
+      {showRules && <Rules close={() => setShowRules(false)} />}
     </div>
   );
 };
