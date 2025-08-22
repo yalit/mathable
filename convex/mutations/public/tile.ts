@@ -1,13 +1,12 @@
-import type { Id } from "@cvx/_generated/dataModel";
+import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
-import { getGameBagTiles } from "../../helpers/game";
-import { mutationWithSession } from "../../middleware/sessions";
+import { withSessionMutation } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
 import { MoveType } from "../internal/move";
-import { useSessionMutation } from "convex-helpers/react/sessions";
+import {TilesQueryRepository} from "../../repository/query/tiles.repository.ts";
 
-export const playToCell = mutationWithSession({
+export const playToCell = withSessionMutation({
   args: {
     tileId: v.id("tiles"),
     cellId: v.id("cells"),
@@ -65,7 +64,7 @@ export const playToCell = mutationWithSession({
   },
 });
 
-export const pick = mutationWithSession({
+export const pick = withSessionMutation({
   args: {
     playerId: v.id("players"),
     sessionId: vSessionId,
@@ -92,7 +91,7 @@ export const pick = mutationWithSession({
       return;
     }
 
-    const gameTiles = await getGameBagTiles(game, ctx);
+    const gameTiles = await TilesQueryRepository.instance.findAllInBagByGame(game._id)
     if (gameTiles.length > 0) {
       gameTiles.sort(() => Math.random() - 0.5);
 

@@ -1,24 +1,19 @@
-import { queryWithSession } from "../middleware/sessions";
 import { playerSchema, type Player } from "../../src/context/model/player";
-import { query } from "../_generated/server";
-import { getPlayerTiles } from "../helpers/player";
 import { v } from "convex/values";
-import { SessionIdArg } from "convex-helpers/server/sessions";
-import { api } from "../_generated/api";
+import {withRepositoryQuery} from "../middleware/repository.middleware.ts";
+import {PlayersQueryRepository} from "../repository/query/players.repository.ts";
+import {TilesQueryRepository} from "../repository/query/tiles.repository.ts";
 
-export const get = query({
+export const get = withRepositoryQuery({
   args: { playerToken: v.string() },
-  handler: async (ctx, args): Promise<Player | null> => {
-    const player = await ctx.db
-      .query("players")
-      .withIndex("by_token", (q) => q.eq("token", args.playerToken))
-      .unique();
+  handler: async (_, args): Promise<Player | null> => {
+    const player = await PlayersQueryRepository.instance.findByToken(args.playerToken);
 
     if (!player) {
       return null;
     }
 
-    const tiles = await getPlayerTiles(player, ctx);
+    const tiles = await TilesQueryRepository.instance.findByPlayer(player._id)
 
     return playerSchema.parse({
       ...player,

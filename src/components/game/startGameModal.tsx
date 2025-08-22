@@ -29,13 +29,13 @@ export const StartGameModal = () => {
             {t("Game start procedure")}
           </div>
           <div className="mt-2">
-            <p className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500">
               {!canStart ? (
                 <div>{t("There is not enough players to start the game")}</div>
               ) : (
                 <div>{t("The game can be started")}</div>
               )}
-            </p>
+            </div>
           </div>
           <div className="mt-2">
             <div className="font-semibold text-gray-600">{t("Players")} :</div>

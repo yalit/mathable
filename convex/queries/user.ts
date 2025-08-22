@@ -1,13 +1,11 @@
 import type { Doc } from "../_generated/dataModel";
-import { queryWithSession } from "../middleware/sessions";
+import { withSessionQuery } from "../middleware/sessions";
 import { SessionIdArg } from "convex-helpers/server/sessions";
+import {UsersQueryRepository} from "../repository/query/users.repository.ts";
 
-export const getForSession = queryWithSession({
+export const getForSession = withSessionQuery({
   args: SessionIdArg,
-  handler: async (ctx, _): Promise<Doc<"users"> | null> => {
-    return await ctx.db
-      .query("users")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", ctx.sessionId))
-      .unique();
+  handler: async (ctx): Promise<Doc<"users"> | null> => {
+    return await UsersQueryRepository.instance.findBySessionId(ctx.sessionId);
   },
 });

@@ -1,23 +1,20 @@
-import type { Doc } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import type {Doc} from "../_generated/dataModel";
+import {TilesQueryRepository} from "../repository/query/tiles.repository.ts";
 
 export const hasValue = (cell: Doc<"cells">): boolean => {
-  return cell && (cell.value !== null || cell.tileId !== null);
+    return cell && (cell.value !== null || cell.tileId !== null);
 };
 
-export const getNumericValue = async (
-  c: Doc<"cells">,
-  ctx: QueryCtx,
-): Promise<number> => {
-  if (c.value) {
-    return c.value;
-  }
-  if (c.tileId) {
-    const tile = await ctx.db.get(c.tileId);
-    if (!tile) {
-      throw new Error("Tile is not existing");
+export const getNumericValue = async (c: Doc<"cells">): Promise<number> => {
+    if (c.value) {
+        return c.value;
     }
-    return tile.value;
-  }
-  throw new Error("No value for the cell");
+    if (c.tileId) {
+        const tile = await TilesQueryRepository.instance.find(c.tileId)
+        if (!tile) {
+            throw new Error("Tile is not existing");
+        }
+        return tile.value;
+    }
+    throw new Error("No value for the cell");
 };

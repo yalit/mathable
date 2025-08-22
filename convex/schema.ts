@@ -20,6 +20,7 @@ export default defineSchema({
   })
     .index("by_token", ["token"])
     .index("by_game", ["gameId"])
+    .index("by_game_current", ["gameId", "current"])
     .index("by_game_order", ["gameId", "order"])
     .index("by_user", ["userId"]),
   cells: defineTable({

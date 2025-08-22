@@ -1,5 +1,5 @@
-import { internalMutation } from "../../_generated/server";
 import { v } from "convex/values";
+import {withRepositoryInternalMutation} from "../../middleware/repository.middleware.ts";
 
 export const MoveType = {
   PLAYER_TO_CELL: "player_to_cell",
@@ -12,7 +12,7 @@ export const TileMoveSource = {
   PLAYER: "player",
 };
 
-export const createMove = internalMutation({
+export const createMove = withRepositoryInternalMutation({
   args: {
     gameId: v.id("games"),
     type: v.string(),

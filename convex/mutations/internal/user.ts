@@ -1,15 +1,16 @@
-import type { Id } from "../../_generated/dataModel";
-import { internalMutationWithSession } from "../../middleware/sessions";
-import { v } from "convex/values";
+import type {Id} from "../../_generated/dataModel";
+import {withSessionInternalMutation} from "../../middleware/sessions";
+import {v} from "convex/values";
+import {UsersMutationRepository} from "../../repository/mutations/users.repository.ts";
 
-export const set = internalMutationWithSession({
-  args: { name: v.string() },
-  handler: async (ctx, { name }): Promise<Id<"users"> | null> => {
-    if (ctx.user) {
-      await ctx.db.patch(ctx.user._id, { name });
-      return ctx.user._id;
-    } else {
-      return await ctx.db.insert("users", { name, sessionId: ctx.sessionId });
-    }
-  },
+export const set = withSessionInternalMutation({
+    args: {name: v.string()},
+    handler: async (ctx, args): Promise<Id<"users"> | null> => {
+        if (ctx.user) {
+            await UsersMutationRepository.instance.patch(ctx.user, args);
+            return ctx.user._id;
+        } else {
+            return await UsersMutationRepository.instance.new({name: args.name, sessionId: ctx.sessionId});
+        }
+    },
 });

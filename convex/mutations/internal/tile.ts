@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { internalMutation } from "../../_generated/server";
+import {withRepositoryInternalMutation} from "../../middleware/repository.middleware.ts";
 
-export const moveToPlayer = internalMutation({
+export const moveToPlayer = withRepositoryInternalMutation({
   args: {
     tileId: v.id("tiles"),
     playerId: v.id("players"),
@@ -31,7 +31,7 @@ export const moveToPlayer = internalMutation({
   },
 });
 
-export const moveToCell = internalMutation({
+export const moveToCell = withRepositoryInternalMutation({
   args: { tileId: v.id("tiles"), cellId: v.id("cells") },
   handler: async (ctx, { tileId, cellId }) => {
     // move the tile to cell
@@ -45,7 +45,7 @@ export const moveToCell = internalMutation({
   },
 });
 
-export const moveToBag = internalMutation({
+export const moveToBag = withRepositoryInternalMutation({
   args: { tileId: v.id("tiles") },
   handler: async (ctx, { tileId }) => {
     const tile = await ctx.db.get(tileId);

@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@cvx/*": ["./convex/*"],
+      //"@cvx/*": ["./convex/*"],
       "@components/*": ["./src/components/*"],
       "@context/*": ["./src/context/*"],
       "@hooks/*": ["./src/hooks/*"],
