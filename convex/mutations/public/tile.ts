@@ -4,7 +4,10 @@ import { withSessionMutation } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
 import { MoveType } from "../internal/move";
-import {TilesQueryRepository} from "../../repository/query/tiles.repository.ts";
+import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts";
+import { PlayersQueryRepository } from "../../repository/query/players.repository.ts";
+import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
+import { GamesQueryRepository } from "../../repository/query/games.repository.ts";
 
 export const playToCell = withSessionMutation({
   args: {
@@ -14,15 +17,15 @@ export const playToCell = withSessionMutation({
     sessionId: vSessionId,
   },
   handler: async (ctx, { tileId, cellId, playerId }) => {
-    const tile = await ctx.db.get(tileId);
-    const player = await ctx.db.get(playerId);
-    const cell = await ctx.db.get(cellId);
+    const tile = await TilesQueryRepository.instance.find(tileId);
+    const player = await PlayersQueryRepository.instance.find(playerId);
+    const cell = await CellsQueryRepository.instance.find(cellId);
 
     if (!(tile && cell && player)) {
       return;
     }
 
-    const game = await ctx.db.get(tile.gameId);
+    const game = await GamesQueryRepository.instance.find(tile.gameId);
 
     if (!game) {
       return;
@@ -70,13 +73,13 @@ export const pick = withSessionMutation({
     sessionId: vSessionId,
   },
   handler: async (ctx, { playerId }) => {
-    const player = await ctx.db.get(playerId);
+    const player = await PlayersQueryRepository.instance.find(playerId);
 
     if (!player) {
       return;
     }
 
-    const game = await ctx.db.get(player.gameId);
+    const game = await GamesQueryRepository.instance.find(player.gameId);
 
     if (!game) {
       return;
@@ -91,7 +94,9 @@ export const pick = withSessionMutation({
       return;
     }
 
-    const gameTiles = await TilesQueryRepository.instance.findAllInBagByGame(game._id)
+    const gameTiles = await TilesQueryRepository.instance.findAllInBagByGame(
+      game._id,
+    );
     if (gameTiles.length > 0) {
       gameTiles.sort(() => Math.random() - 0.5);
 

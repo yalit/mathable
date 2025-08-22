@@ -1,7 +1,6 @@
 import type {DataModel, Doc, Id} from "../../_generated/dataModel";
 import type {GenericDatabaseWriter} from "convex/server";
 import type {MutationRepositoryInterface} from "../repositories.interface.ts";
-import type {SessionId} from "convex-helpers/server/sessions";
 
 export interface UsersMutationRepositoryInterface extends MutationRepositoryInterface<"users"> {}
 
@@ -22,20 +21,12 @@ export class UsersMutationRepository implements UsersMutationRepositoryInterface
         return UsersMutationRepository.instance;
     }
 
-    async new(data: Partial<Doc<"users">>): Promise<Id<"users">> {
-        type correctType = { name: string; sessionId: SessionId };
-        const isCorrectType = (obj: object): obj is correctType => {
-            return "name" in obj && typeof obj.name === "string" && "sessionId" in obj && typeof obj.sessionId === "string";
-        };
-        if (!isCorrectType(data)) {
-            throw new Error("Invalid data for creating a new user");
-        }
-
-        return this.db.insert("users", { name: data.name, sessionId: data.sessionId });
+    async new(data: Omit<Doc<"users">, "_id" | "_creationTime">): Promise<Id<"users">> {
+        return this.db.insert("users", data);
     }
 
-    async patch(user: Doc<"users">, data: Partial<Doc<"users">>): Promise<void> {
-        return this.db.patch(user._id, data);
+    async patch(id: Id<"users">, data: Partial<Doc<"users">>): Promise<void> {
+        return this.db.patch(id, data);
     }
 
     async delete(id: Id<"users">): Promise<void> {

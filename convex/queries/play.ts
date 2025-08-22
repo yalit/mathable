@@ -1,6 +1,6 @@
 import {withSessionQuery} from "../middleware/sessions";
 import {v} from "convex/values";
-import {GamesQueryRepository} from "../repository/query/game.repository.ts";
+import {GamesQueryRepository} from "../repository/query/games.repository.ts";
 import {MovesQueryRepository} from "../repository/query/moves.repository.ts";
 
 export const getCurrentTurnScore = withSessionQuery({

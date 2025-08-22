@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import {withRepositoryInternalMutation} from "../../middleware/repository.middleware.ts";
+import { withRepositoryInternalMutation } from "../../middleware/repository.middleware.ts";
+import { MovesMutationRepository } from "../../repository/mutations/moves.repository.ts";
 
 export const MoveType = {
   PLAYER_TO_CELL: "player_to_cell",
@@ -22,8 +23,8 @@ export const createMove = withRepositoryInternalMutation({
     cellId: v.optional(v.union(v.null(), v.id("cells"))),
     moveScore: v.number(),
   },
-  handler: async (ctx, args) => {
-    await ctx.db.insert("moves", {
+  handler: async (_, args) => {
+    await MovesMutationRepository.instance.new({
       ...args,
     });
   },
