@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as helpers_array from "../helpers/array.js";
 import type * as helpers_cell from "../helpers/cell.js";
 import type * as middleware_sessions from "../middleware/sessions.js";
 import type * as mutations_internal_cell from "../mutations/internal/cell.js";
@@ -37,6 +38,7 @@ import type * as queries_user from "../queries/user.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "helpers/array": typeof helpers_array;
   "helpers/cell": typeof helpers_cell;
   "middleware/sessions": typeof middleware_sessions;
   "mutations/internal/cell": typeof mutations_internal_cell;
