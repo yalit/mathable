@@ -10,7 +10,7 @@ export function PlayerPlayArea() {
       <div></div>
       <div className="flex justify-center items-center gap-2">
         {player.tiles.map((t: Tile) => (
-          <PlayTile key={t._id} tile={t} tileClass="p-2 min-w-[50px] text-lg" />
+          <PlayTile key={t._id} tile={t} tileClass="p-2 text-lg player_tile" />
         ))}
       </div>
       <div>{false && <button onClick={console.log}>Reset</button>}</div>

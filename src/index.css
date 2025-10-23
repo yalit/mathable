@@ -36,17 +36,24 @@ body {
     padding: 0.5rem;
 
     .board__cell {
-      svg {
-        height: 100%;
-        &.tile {
-          height: 1.3em;
-          transform: translateX(-0.1em);
-        }
-        &.small {
-          height: 50%;
-        }
-      }
+      
     }
+  }
+}
+
+.player_tile {
+  height: 3.5rem;
+}
+
+svg {
+  &.tile {
+    transform: translateX(-0.1em);
+  }
+  &.svg-inline--fa {
+    width: inherit;
+  }
+  &.small {
+    transform: translateY(15%) scale(90%);
   }
 }
 

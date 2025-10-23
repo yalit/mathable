@@ -105,7 +105,7 @@ export function BoardCell({ cell }: { cell: Cell }) {
 
   return (
     <div className={cellClass} ref={drop}>
-      <div className="relative flex items-end gap-1 h-[70%]">{cellContent}</div>
+      <div className="relative flex items-end gap-1">{cellContent}</div>
       {cell.tile && (
         <PlayTile tile={cell.tile} tileClass="absolute inset-0.5" />
       )}
