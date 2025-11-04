@@ -36,6 +36,17 @@ body {
     padding: 0.5rem;
 
     .board__cell {
+            position: relative;
+        .board__cell__allowed-values {
+            display: none;
+            position: absolute;
+            top: 50%;
+                border: 1px solid black;
+        }
+
+        &:hover>.board__cell__allowed-values {
+                display: block;
+            }
       
     }
   }

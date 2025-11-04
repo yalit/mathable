@@ -39,4 +39,12 @@ export class MovesQueryRepository implements MovesQueryRepositoryInterface {
             .order("desc")
             .collect();
     }
+
+    async findLast(game: Doc<"games">): Promise<Doc<"moves">[]> {
+        return this.db
+            .query("moves")
+            .withIndex("by_game", (q => q.eq("gameId", game._id)))
+            .order("desc")
+            .take(1);
+    }
 }

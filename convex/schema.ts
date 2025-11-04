@@ -7,7 +7,9 @@ export default defineSchema({
     token: v.string(),
     status: v.string(),
     currentTurn: v.number(),
-  }).index("by_token", ["token"]),
+    winner: v.optional(v.id("players"))
+  }).index("by_token", ["token"])
+    .index("by_status", ["status"]),
   players: defineTable({
     gameId: v.id("games"),
     name: v.string(),
@@ -55,7 +57,9 @@ export default defineSchema({
     cellId: v.optional(v.union(v.null(), v.id("cells"))),
     tileId: v.union(v.null(), v.id("tiles")),
     playerId: v.optional(v.union(v.null(), v.id("players"))),
-  }).index("by_turn", ["gameId", "turn"]),
+  })
+      .index("by_turn", ["gameId", "turn"])
+      .index("by_game", ["gameId"]),
   users: defineTable({
     // Note: make sure not to leak this to clients. See this post for more info:
     // https://stack.convex.dev/track-sessions-without-cookies

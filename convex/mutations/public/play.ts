@@ -32,13 +32,13 @@ export const resetTurn = withSessionMutation({
         const moves =
             await MovesQueryRepository.instance.findAllForCurrentTurn(game);
         let canContinue = true;
-        moves.forEach(async (m) => {
+        for (const m of moves) {
             if (!canContinue) {
-                return;
+                continue;
             }
             if (m.type === MoveType.PLAYER_TO_CELL) {
                 if (!(m.cellId && m.tileId && m.playerId)) {
-                    return;
+                    continue;
                 }
                 await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
                     tileId: m.tileId,
@@ -51,16 +51,16 @@ export const resetTurn = withSessionMutation({
             }
             if (m.type === MoveType.BAG_TO_PLAYER) {
                 if (!m.tileId) {
-                    return;
+                    continue;
                 }
                 // if a tile is moved from the bag to the player during a turn it means that the player played on an operator cell and so fetched a new tile
                 // in that case stop the reset as it would contrevene the randomness of the game
                 canContinue = false;
-                return;
+                continue;
             }
 
             await MovesMutationRepository.instance.delete(m._id);
-        });
+        }
     },
 });
 
@@ -76,6 +76,16 @@ export const endTurn = withSessionMutation({
 
         if (!ctx.user || !currentPlayer || currentPlayer.userId !== ctx.user._id) {
             return;
+        }
+
+        // check if game is finished
+        // 1. or the current player has no tile anymore and there are no tiles anymore in the bag => set the game in finished status + a
+        if (await GamesQueryRepository.instance.isGameWon(gameId, currentPlayer._id)) {
+            await ctx.runMutation(internal.mutations.internal.game.endGameWithWinner, {gameId: gameId, playerId: currentPlayer._id})
+        }
+        // 2. or if there were no actions for the last 2 moves for each player (so 4 turns) => set the
+        if (await GamesQueryRepository.instance.isGameIdle(game._id)) {
+            await ctx.runMutation(internal.mutations.internal.game.endGameAsIdle, {gameId: gameId})
         }
 
         const turnScore = await ctx.runQuery(api.queries.play.getCurrentTurnScore, {

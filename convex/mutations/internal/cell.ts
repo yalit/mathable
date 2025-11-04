@@ -12,13 +12,12 @@ export const computeAllAllowedValues = withRepositoryInternalMutation({
         const cells = await CellsQueryRepository.instance.findAllForGame(
             args.gameId,
         );
-        cells.forEach(
-            async (cell) =>
-                await ctx.runMutation(
-                    internal.mutations.internal.cell.computeAllowedValuesForCell,
-                    { cellId: cell._id },
-                ),
-        );
+        for (const cell of cells) {
+            await ctx.runMutation(
+                internal.mutations.internal.cell.computeAllowedValuesForCell,
+                {cellId: cell._id},
+            );
+        }
     },
 });
 
@@ -33,16 +32,16 @@ export const computeAllowedValuesFromUpdatedCell =
             }
 
             const impactingDirections =
-                await CellsQueryRepository.instance.findAllForCellInEachDirection(cell);
+                await CellsQueryRepository.instance.findCellInCrossFromCell(cell);
 
-            impactingDirections.forEach(async (arr) =>
-                arr.forEach(async (c) => {
+            for (const arr of impactingDirections) {
+                for (const c of arr) {
                     await ctx.runMutation(
                         internal.mutations.internal.cell.computeAllowedValuesForCell,
-                        { cellId: c._id },
+                        {cellId: c._id},
                     );
-                }),
-            );
+                }
+            }
         },
     });
 
@@ -74,6 +73,7 @@ export const computeAllowedValuesForCell = withRepositoryInternalMutation({
                     return;
                 }
 
+                const tempAllowedValues: Set<number> = new Set();
                 const first: number = await getNumericValue(impactingCells[0]);
                 const second: number = await getNumericValue(impactingCells[1]);
 
@@ -91,16 +91,16 @@ export const computeAllowedValuesForCell = withRepositoryInternalMutation({
                 if (cell.type === "operator") {
                     switch (cell.operator) {
                         case "+":
-                            allowedValues.push(add[0]);
+                            tempAllowedValues.add(add[0]);
                             break;
                         case "-":
-                            allowedValues.push(sub[0]);
+                            tempAllowedValues.add(sub[0]);
                             break;
                         case "*":
-                            allowedValues.push(mult[0]);
+                            tempAllowedValues.add(mult[0]);
                             break;
                         case "/":
-                            div.forEach((n) => allowedValues.push(n));
+                            div.forEach((n) => tempAllowedValues.add(n));
                             break;
                     }
                 } else {
@@ -108,9 +108,11 @@ export const computeAllowedValuesForCell = withRepositoryInternalMutation({
                         .concat(sub, mult, div)
                         .filter((n) => Number.isInteger(n) && n >= 0)
                         .forEach((n) => {
-                            allowedValues.push(n);
+                            tempAllowedValues.add(n);
                         });
                 }
+
+                allowedValues.push(...tempAllowedValues)
             }),
         );
 

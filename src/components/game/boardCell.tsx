@@ -123,6 +123,9 @@ export function BoardCell({ cell }: { cell: Cell }) {
             {displayPickModal && (
                 <PickATileModal closeModal={() => setDisplayPickModal(false)} />
             )}
+            <div className="board__cell__allowed-values">
+                {cell.allowedValues.join("/")}
+            </div>
         </div>
     );
 }

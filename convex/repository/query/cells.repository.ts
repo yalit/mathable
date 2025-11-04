@@ -20,7 +20,7 @@ export interface CellsQueryRepositoryInterface
     min: number,
     max: number,
   ) => Promise<Doc<"cells">[]>;
-  findAllForCellInEachDirection: (
+  findCellInCrossFromCell: (
     cell: Doc<"cells">,
   ) => Promise<Doc<"cells">[][]>;
   findAllImpactingCellsForCellInEachDirection: (
@@ -104,7 +104,7 @@ export class CellsQueryRepository implements CellsQueryRepositoryInterface {
       .collect();
   }
 
-  async findAllForCellInEachDirection(
+  async findCellInCrossFromCell(
     cell: Doc<"cells">,
   ): Promise<Doc<"cells">[][]> {
     const left: Doc<"cells">[] = await this.findByRow(
@@ -129,7 +129,7 @@ export class CellsQueryRepository implements CellsQueryRepositoryInterface {
       cell.gameId,
       cell.column,
       cell.row + 1,
-      Math.max(GAME_SIZE, cell.row + 3),
+      Math.min(GAME_SIZE, cell.row + 3),
     );
 
     return [left, right, up, down];
@@ -138,7 +138,7 @@ export class CellsQueryRepository implements CellsQueryRepositoryInterface {
   async findAllImpactingCellsForCellInEachDirection(
     cell: Doc<"cells">,
   ): Promise<Doc<"cells">[][]> {
-    const cells = await this.findAllForCellInEachDirection(cell);
+    const cells = await this.findCellInCrossFromCell(cell);
 
     return [
       cells[0].filter((c) => hasValue(c)),

@@ -141,26 +141,27 @@ export const start = withSessionMutation({
     // set the current player to the player with order 1
     // randomize the order
     players.sort(() => Math.random() - 0.5);
-    players.forEach(async (p, idx) => {
+    for (const p of players) {
+      const idx = players.indexOf(p);
       await PlayersMutationRepository.instance.patch(p._id as Id<"players">, {
         order: idx + 1,
         current: idx === 0,
       });
-    });
+    }
 
     // set the tiles for each users
-    players.forEach(async (p) => {
+    for (const p of players) {
       const tiles = await TilesQueryRepository.instance.findAllInBagByGame(
         game._id,
       );
       tiles.sort(() => Math.random() - 0.5);
-      tiles.slice(0, 7).forEach(async (t) => {
+      for (const t of tiles.slice(0, 7)) {
         await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
           tileId: t._id as Id<"tiles">,
           playerId: p._id as Id<"players">,
         });
-      });
-    });
+      }
+    }
   },
 });
 

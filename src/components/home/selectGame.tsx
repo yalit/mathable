@@ -12,7 +12,6 @@ export const SelectGame = () => {
     const { joinGame } = useJoinGame();
 
     const rejoinGame = (game: Game, player: Player) => {
-        console.log("Game => ", game, sessionUser);
         joinGame(game, player);
     };
     return (

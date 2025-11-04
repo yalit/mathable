@@ -17,6 +17,7 @@ import type * as helpers_array from "../helpers/array.js";
 import type * as helpers_cell from "../helpers/cell.js";
 import type * as middleware_sessions from "../middleware/sessions.js";
 import type * as mutations_internal_cell from "../mutations/internal/cell.js";
+import type * as mutations_internal_game from "../mutations/internal/game.js";
 import type * as mutations_internal_move from "../mutations/internal/move.js";
 import type * as mutations_internal_player from "../mutations/internal/player.js";
 import type * as mutations_internal_tile from "../mutations/internal/tile.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/cell": typeof helpers_cell;
   "middleware/sessions": typeof middleware_sessions;
   "mutations/internal/cell": typeof mutations_internal_cell;
+  "mutations/internal/game": typeof mutations_internal_game;
   "mutations/internal/move": typeof mutations_internal_move;
   "mutations/internal/player": typeof mutations_internal_player;
   "mutations/internal/tile": typeof mutations_internal_tile;
