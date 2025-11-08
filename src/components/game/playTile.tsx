@@ -24,7 +24,7 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
     () => ({
       type: DragItemTypes.TILE,
       item: tile,
-      canDrag: () => player.current,
+      canDrag: () => player.current && tile.location === "in_hand",
     }),
     [player],
   );
