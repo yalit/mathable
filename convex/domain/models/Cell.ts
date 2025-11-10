@@ -142,7 +142,7 @@ export abstract class Cell {
   /**
    * Check if cell has a tile
    */
-  isOnTile(): boolean {
+  hasTile(): boolean {
     return this._tileId !== null;
   }
 
