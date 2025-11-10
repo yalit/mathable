@@ -34,7 +34,7 @@ export const join = withRepositoryMutation({
     playerName: v.string(),
     sessionId: vSessionId,
   },
-  handler: async (ctx, args): Promise<{ success: boolean; token: string; error?: string }> => {
+  handler: async (ctx, args): Promise<{ success: boolean; token: string|null; error?: string }> => {
     const useCase = new JoinGameUseCase(ctx);
     const result = await useCase.execute(args.gameId, args.playerName, args.sessionId);
 

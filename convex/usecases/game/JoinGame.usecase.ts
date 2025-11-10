@@ -8,7 +8,7 @@ import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 
 export interface JoinGameResult {
   success: boolean;
-  playerToken: string;
+  playerToken: string|null;
   error?: string;
 }
 
@@ -33,8 +33,8 @@ export class JoinGameUseCase {
     if (!gameDoc) {
       return {
         success: false,
-        playerToken: "",
         error: "Game not found",
+        playerToken: null,
       };
     }
 
@@ -45,8 +45,8 @@ export class JoinGameUseCase {
     if (!game.isWaiting()) {
       return {
         success: false,
-        playerToken: "",
         error: "Game has already started",
+        playerToken: null,
       };
     }
 
@@ -55,8 +55,8 @@ export class JoinGameUseCase {
     if (players.length >= 4) {
       return {
         success: false,
-        playerToken: "",
         error: "Game is full (maximum 4 players)",
+        playerToken: null,
       };
     }
 
