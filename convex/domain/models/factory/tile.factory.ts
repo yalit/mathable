@@ -1,6 +1,6 @@
 import {Tile, type TileLocation} from "../Tile.ts";
-import {UUID} from "@cvx/domain/models/factory/uuid.factory.ts";
-import type {Doc, Id} from "@cvx/_generated/dataModel";
+import {UUID} from "./uuid.factory.ts";
+import type {Doc, Id} from "../../../_generated/dataModel";
 
 export const createTile = (
     id: Id<"tiles"> | null, gameId: Id<"games">,

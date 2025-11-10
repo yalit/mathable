@@ -142,31 +142,9 @@ export abstract class Cell {
   /**
    * Check if cell has a tile
    */
-  hasTile(): boolean {
+  isOnTile(): boolean {
     return this._tileId !== null;
   }
-
-  /**
-   * Check if cell is empty (no tile, no fixed value)
-   */
-  isEmpty(): boolean {
-    return this.type === "empty" && this._tileId === null;
-  }
-
-  /**
-   * Check if cell is an operator cell
-   */
-  isOperator(): boolean {
-    return this.type === "operator";
-  }
-
-  /**
-   * Check if cell is a multiplier cell
-   */
-  isMultiplier(): boolean {
-    return this.type === "multiplier";
-  }
-
 
   // ========================================
   // Getters

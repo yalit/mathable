@@ -1,12 +1,12 @@
 import type {Doc, Id} from "../../../_generated/dataModel";
 import {createEmptyCell, createMultiplierCell, createOperatorCell, createValueCell} from "./cell.factory";
 import {Game, type GameStatus} from "../Game.ts";
-import type {Cell} from "../Cell.ts";
-import type {Tile} from "../Tile.ts";
+import {Cell} from "../Cell.ts";
+import {Tile} from "../Tile.ts";
 import {createTile} from "./tile.factory.ts";
 import {UUID} from "./uuid.factory.ts";
 
-const create = (): Game => {
+export const createGame = (): Game => {
     return new Game(
         "" as Id<"games">,
         UUID(),
@@ -15,7 +15,7 @@ const create = (): Game => {
     )
 }
 
-const createFromDoc = (doc: Doc<"games">): Game => {
+export const createGameFromDoc = (doc: Doc<"games">): Game => {
     return new Game(
         doc._id,
         doc.token,
@@ -106,7 +106,7 @@ export const getBoardCells = (gameId: Id<"games">): Cell[] => {
     cells.push(createValueCell(null, gameId, 7, 6, 3));
     cells.push(createValueCell(null, gameId, 7, 7, 4));
 
-    const index = (row: number, col: number): number => row * GAME_SIZE + col;
+    const index = (row: number, col: number): number => row * Game.gameSize() + col;
 
     const indexes = new Set();
     cells.forEach((c) => indexes.add(index(c.row, c.column)));
@@ -123,17 +123,17 @@ export const getBoardCells = (gameId: Id<"games">): Cell[] => {
     return cells;
 };
 
-export const getInitialGameTiles = (): Tile[] => {
+export const getInitialGameTiles = (gameId: Id<"games">): Tile[] => {
     const tiles: Tile[] = [];
 
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach((v) => {
         for (let n = 1; n <= 7; n++) {
-            tiles.push(createTile(v));
+            tiles.push(createTile(null, gameId, v));
         }
     });
     [
         0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 27, 28, 30, 32, 35,
         36, 40, 42, 45, 48, 49, 50, 54, 56, 60, 63, 64, 70, 72, 80, 81, 90,
-    ].forEach((n) => tiles.push(createTile(n)));
+    ].forEach((n) => tiles.push(createTile(null, gameId, n)));
     return tiles;
 };
