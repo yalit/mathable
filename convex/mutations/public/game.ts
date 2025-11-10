@@ -1,9 +1,3 @@
-import {
-  getBoardCells,
-  getInitialGameTiles,
-} from "../../../src/context/factories/gameFactory";
-import { UUID } from "../../../src/context/factories/uuidFactory";
-import type { Cell } from "../../../src/context/model/cell";
 import { internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { v } from "convex/values";
@@ -15,70 +9,17 @@ import { GamesQueryRepository } from "../../repository/query/games.repository.ts
 import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts";
 import { GamesMutationRepository } from "../../repository/mutations/games.repository.ts";
 import { PlayersMutationRepository } from "../../repository/mutations/players.repository.ts";
-import { CellsMutationRepository } from "../../repository/mutations/cells.repository.ts";
-import { TilesMutationRepository } from "../../repository/mutations/tiles.repository.ts";
+import { CreateGameUseCase } from "../../usecases/game/CreateGame.usecase.ts";
 
+/**
+ * Create a new game
+ * Thin adapter that delegates to CreateGameUseCase
+ */
 export const create = withRepositoryMutation({
   args: { playerName: v.string(), sessionId: vSessionId },
   handler: async (ctx, args) => {
-    // create Game
-    const gameId = await GamesMutationRepository.instance.new({
-      token: UUID(),
-      status: "waiting",
-      currentTurn: 0,
-    });
-    const game = await GamesQueryRepository.instance.find(gameId);
-
-    // create playerName
-    const playerId: Id<"players"> = await ctx.runMutation(
-      internal.mutations.internal.player.create,
-      { gameId, name: args.playerName, sessionId: args.sessionId },
-    );
-
-    // set the user as the owner
-    await PlayersMutationRepository.instance.patch(playerId, { owner: true });
-    const player = await PlayersQueryRepository.instance.find(playerId);
-
-    // create Cells
-    const boardCells = getBoardCells();
-    await Promise.all(
-      boardCells.map(async (c: Cell) => {
-        const cellId = await CellsMutationRepository.instance.new({
-          gameId,
-          row: c.row,
-          column: c.column,
-          allowedValues: [],
-          type: c.type,
-          value: c.type === "value" ? c.value : null,
-          multiplier: c.type === "multiplier" ? c.multiplier : null,
-          operator: c.type === "operator" ? c.operator : null,
-          tileId: null,
-        });
-        return {
-          ...c,
-          id: cellId,
-        };
-      }),
-    );
-
-    // generate allowedValues
-    await ctx.runMutation(
-      internal.mutations.internal.cell.computeAllAllowedValues,
-      { gameId },
-    );
-
-    // create Tiles
-    for (const t of getInitialGameTiles()) {
-      await TilesMutationRepository.instance.new({
-        gameId,
-        value: t.value,
-        location: t.location,
-        playerId: null,
-        cellId: null,
-      });
-    }
-
-    return { gameToken: game?.token ?? "", playerToken: player?.token ?? "" };
+    const useCase = new CreateGameUseCase(ctx);
+    return await useCase.execute(args.playerName, args.sessionId);
   },
 });
 
