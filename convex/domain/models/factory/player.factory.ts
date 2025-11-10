@@ -1,6 +1,6 @@
-import {Player} from "@cvx/domain/models/Player.ts";
-import type {Doc, Id} from "@cvx/_generated/dataModel";
-import {UUID} from "@cvx/domain/models/factory/uuid.factory.ts";
+import {Player} from "../Player.ts";
+import type {Doc, Id} from "../../../_generated/dataModel";
+import {UUID} from "./uuid.factory.ts";
 
 export const createPlayer = (
     id: Id<"players">, gameId: Id<"games">, userId: Id<"users">,

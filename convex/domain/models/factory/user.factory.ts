@@ -1,6 +1,6 @@
 import { User } from "../User.ts";
-import { UUID } from "@cvx/domain/models/factory/uuid.factory.ts";
-import type { Doc, Id } from "@cvx/_generated/dataModel";
+import { UUID } from "./uuid.factory.ts";
+import type { Doc, Id } from "../../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
 
 /**
