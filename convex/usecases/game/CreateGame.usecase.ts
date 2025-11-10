@@ -7,7 +7,6 @@ import {
   getInitialGameTiles,
 } from "../../../src/context/factories/gameFactory";
 import type { Cell } from "../../../src/context/model/cell";
-import { Game } from "../../domain/models/Game";
 import { GamesMutationRepository } from "../../repository/mutations/games.repository";
 import { GamesQueryRepository } from "../../repository/query/games.repository";
 import { PlayersMutationRepository } from "../../repository/mutations/players.repository";
@@ -26,7 +25,11 @@ export interface CreateGameResult {
  * Orchestrates the creation of a new game with all required setup
  */
 export class CreateGameUseCase {
-  constructor(private ctx: MutationCtx) {}
+  private ctx: MutationCtx;
+
+  constructor(ctx: MutationCtx) {
+    this.ctx = ctx;
+  }
 
   async execute(
     playerName: string,
@@ -103,8 +106,7 @@ export class CreateGameUseCase {
           gameId,
           row: cell.row,
           column: cell.column,
-          allowedValues: cell.allowedValues || {},
-          impactingCells: cell.impactingCells || {},
+          allowedValues: [],
           type: cell.type,
           value: cell.type === "value" ? cell.value : null,
           multiplier: cell.type === "multiplier" ? cell.multiplier : null,

@@ -5,17 +5,37 @@ import type { Doc, Id } from "../../_generated/dataModel";
  * Encapsulates player state and business rules
  */
 export class Player {
+  public readonly id: Id<"players">;
+  public readonly gameId: Id<"games">;
+  public readonly userId: Id<"users">;
+  public readonly name: string;
+  public readonly token: string;
+  private _current: boolean;
+  private _score: number;
+  private _owner: boolean;
+  private _order: number;
+
   private constructor(
-    public readonly id: Id<"players">,
-    public readonly gameId: Id<"games">,
-    public readonly userId: Id<"users">,
-    public readonly name: string,
-    public readonly token: string,
-    private _current: boolean,
-    private _score: number,
-    private _owner: boolean,
-    private _order: number
-  ) {}
+    id: Id<"players">,
+    gameId: Id<"games">,
+    userId: Id<"users">,
+    name: string,
+    token: string,
+    current: boolean,
+    score: number,
+    owner: boolean,
+    order: number
+  ) {
+    this.id = id;
+    this.gameId = gameId;
+    this.userId = userId;
+    this.name = name;
+    this.token = token;
+    this._current = current;
+    this._score = score;
+    this._owner = owner;
+    this._order = order;
+  }
 
   /**
    * Create a Player domain model from a database document

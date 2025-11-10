@@ -9,8 +9,11 @@ import { TilesQueryRepository } from "../../repository/query/tiles.repository";
  */
 export class TileDistributionService {
   private readonly INITIAL_TILE_COUNT = 7;
+  private ctx: MutationCtx;
 
-  constructor(private ctx: MutationCtx) {}
+  constructor(ctx: MutationCtx) {
+    this.ctx = ctx;
+  }
 
   /**
    * Distribute initial tiles to all players at game start

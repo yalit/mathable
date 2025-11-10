@@ -7,13 +7,25 @@ export type GameStatus = "waiting" | "ongoing" | "ended";
  * Encapsulates game state and business rules
  */
 export class Game {
+  public readonly id: Id<"games">;
+  public readonly token: string;
+  private _status: GameStatus;
+  private _currentTurn: number;
+  private _winner?: Id<"players">;
+
   private constructor(
-    public readonly id: Id<"games">,
-    public readonly token: string,
-    private _status: GameStatus,
-    private _currentTurn: number,
-    private _winner?: Id<"players">
-  ) {}
+    id: Id<"games">,
+    token: string,
+    status: GameStatus,
+    currentTurn: number,
+    winner?: Id<"players">
+  ) {
+    this.id = id;
+    this.token = token;
+    this._status = status;
+    this._currentTurn = currentTurn;
+    this._winner = winner;
+  }
 
   /**
    * Create a Game domain model from a database document
