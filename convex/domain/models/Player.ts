@@ -1,8 +1,9 @@
 import type { Doc, Id } from "../../_generated/dataModel";
+import { Tile } from "./Tile";
 
 /**
- * Player domain model
- * Encapsulates player state and business rules
+ * Player domain model with relationship support
+ * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Player {
   public readonly id: Id<"players">;
@@ -90,6 +91,42 @@ export class Player {
     };
   }
 
+  // ========================================
+  // Relationship Validation Methods
+  // ========================================
+
+  /**
+   * Validate that all tiles belong to this player
+   * @throws Error if any tile doesn't belong to this player
+   */
+  private validateTilesBelongToPlayer(tiles: Tile[]): void {
+    for (const tile of tiles) {
+      if (tile.playerId !== this.id) {
+        throw new Error(
+          `Tile ${tile.id} does not belong to player ${this.id}`
+        );
+      }
+    }
+  }
+
+  /**
+   * Validate that tiles belong to the same game as the player
+   * @throws Error if any tile doesn't belong to player's game
+   */
+  private validateTilesBelongToGame(tiles: Tile[]): void {
+    for (const tile of tiles) {
+      if (tile.gameId !== this.gameId) {
+        throw new Error(
+          `Tile ${tile.id} does not belong to game ${this.gameId}`
+        );
+      }
+    }
+  }
+
+  // ========================================
+  // Business Logic Methods
+  // ========================================
+
   /**
    * Set this player as the current player
    */
@@ -106,12 +143,42 @@ export class Player {
 
   /**
    * Add points to player's score
+   * @param points - Points to add (must be non-negative)
+   * @throws Error if points is negative
    */
   addScore(points: number): void {
     if (points < 0) {
       throw new Error("Cannot add negative score");
     }
     this._score += points;
+  }
+
+  /**
+   * Check if player has won (no tiles remaining in hand)
+   * @param playerTiles - The tiles in player's hand
+   * @returns true if player has no tiles
+   */
+  hasNoTilesRemaining(playerTiles: Tile[]): boolean {
+    this.validateTilesBelongToPlayer(playerTiles);
+    this.validateTilesBelongToGame(playerTiles);
+
+    // Only count tiles that are in the player's hand
+    const tilesInHand = playerTiles.filter(t => t.isInHand());
+    return tilesInHand.length === 0;
+  }
+
+  /**
+   * Get total hand value (sum of all tile values in hand)
+   * @param playerTiles - The tiles in player's hand
+   * @returns sum of tile values
+   */
+  getHandValue(playerTiles: Tile[]): number {
+    this.validateTilesBelongToPlayer(playerTiles);
+    this.validateTilesBelongToGame(playerTiles);
+
+    return playerTiles
+      .filter(t => t.isInHand())
+      .reduce((sum, tile) => sum + tile.value, 0);
   }
 
   /**
