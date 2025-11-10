@@ -16,7 +16,7 @@ export class Player {
   private _owner: boolean;
   private _order: number;
 
-  private constructor(
+  public constructor(
     id: Id<"players">,
     gameId: Id<"games">,
     userId: Id<"users">,
@@ -39,45 +39,14 @@ export class Player {
   }
 
   /**
-   * Create a Player domain model from a database document
+   * NOTE: To create a Player from a database document, use the factory:
+   * import { playerFromDoc } from "./factory/player.factory";
+   * const player = playerFromDoc(doc);
+   *
+   * To create a new Player instance, use:
+   * import { createNewPlayer } from "./factory/player.factory";
+   * const player = createNewPlayer(id, gameId, userId, name, token, isOwner);
    */
-  static fromDoc(doc: Doc<"players">): Player {
-    return new Player(
-      doc._id,
-      doc.gameId,
-      doc.userId,
-      doc.name,
-      doc.token,
-      doc.current,
-      doc.score,
-      doc.owner,
-      doc.order
-    );
-  }
-
-  /**
-   * Create a new Player instance for initial creation
-   */
-  static create(
-    id: Id<"players">,
-    gameId: Id<"games">,
-    userId: Id<"users">,
-    name: string,
-    token: string,
-    isOwner: boolean
-  ): Player {
-    return new Player(
-      id,
-      gameId,
-      userId,
-      name,
-      token,
-      false, // current
-      0, // score
-      isOwner,
-      0 // order (not set yet)
-    );
-  }
 
   /**
    * Convert domain model back to database format

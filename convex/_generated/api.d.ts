@@ -13,6 +13,12 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as domain_models_Cell from "../domain/models/Cell.js";
+import type * as domain_models_Game from "../domain/models/Game.js";
+import type * as domain_models_Move from "../domain/models/Move.js";
+import type * as domain_models_Player from "../domain/models/Player.js";
+import type * as domain_models_Tile from "../domain/models/Tile.js";
+import type * as domain_models_User from "../domain/models/User.js";
 import type * as helpers_array from "../helpers/array.js";
 import type * as helpers_cell from "../helpers/cell.js";
 import type * as middleware_sessions from "../middleware/sessions.js";
@@ -39,6 +45,12 @@ import type * as queries_user from "../queries/user.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "domain/models/Cell": typeof domain_models_Cell;
+  "domain/models/Game": typeof domain_models_Game;
+  "domain/models/Move": typeof domain_models_Move;
+  "domain/models/Player": typeof domain_models_Player;
+  "domain/models/Tile": typeof domain_models_Tile;
+  "domain/models/User": typeof domain_models_User;
   "helpers/array": typeof helpers_array;
   "helpers/cell": typeof helpers_cell;
   "middleware/sessions": typeof middleware_sessions;

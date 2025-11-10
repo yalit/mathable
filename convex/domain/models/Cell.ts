@@ -35,31 +35,16 @@ export abstract class Cell {
   }
 
   /**
-   * Create appropriate Cell subclass from a database document
-   * Factory method that returns the correct subclass based on type
-   */
-  static fromDoc(doc: Doc<"cells">): Cell {
-    const type = doc.type as CellType;
-
-    switch (type) {
-      case "empty":
-        return EmptyCell.fromDoc(doc);
-      case "value":
-        return ValueCell.fromDoc(doc);
-      case "multiplier":
-        return MultiplierCell.fromDoc(doc);
-      case "operator":
-        return OperatorCell.fromDoc(doc);
-      default:
-        throw new Error(`Unknown cell type: ${type}`);
-    }
-  }
-
-  /**
    * Convert domain model back to database format
    * Abstract method - each subclass provides its own implementation
    */
   abstract toDoc(): Partial<Doc<"cells">>;
+
+  /**
+   * NOTE: To create a Cell from a database document, use the factory:
+   * import { cellFromDoc } from "./factory/cell.factory";
+   * const cell = cellFromDoc(doc);
+   */
 
   /**
    * Get the numeric value of this cell
@@ -194,6 +179,38 @@ export abstract class Cell {
   get tileId(): Id<"tiles"> | null {
     return this._tileId;
   }
+
+  // ========================================
+  // Type Guards
+  // ========================================
+
+  /**
+   * Check if cell is an EmptyCell
+   */
+  isEmptyCell(): this is EmptyCell {
+    return this.type === "empty";
+  }
+
+  /**
+   * Check if cell is a ValueCell
+   */
+  isValueCell(): this is ValueCell {
+    return this.type === "value";
+  }
+
+  /**
+   * Check if cell is a MultiplierCell
+   */
+  isMultiplierCell(): this is MultiplierCell {
+    return this.type === "multiplier";
+  }
+
+  /**
+   * Check if cell is an OperatorCell
+   */
+  isOperatorCell(): this is OperatorCell {
+    return this.type === "operator";
+  }
 }
 
 // ========================================
@@ -215,17 +232,6 @@ export class EmptyCell extends Cell {
     tileId: Id<"tiles"> | null
   ) {
     super(id, gameId, row, column, allowedValues, tileId);
-  }
-
-  static fromDoc(doc: Doc<"cells">): EmptyCell {
-    return new EmptyCell(
-      doc._id,
-      doc.gameId,
-      doc.row,
-      doc.column,
-      doc.allowedValues,
-      doc.tileId
-    );
   }
 
   toDoc(): Partial<Doc<"cells">> {
@@ -265,20 +271,6 @@ export class ValueCell extends Cell {
   ) {
     super(id, gameId, row, column, allowedValues, null); // Value cells never have tiles
     this.value = value;
-  }
-
-  static fromDoc(doc: Doc<"cells">): ValueCell {
-    if (doc.value === null) {
-      throw new Error(`ValueCell at (${doc.row}, ${doc.column}) has no value`);
-    }
-    return new ValueCell(
-      doc._id,
-      doc.gameId,
-      doc.row,
-      doc.column,
-      doc.value,
-      doc.allowedValues
-    );
   }
 
   toDoc(): Partial<Doc<"cells">> {
@@ -330,23 +322,6 @@ export class MultiplierCell extends Cell {
     this.multiplier = multiplier;
   }
 
-  static fromDoc(doc: Doc<"cells">): MultiplierCell {
-    if (doc.multiplier === null) {
-      throw new Error(
-        `MultiplierCell at (${doc.row}, ${doc.column}) has no multiplier`
-      );
-    }
-    return new MultiplierCell(
-      doc._id,
-      doc.gameId,
-      doc.row,
-      doc.column,
-      doc.multiplier,
-      doc.allowedValues,
-      doc.tileId
-    );
-  }
-
   toDoc(): Partial<Doc<"cells">> {
     return {
       type: this.type,
@@ -392,23 +367,6 @@ export class OperatorCell extends Cell {
   ) {
     super(id, gameId, row, column, allowedValues, tileId);
     this.operator = operator;
-  }
-
-  static fromDoc(doc: Doc<"cells">): OperatorCell {
-    if (doc.operator === null) {
-      throw new Error(
-        `OperatorCell at (${doc.row}, ${doc.column}) has no operator`
-      );
-    }
-    return new OperatorCell(
-      doc._id,
-      doc.gameId,
-      doc.row,
-      doc.column,
-      doc.operator as CellOperator,
-      doc.allowedValues,
-      doc.tileId
-    );
   }
 
   toDoc(): Partial<Doc<"cells">> {

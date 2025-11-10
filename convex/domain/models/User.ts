@@ -22,11 +22,14 @@ export class User {
   }
 
   /**
-   * Create a User domain model from a database document
+   * NOTE: To create a User from a database document, use the factory:
+   * import { userFromDoc } from "./factory/user.factory";
+   * const user = userFromDoc(doc);
+   *
+   * To create a new User instance, use:
+   * import { createUser } from "./factory/user.factory";
+   * const user = createUser(id, sessionId, name);
    */
-  static fromDoc(doc: Doc<"users">): User {
-    return new User(doc._id, doc.sessionId, doc.name);
-  }
 
   /**
    * Convert domain model back to database format

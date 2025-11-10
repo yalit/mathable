@@ -40,20 +40,14 @@ export class Move {
   }
 
   /**
-   * Create a Move domain model from a database document
+   * NOTE: To create a Move from a database document, use the factory:
+   * import { moveFromDoc } from "./factory/move.factory";
+   * const move = moveFromDoc(doc);
+   *
+   * To create a new Move instance, use:
+   * import { createMove } from "./factory/move.factory";
+   * const move = createMove(id, gameId, type, turn, moveScore, cellId, tileId, playerId);
    */
-  static fromDoc(doc: Doc<"moves">): Move {
-    return new Move(
-      doc._id,
-      doc.gameId,
-      doc.type as MoveType,
-      doc.turn,
-      doc.moveScore,
-      doc.cellId,
-      doc.tileId,
-      doc.playerId
-    );
-  }
 
   /**
    * Convert domain model back to database format

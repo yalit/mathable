@@ -14,7 +14,7 @@ export class Tile {
   private _playerId: Id<"players"> | null;
   private _cellId: Id<"cells"> | null;
 
-  private constructor(
+  public constructor(
     id: Id<"tiles">,
     gameId: Id<"games">,
     value: number,
@@ -31,18 +31,10 @@ export class Tile {
   }
 
   /**
-   * Create a Tile domain model from a database document
+   * NOTE: To create a Tile from a database document, use the factory:
+   * import { tileFromDoc } from "./factory/tile.factory";
+   * const tile = tileFromDoc(doc);
    */
-  static fromDoc(doc: Doc<"tiles">): Tile {
-    return new Tile(
-      doc._id,
-      doc.gameId,
-      doc.value,
-      doc.location as TileLocation,
-      doc.playerId,
-      doc.cellId
-    );
-  }
 
   /**
    * Convert domain model back to database format

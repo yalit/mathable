@@ -28,6 +28,8 @@ export class Game {
         this._winner = winner;
     }
 
+    static gameSize = () : number => 14
+
     // ========================================
     // Relationship Validation Methods
     // ========================================
