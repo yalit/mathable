@@ -10,6 +10,7 @@ import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts
 import { GamesMutationRepository } from "../../repository/mutations/games.repository.ts";
 import { PlayersMutationRepository } from "../../repository/mutations/players.repository.ts";
 import { CreateGameUseCase } from "../../usecases/game/CreateGame.usecase.ts";
+import { JoinGameUseCase } from "../../usecases/game/JoinGame.usecase.ts";
 
 /**
  * Create a new game
@@ -23,32 +24,25 @@ export const create = withRepositoryMutation({
   },
 });
 
+/**
+ * Join an existing game
+ * Thin adapter that delegates to JoinGameUseCase
+ */
 export const join = withRepositoryMutation({
   args: {
     gameId: v.id("games"),
     playerName: v.string(),
     sessionId: vSessionId,
   },
-  handler: async (ctx, args): Promise<{ success: boolean; token: string }> => {
-    const game = await GamesQueryRepository.instance.find(args.gameId);
-    if (!game) {
-      return { success: false, token: "" };
-    }
+  handler: async (ctx, args): Promise<{ success: boolean; token: string; error?: string }> => {
+    const useCase = new JoinGameUseCase(ctx);
+    const result = await useCase.execute(args.gameId, args.playerName, args.sessionId);
 
-    const players = await PlayersQueryRepository.instance.findByGame(game._id);
-
-    if (players.length >= 4) {
-      return { success: false, token: "" };
-    }
-
-    const playerId = await ctx.runMutation(
-      internal.mutations.internal.player.create,
-      { gameId: args.gameId, name: args.playerName, sessionId: args.sessionId },
-    );
-
-    const player = await PlayersQueryRepository.instance.find(playerId);
-
-    return { success: player !== null, token: player?.token ?? "" };
+    return {
+      success: result.success,
+      token: result.playerToken,
+      error: result.error,
+    };
   },
 });
 
