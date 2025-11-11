@@ -1,8 +1,11 @@
 import type {MutationRepositoryInterface} from "../repositories.interface.ts";
 import type {GenericDatabaseWriter} from "convex/server";
 import type {DataModel, Doc, Id} from "../../_generated/dataModel";
+import type {Game} from "../../domain/models/Game";
 
-export interface GamesMutationRepositoryInterface extends MutationRepositoryInterface<"games"> {}
+export interface GamesMutationRepositoryInterface extends MutationRepositoryInterface<"games"> {
+    save(game: Game): Promise<Id<"games">>;
+}
 
 
 export class GamesMutationRepository implements GamesMutationRepositoryInterface {
@@ -23,15 +26,25 @@ export class GamesMutationRepository implements GamesMutationRepositoryInterface
         return GamesMutationRepository.instance;
     }
 
-    async new(data: Omit<Doc<"games">, "_id" | "_creationTime">): Promise<Id<"games">> {
-        return await this.db.insert("games", data);
-    }
-
-    async patch(id: Id<"games">, data: Partial<Doc<"games">>): Promise<void> {
-        await this.db.patch(id, data);
-    }
-
     async delete(id: Id<"games">): Promise<void> {
         await this.db.delete(id);
+    }
+
+    async save(game: Game): Promise<Id<"games">> {
+        const docData = {
+            token: game.token,
+            status: game.status,
+            currentTurn: game.currentTurn,
+            winner: game.winner
+        };
+
+        if (game.id === null) {
+            // Insert new game - omit _id and _creationTime
+            return await this.db.insert("games", docData as Omit<Doc<"games">, "_id" | "_creationTime">);
+        } else {
+            // Update existing game - patch all fields
+            await this.db.patch(game.id, docData);
+            return game.id;
+        }
     }
 }

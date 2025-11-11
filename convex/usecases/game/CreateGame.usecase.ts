@@ -60,12 +60,9 @@ export class CreateGameUseCase {
    * Create the game entity
    */
   private async initializeGame(): Promise<Id<"games">> {
-    const game = createGame()
-    return await GamesMutationRepository.instance.new({
-      token: game.token,
-      status: game.status,
-      currentTurn: game.currentTurn
-    });
+    const { UUID } = await import("../../domain/models/factory/uuid.factory.ts");
+    const game = createGame(UUID());
+    return await GamesMutationRepository.instance.save(game);
   }
 
   /**
@@ -83,7 +80,13 @@ export class CreateGameUseCase {
     );
 
     // Set the player as owner
-    await PlayersMutationRepository.instance.patch(playerId, { owner: true });
+    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    if (playerDoc) {
+      const { playerFromDoc } = await import("../../domain/models/factory/player.factory");
+      const player = playerFromDoc(playerDoc);
+      player.setAsOwner();
+      await PlayersMutationRepository.instance.save(player);
+    }
 
     return playerId;
   }
@@ -97,17 +100,7 @@ export class CreateGameUseCase {
 
     await Promise.all(
       boardCells.map(async (cell: Cell) => {
-        await CellsMutationRepository.instance.new({
-          gameId,
-          row: cell.row,
-          column: cell.column,
-          allowedValues: [],
-          type: cell.type,
-          value: cell.isValueCell() ? cell.value : null,
-          multiplier: cell.isMultiplierCell() ? cell.multiplier : null,
-          operator: cell.isOperatorCell() ? cell.operator : null,
-          tileId: null,
-        });
+        await CellsMutationRepository.instance.save(cell);
       })
     );
   }
@@ -118,15 +111,11 @@ export class CreateGameUseCase {
    */
   private async createInitialTiles(gameId: Id<"games">): Promise<void> {
     const initialTiles = getInitialGameTiles(gameId);
+    const { createTile } = await import("../../domain/models/factory/tile.factory.ts");
 
-    for (const tile of initialTiles) {
-      await TilesMutationRepository.instance.new({
-        gameId,
-        value: tile.value,
-        location: tile.location,
-        playerId: null,
-        cellId: null,
-      });
+    for (const tileData of initialTiles) {
+      const tile = createTile(gameId, tileData.value, tileData.location);
+      await TilesMutationRepository.instance.save(tile);
     }
   }
 

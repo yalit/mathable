@@ -82,17 +82,11 @@ export class StartGameUseCase {
     game.start(players);
 
     // 8. Persist game state changes
-    await GamesMutationRepository.instance.patch(gameId, {
-      status: game.status,
-      currentTurn: game.currentTurn,
-    });
+    await GamesMutationRepository.instance.save(game);
 
     // 9. Persist player state changes (order and current status)
     for (const player of players) {
-      await PlayersMutationRepository.instance.patch(player.id, {
-        order: player.order,
-        current: player.current,
-      });
+      await PlayersMutationRepository.instance.save(player);
     }
 
     // 10. Distribute initial tiles to all players

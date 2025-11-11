@@ -8,7 +8,7 @@ export type GameStatus = "waiting" | "ongoing" | "ended";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Game {
-    public readonly id: Id<"games">;
+    public readonly id: Id<"games"> | null;
     public readonly token: string;
     private _status: GameStatus;
     private _currentTurn: number;
@@ -21,7 +21,7 @@ export class Game {
         currentTurn: number,
         winner?: Id<"players">
     ) {
-        this.id = id ?? "" as Id<"games">
+        this.id = id;
         this.token = token;
         this._status = status;
         this._currentTurn = currentTurn;
@@ -113,6 +113,13 @@ export class Game {
     }
 
     /**
+     * Increment the current turn
+     */
+    incrementTurn(): void {
+        this._currentTurn++;
+    }
+
+    /**
      * Check if a specific player can start this game
      * @param player - The player attempting to start the game
      * @returns true if player is owner and game is waiting
@@ -128,14 +135,16 @@ export class Game {
      * @param players - All players to validate winner exists
      * @throws Error if game cannot be ended or winner invalid
      */
-    endWithWinner(winnerId: Id<"players">, players: Player[]): void {
-        // Validate relationships
-        this.validatePlayersBelongToGame(players);
-        this.validateWinnerInPlayers(winnerId, players);
+    endWithWinner(winnerId: Id<"players">, players?: Player[]): void {
+        if (players) {
+            // Validate relationships
+            this.validatePlayersBelongToGame(players);
+            this.validateWinnerInPlayers(winnerId, players);
 
-        // Validate game state
-        if (this._status !== "ongoing") {
-            throw new Error("Can only end a game that is ongoing");
+            // Validate game state
+            if (this._status !== "ongoing") {
+                throw new Error("Can only end a game that is ongoing");
+            }
         }
 
         // Update state

@@ -94,18 +94,18 @@ export const endTurn = withSessionMutation({
         });
 
         // change the current player to the next one
-        const nextPlayer = await PlayersQueryRepository.instance.findNextPlayer(
+        const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(
             game._id,
         );
 
-        if (!nextPlayer) {
+        if (!nextPlayerDoc) {
             return;
         }
 
-        await PlayersMutationRepository.instance.patch(
-            nextPlayer._id as Id<"players">,
-            { current: true },
-        );
+        const { playerFromDoc } = await import("../../domain/models/factory/player.factory");
+        const nextPlayer = playerFromDoc(nextPlayerDoc);
+        nextPlayer.setAsCurrent();
+        await PlayersMutationRepository.instance.save(nextPlayer);
 
         // update the score of the current playerId
         const currentPlayerTiles = await TilesQueryRepository.instance.findByPlayer(
@@ -114,13 +114,10 @@ export const endTurn = withSessionMutation({
         const additionalScoreForEmptyHand =
             currentPlayerTiles.length === 0 ? 50 : 0;
 
-        await PlayersMutationRepository.instance.patch(
-            currentPlayer._id as Id<"players">,
-            {
-                current: false,
-                score: currentPlayer.score + turnScore + additionalScoreForEmptyHand,
-            },
-        );
+        const currentPlayerModel = playerFromDoc(currentPlayer);
+        currentPlayerModel.removeAsCurrent();
+        currentPlayerModel.addScore(turnScore + additionalScoreForEmptyHand);
+        await PlayersMutationRepository.instance.save(currentPlayerModel);
 
         // add the needed tiles to the current player
         const currentTiles = await TilesQueryRepository.instance.findByPlayer(
@@ -144,8 +141,9 @@ export const endTurn = withSessionMutation({
         }
 
         // update the current turn to + 1
-        await GamesMutationRepository.instance.patch(gameId, {
-            currentTurn: game.currentTurn + 1,
-        });
+        const { createGameFromDoc } = await import("../../domain/models/factory/game.factory.ts");
+        const gameModel = createGameFromDoc(game);
+        gameModel.incrementTurn();
+        await GamesMutationRepository.instance.save(gameModel);
     },
 });
