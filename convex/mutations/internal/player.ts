@@ -5,6 +5,7 @@ import {vSessionId} from "convex-helpers/server/sessions";
 import {withSessionInternalMutation} from "../../middleware/sessions";
 import {PlayersMutationRepository} from "../../repository/mutations/players.repository.ts";
 import {UUID} from "../../domain/models/factory/uuid.factory.ts";
+import {createPlayer} from "../../domain/models/factory/player.factory.ts";
 
 export const create = withSessionInternalMutation({
     args: {gameId: v.id("games"), name: v.string(), sessionId: vSessionId},
@@ -16,17 +17,16 @@ export const create = withSessionInternalMutation({
                 sessionId: ctx.sessionId,
             });
         }
-        return await PlayersMutationRepository.instance.new(
-            {
-                gameId,
-                token: UUID(),
-                name,
-                current: false,
-                score: 0,
-                owner: false,
-                order: 0,
-                userId: userId!
-            }
+        const player = createPlayer(
+            gameId,
+            userId!,
+            name,
+            UUID(),
+            false, // current
+            0, // score
+            false, // owner
+            0 // order
         );
+        return await PlayersMutationRepository.instance.save(player);
     },
 });

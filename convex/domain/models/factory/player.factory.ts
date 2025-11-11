@@ -1,18 +1,18 @@
 import {Player} from "../Player.ts";
 import type {Doc, Id} from "../../../_generated/dataModel";
-import {UUID} from "./uuid.factory.ts";
 
 export const createPlayer = (
-    id: Id<"players">, gameId: Id<"games">, userId: Id<"users">,
+    gameId: Id<"games">,
+    userId: Id<"users">,
     name: string,
     token: string,
     current: boolean = false,
     score: number = 0,
     owner: boolean = false,
-    order: number
+    order: number = 0
 ): Player => {
     return new Player(
-        id ?? UUID(),
+        null,
         gameId,
         userId,
         name,
@@ -47,7 +47,6 @@ export const playerFromDoc = (doc: Doc<"players">): Player => {
 /**
  * Create a new Player instance for initial creation
  * Factory function for creating a new player with default values
- * @param id - Player ID
  * @param gameId - Game ID
  * @param userId - User ID
  * @param name - Player name
@@ -56,7 +55,6 @@ export const playerFromDoc = (doc: Doc<"players">): Player => {
  * @returns Player
  */
 export const createNewPlayer = (
-    id: Id<"players">,
     gameId: Id<"games">,
     userId: Id<"users">,
     name: string,
@@ -64,7 +62,7 @@ export const createNewPlayer = (
     isOwner: boolean
 ): Player => {
     return new Player(
-        id,
+        null,
         gameId,
         userId,
         name,

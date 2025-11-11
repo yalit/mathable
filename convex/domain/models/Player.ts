@@ -6,7 +6,7 @@ import { Tile } from "./Tile";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Player {
-  public readonly id: Id<"players">;
+  public readonly id: Id<"players"> | null;
   public readonly gameId: Id<"games">;
   public readonly userId: Id<"users">;
   public readonly name: string;
@@ -17,7 +17,7 @@ export class Player {
   private _order: number;
 
   public constructor(
-    id: Id<"players">,
+    id: Id<"players"> | null,
     gameId: Id<"games">,
     userId: Id<"users">,
     name: string,
@@ -108,6 +108,13 @@ export class Player {
    */
   removeAsCurrent(): void {
     this._current = false;
+  }
+
+  /**
+   * Set this player as the game owner
+   */
+  setAsOwner(): void {
+    this._owner = true;
   }
 
   /**
