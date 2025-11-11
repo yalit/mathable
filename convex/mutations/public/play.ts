@@ -10,6 +10,8 @@ import { GamesQueryRepository } from "../../repository/query/games.repository.ts
 import { MovesMutationRepository } from "../../repository/mutations/moves.repository.ts";
 import { PlayersMutationRepository } from "../../repository/mutations/players.repository.ts";
 import { GamesMutationRepository } from "../../repository/mutations/games.repository.ts";
+import { playerFromDoc } from "../../domain/models/factory/player.factory";
+import { createGameFromDoc } from "../../domain/models/factory/game.factory.ts";
 
 export const resetTurn = withSessionMutation({
     args: { gameId: v.id("games") },
@@ -102,7 +104,6 @@ export const endTurn = withSessionMutation({
             return;
         }
 
-        const { playerFromDoc } = await import("../../domain/models/factory/player.factory");
         const nextPlayer = playerFromDoc(nextPlayerDoc);
         nextPlayer.setAsCurrent();
         await PlayersMutationRepository.instance.save(nextPlayer);
@@ -141,7 +142,6 @@ export const endTurn = withSessionMutation({
         }
 
         // update the current turn to + 1
-        const { createGameFromDoc } = await import("../../domain/models/factory/game.factory.ts");
         const gameModel = createGameFromDoc(game);
         gameModel.incrementTurn();
         await GamesMutationRepository.instance.save(gameModel);

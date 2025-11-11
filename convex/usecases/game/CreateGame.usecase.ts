@@ -10,6 +10,9 @@ import { CellsMutationRepository } from "../../repository/mutations/cells.reposi
 import { TilesMutationRepository } from "../../repository/mutations/tiles.repository";
 import {createGame, getBoardCells, getInitialGameTiles} from "../../domain/models/factory/game.factory.ts";
 import type {Cell} from "../../domain/models/Cell.ts";
+import { UUID } from "../../domain/models/factory/uuid.factory.ts";
+import {createTile} from "../../domain/models/factory/tile.factory.ts";
+import {playerFromDoc} from "../../domain/models/factory/player.factory.ts";
 
 export interface CreateGameResult {
   gameToken: string;
@@ -60,7 +63,6 @@ export class CreateGameUseCase {
    * Create the game entity
    */
   private async initializeGame(): Promise<Id<"games">> {
-    const { UUID } = await import("../../domain/models/factory/uuid.factory.ts");
     const game = createGame(UUID());
     return await GamesMutationRepository.instance.save(game);
   }
@@ -82,7 +84,6 @@ export class CreateGameUseCase {
     // Set the player as owner
     const playerDoc = await PlayersQueryRepository.instance.find(playerId);
     if (playerDoc) {
-      const { playerFromDoc } = await import("../../domain/models/factory/player.factory");
       const player = playerFromDoc(playerDoc);
       player.setAsOwner();
       await PlayersMutationRepository.instance.save(player);
@@ -111,7 +112,6 @@ export class CreateGameUseCase {
    */
   private async createInitialTiles(gameId: Id<"games">): Promise<void> {
     const initialTiles = getInitialGameTiles(gameId);
-    const { createTile } = await import("../../domain/models/factory/tile.factory.ts");
 
     for (const tileData of initialTiles) {
       const tile = createTile(gameId, tileData.value, tileData.location);
