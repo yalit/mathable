@@ -52,6 +52,13 @@ export class PickTileUseCase {
 
     const game = createGameFromDoc(gameDoc);
 
+    // 2b Ensure game is instanciated
+    if (!game.id) {
+      return {
+        success: false,
+        error: "Game is not instanciated",
+      }
+    }
     // 3. Validate user authorization
     if (!player.isSameUser(userId)) {
       return {

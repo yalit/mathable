@@ -12,6 +12,7 @@ import { cellFromDoc } from "../../domain/models/factory/cell.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { createPlayerToCellMove } from "../../domain/models/factory/move.factory";
 import { countItems } from "../../helpers/array";
+import {Cell} from "../../domain/models/Cell.ts";
 
 export interface PlaceTileResult {
   success: boolean;
@@ -62,6 +63,14 @@ export class PlaceTileUseCase {
     }
 
     const game = createGameFromDoc(gameDoc);
+
+    // 3b. Ensure game is instanciated
+    if (!game.id) {
+      return {
+        success: false,
+        error: "Game not instanciated",
+      }
+    }
 
     // 4. Validate user authorization
     if (!player.isSameUser(userId)) {
@@ -129,7 +138,7 @@ export class PlaceTileUseCase {
    * Calculate the score for placing a tile on a cell
    * Score = tile value * occurrence count * multiplier (if applicable)
    */
-  private calculateMoveScore(cell: typeof cellFromDoc extends (doc: any) => infer T ? T : never, tileValue: number): number {
+  private calculateMoveScore(cell: Cell, tileValue: number): number {
     const occurrenceCount = countItems(cell.allowedValues as number[], tileValue);
     const baseScore = tileValue * occurrenceCount;
 
