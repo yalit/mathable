@@ -7,7 +7,7 @@ import { Player } from "./Player";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class User {
-  public readonly id: Id<"users">;
+  public readonly id: Id<"users"> | null;
   public readonly sessionId: SessionId;
   private _name: string;
 
@@ -16,7 +16,7 @@ export class User {
     sessionId: SessionId,
     name: string
   ) {
-    this.id = id ?? ("" as Id<"users">);
+    this.id = id;
     this.sessionId = sessionId;
     this._name = name;
   }

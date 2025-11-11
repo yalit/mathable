@@ -1,8 +1,11 @@
 import type {DataModel, Doc, Id} from "../../_generated/dataModel";
 import type {GenericDatabaseWriter} from "convex/server";
 import type {MutationRepositoryInterface} from "../repositories.interface.ts";
+import type {User} from "../../domain/models/User";
 
-export interface UsersMutationRepositoryInterface extends MutationRepositoryInterface<"users"> {}
+export interface UsersMutationRepositoryInterface extends MutationRepositoryInterface<"users"> {
+    save(user: User): Promise<Id<"users">>;
+}
 
 export class UsersMutationRepository implements UsersMutationRepositoryInterface {
     static instance: UsersMutationRepository;
@@ -21,12 +24,20 @@ export class UsersMutationRepository implements UsersMutationRepositoryInterface
         return UsersMutationRepository.instance;
     }
 
-    async new(data: Omit<Doc<"users">, "_id" | "_creationTime">): Promise<Id<"users">> {
-        return this.db.insert("users", data);
-    }
+    async save(user: User): Promise<Id<"users">> {
+        const docData = {
+            sessionId: user.sessionId,
+            name: user.name
+        };
 
-    async patch(id: Id<"users">, data: Partial<Doc<"users">>): Promise<void> {
-        return this.db.patch(id, data);
+        if (user.id === null) {
+            // Insert new user - omit _id and _creationTime
+            return await this.db.insert("users", docData as Omit<Doc<"users">, "_id" | "_creationTime">);
+        } else {
+            // Update existing user - patch all fields
+            await this.db.patch(user.id, docData);
+            return user.id;
+        }
     }
 
     async delete(id: Id<"users">): Promise<void> {
