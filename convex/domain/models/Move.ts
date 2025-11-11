@@ -11,7 +11,7 @@ export type MoveType = "PLAYER_TO_CELL" | "CELL_TO_PLAYER" | "BAG_TO_PLAYER" | "
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export abstract class Move {
-  public readonly id: Id<"moves">;
+  public readonly id: Id<"moves"> | null;
   public readonly gameId: Id<"games">;
   public abstract readonly type: MoveType;
   public readonly turn: number;
@@ -23,7 +23,7 @@ export abstract class Move {
     turn: number,
     tileId: Id<"tiles"> | null
   ) {
-    this.id = id ?? ("" as Id<"moves">);
+    this.id = id;
     this.gameId = gameId;
     this.turn = turn;
     this.tileId = tileId;

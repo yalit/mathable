@@ -5,10 +5,12 @@ import { TilesQueryRepository } from "../../repository/query/tiles.repository";
 import { PlayersQueryRepository } from "../../repository/query/players.repository";
 import { CellsQueryRepository } from "../../repository/query/cells.repository";
 import { GamesQueryRepository } from "../../repository/query/games.repository";
+import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
+import { createPlayerToCellMove } from "../../domain/models/factory/move.factory";
 import { countItems } from "../../helpers/array";
 
 export interface PlaceTileResult {
@@ -149,14 +151,14 @@ export class PlaceTileUseCase {
     playerId: Id<"players">,
     moveScore: number
   ): Promise<void> {
-    await this.ctx.runMutation(internal.mutations.internal.move.createMove, {
+    const move = createPlayerToCellMove(
       gameId,
-      type: "PLAYER_TO_CELL",
       turn,
       tileId,
-      cellId,
       playerId,
-      moveScore,
-    });
+      cellId,
+      moveScore
+    );
+    await MovesMutationRepository.instance.save(move);
   }
 }

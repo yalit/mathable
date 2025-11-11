@@ -1,6 +1,12 @@
 import { v } from "convex/values";
 import { withRepositoryInternalMutation } from "../../middleware/repository.middleware.ts";
 import { MovesMutationRepository } from "../../repository/mutations/moves.repository.ts";
+import {
+  createPlayerToCellMove,
+  createBagToPlayerMove,
+  createCellToPlayerMove,
+  createPlayerToBagMove,
+} from "../../domain/models/factory/move.factory.ts";
 
 export const MoveType = {
   PLAYER_TO_CELL: "player_to_cell",
@@ -24,8 +30,42 @@ export const createMove = withRepositoryInternalMutation({
     moveScore: v.number(),
   },
   handler: async (_, args) => {
-    await MovesMutationRepository.instance.new({
-      ...args,
-    });
+    const { gameId, type, turn, tileId, playerId, cellId, moveScore } = args;
+
+    let move;
+    switch (type) {
+      case "PLAYER_TO_CELL":
+        if (!playerId || !cellId || !tileId) {
+          throw new Error("PLAYER_TO_CELL requires playerId, cellId, and tileId");
+        }
+        move = createPlayerToCellMove(gameId, turn, tileId, playerId, cellId, moveScore);
+        break;
+
+      case "BAG_TO_PLAYER":
+        if (!playerId || !tileId) {
+          throw new Error("BAG_TO_PLAYER requires playerId and tileId");
+        }
+        move = createBagToPlayerMove(gameId, turn, tileId, playerId);
+        break;
+
+      case "CELL_TO_PLAYER":
+        if (!playerId || !cellId || !tileId) {
+          throw new Error("CELL_TO_PLAYER requires playerId, cellId, and tileId");
+        }
+        move = createCellToPlayerMove(gameId, turn, tileId, playerId, cellId, moveScore);
+        break;
+
+      case "PLAYER_TO_BAG":
+        if (!playerId || !tileId) {
+          throw new Error("PLAYER_TO_BAG requires playerId and tileId");
+        }
+        move = createPlayerToBagMove(gameId, turn, tileId, playerId);
+        break;
+
+      default:
+        throw new Error(`Unknown move type: ${type}`);
+    }
+
+    await MovesMutationRepository.instance.save(move);
   },
 });

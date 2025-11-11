@@ -6,13 +6,14 @@ import { PlayersQueryRepository } from "../../repository/query/players.repositor
 import { CellsQueryRepository } from "../../repository/query/cells.repository";
 import { GamesQueryRepository } from "../../repository/query/games.repository";
 import { MovesQueryRepository } from "../../repository/query/moves.repository";
+import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
 import { CellsMutationRepository } from "../../repository/mutations/cells.repository";
 import { TilesMutationRepository } from "../../repository/mutations/tiles.repository";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
-import { moveFromDoc } from "../../domain/models/factory/move.factory";
+import { moveFromDoc, createPlayerToCellMove } from "../../domain/models/factory/move.factory";
 import { countItems } from "../../helpers/array";
 
 export interface DisplaceTileResult {
@@ -147,19 +148,18 @@ export class DisplaceTileUseCase {
     });
 
     if (moveToUpdate) {
-      // Update the move with new cell and score
-      await this.ctx.runMutation(internal.mutations.internal.move.createMove, {
-        gameId: game.id,
-        type: "PLAYER_TO_CELL",
-        turn: game.currentTurn,
+      // Create new move with updated cell and score
+      const updatedMove = createPlayerToCellMove(
+        game.id,
+        game.currentTurn,
         tileId,
-        cellId: toCellId,
         playerId,
-        moveScore,
-      });
+        toCellId,
+        moveScore
+      );
+      await MovesMutationRepository.instance.save(updatedMove);
 
       // Delete old move
-      const MovesMutationRepository = (await import("../../repository/mutations/moves.repository")).MovesMutationRepository;
       await MovesMutationRepository.instance.delete(moveToUpdate._id);
     }
 

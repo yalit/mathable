@@ -4,8 +4,10 @@ import type { Id } from "../../_generated/dataModel";
 import { TilesQueryRepository } from "../../repository/query/tiles.repository";
 import { PlayersQueryRepository } from "../../repository/query/players.repository";
 import { GamesQueryRepository } from "../../repository/query/games.repository";
+import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
+import { createBagToPlayerMove } from "../../domain/models/factory/move.factory";
 
 export interface PickTileResult {
   success: boolean;
@@ -89,15 +91,13 @@ export class PickTileUseCase {
     });
 
     // 8. Record the move (BAG_TO_PLAYER is not cancellable due to randomness)
-    await this.ctx.runMutation(internal.mutations.internal.move.createMove, {
-      gameId: game.id,
-      type: "BAG_TO_PLAYER",
-      turn: game.currentTurn,
-      tileId: pickedTile._id as Id<"tiles">,
-      cellId: null,
-      playerId,
-      moveScore: 0, // No score for picking tiles
-    });
+    const move = createBagToPlayerMove(
+      game.id,
+      game.currentTurn,
+      pickedTile._id as Id<"tiles">,
+      playerId
+    );
+    await MovesMutationRepository.instance.save(move);
 
     return {
       success: true,

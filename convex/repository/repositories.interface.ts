@@ -6,7 +6,6 @@ export interface QueryRepositoryInterface<T extends TableNames> {
 }
 
 export interface MutationRepositoryInterface<T extends TableNames> {
-    new: (data: Omit<Doc<T>, "_id"|"_creationTime">) => Promise<Id<T>>;
-    patch: (id: Id<T>, data: Partial<Doc<T>>) => Promise<void>;
+    // save function to be added when all the repositories will be updated
     delete: (id: Id<T>) => Promise<void>;
 }

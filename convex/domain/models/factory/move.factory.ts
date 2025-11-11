@@ -6,14 +6,12 @@ import {
     CellToPlayerMove,
     PlayerToBagMove
 } from "../Move.ts";
-import { UUID } from "./uuid.factory.ts";
 import type { Doc, Id } from "../../../_generated/dataModel";
 
 /**
  * Create a PlayerToCellMove instance
  */
 export const createPlayerToCellMove = (
-    id: Id<"moves"> | null,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
@@ -22,7 +20,7 @@ export const createPlayerToCellMove = (
     moveScore: number
 ): PlayerToCellMove => {
     return new PlayerToCellMove(
-        id ?? UUID() as Id<"moves">,
+        null,
         gameId,
         turn,
         tileId,
@@ -36,14 +34,13 @@ export const createPlayerToCellMove = (
  * Create a BagToPlayerMove instance
  */
 export const createBagToPlayerMove = (
-    id: Id<"moves"> | null,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
     playerId: Id<"players">
 ): BagToPlayerMove => {
     return new BagToPlayerMove(
-        id ?? UUID() as Id<"moves">,
+        null,
         gameId,
         turn,
         tileId,
@@ -55,7 +52,6 @@ export const createBagToPlayerMove = (
  * Create a CellToPlayerMove instance
  */
 export const createCellToPlayerMove = (
-    id: Id<"moves"> | null,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
@@ -64,7 +60,7 @@ export const createCellToPlayerMove = (
     moveScore: number
 ): CellToPlayerMove => {
     return new CellToPlayerMove(
-        id ?? UUID() as Id<"moves">,
+        null,
         gameId,
         turn,
         tileId,
@@ -78,14 +74,13 @@ export const createCellToPlayerMove = (
  * Create a PlayerToBagMove instance
  */
 export const createPlayerToBagMove = (
-    id: Id<"moves"> | null,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
     playerId: Id<"players">
 ): PlayerToBagMove => {
     return new PlayerToBagMove(
-        id ?? UUID() as Id<"moves">,
+        null,
         gameId,
         turn,
         tileId,

@@ -1,9 +1,12 @@
 import type { GenericDatabaseWriter } from "convex/server";
 import type { DataModel, Doc, Id } from "../../_generated/dataModel";
 import type { MutationRepositoryInterface } from "../repositories.interface";
+import type { Move } from "../../domain/models/Move";
 
 export interface MovesMutationRepositoryInterface
-  extends MutationRepositoryInterface<"moves"> {}
+  extends MutationRepositoryInterface<"moves"> {
+  save(move: Move): Promise<Id<"moves">>;
+}
 
 export class MovesMutationRepository
   implements MovesMutationRepositoryInterface
@@ -24,17 +27,20 @@ export class MovesMutationRepository
     this.db = db;
   }
 
-  async new(
-    data: Omit<Doc<"moves">, "_id" | "_creationTime">,
-  ): Promise<Id<"moves">> {
-    return this.db.insert("moves", data);
-  }
-
-  async patch(id: Id<"moves">, data: Partial<Doc<"moves">>): Promise<void> {
-    this.db.patch(id, data);
-  }
-
   async delete(id: Id<"moves">): Promise<void> {
     this.db.delete(id);
+  }
+
+  async save(move: Move): Promise<Id<"moves">> {
+    const docData = move.toDoc();
+
+    if (move.id === null) {
+      // Insert new move - omit _id and _creationTime
+      return await this.db.insert("moves", docData as Omit<Doc<"moves">, "_id" | "_creationTime">);
+    } else {
+      // Update existing move - patch all fields
+      await this.db.patch(move.id, docData);
+      return move.id;
+    }
   }
 }
