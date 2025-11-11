@@ -1,14 +1,9 @@
-import type { Id } from "../../_generated/dataModel";
-import { internal } from "../../_generated/api";
 import { withSessionMutation } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
-import { MoveType } from "../internal/move";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts";
-import { PlayersQueryRepository } from "../../repository/query/players.repository.ts";
-import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
-import { GamesQueryRepository } from "../../repository/query/games.repository.ts";
-import { countItems } from "../../helpers/array.ts";
+import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
+import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
+import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
 
 export const playToCell = withSessionMutation({
     args: {
@@ -18,61 +13,16 @@ export const playToCell = withSessionMutation({
         sessionId: vSessionId,
     },
     handler: async (ctx, { tileId, cellId, playerId }) => {
-        const tile = await TilesQueryRepository.instance.find(tileId);
-        const player = await PlayersQueryRepository.instance.find(playerId);
-        const cell = await CellsQueryRepository.instance.find(cellId);
-
-        if (!(tile && cell && player)) {
-            return;
-        }
-
-        const game = await GamesQueryRepository.instance.find(tile.gameId);
-
-        if (!game) {
-            return;
-        }
-
         if (!ctx.user) {
-            return;
-        }
-        // check if tile is well in hand
-        if (tile.location !== "in_hand" || tile.playerId !== player._id) {
-            return;
+            throw new Error("User not authenticated");
         }
 
-        // check that the ctx user is the same as the current game user
-        if (ctx.user._id !== player.userId) {
-            return;
+        const useCase = new PlaceTileUseCase(ctx);
+        const result = await useCase.execute(tileId, cellId, playerId, ctx.user._id);
+
+        if (!result.success) {
+            throw new Error(result.error || "Failed to place tile");
         }
-
-        // check that the tile value is well in the cell allowedValues
-        if (!cell.allowedValues.includes(tile.value)) {
-            return;
-        }
-
-        await ctx.runMutation(internal.mutations.internal.tile.moveToCell, {
-            tileId,
-            cellId,
-            playerId,
-        });
-
-        const cellTileValue = tile.value * countItems(cell.allowedValues, tile.value)
-
-        await ctx.runMutation(internal.mutations.internal.move.createMove, {
-            gameId: game._id,
-            type: MoveType.PLAYER_TO_CELL,
-            turn: game.currentTurn,
-            cellId: cellId,
-            tileId: tileId,
-            playerId: playerId,
-            moveScore: cell.multiplier ? cell.multiplier * cellTileValue : cellTileValue,
-        });
-
-        // recompute values due to cell change
-        await ctx.runMutation(
-            internal.mutations.internal.cell.computeAllowedValuesFromUpdatedCell,
-            { cellId },
-        );
     },
 });
 
@@ -82,48 +32,37 @@ export const pick = withSessionMutation({
         sessionId: vSessionId,
     },
     handler: async (ctx, { playerId }) => {
-        const player = await PlayersQueryRepository.instance.find(playerId);
-
-        if (!player) {
-            return;
-        }
-
-        const game = await GamesQueryRepository.instance.find(player.gameId);
-
-        if (!game) {
-            return;
-        }
-
         if (!ctx.user) {
-            return;
+            throw new Error("User not authenticated");
         }
 
-        // check that the ctx user is the same as the current game user
-        if (ctx.user._id !== player.userId) {
-            return;
+        const useCase = new PickTileUseCase(ctx);
+        const result = await useCase.execute(playerId, ctx.user._id);
+
+        if (!result.success) {
+            throw new Error(result.error || "Failed to pick tile");
+        }
+    },
+});
+
+export const displace = withSessionMutation({
+    args: {
+        tileId: v.id("tiles"),
+        fromCellId: v.id("cells"),
+        toCellId: v.id("cells"),
+        playerId: v.id("players"),
+        sessionId: vSessionId,
+    },
+    handler: async (ctx, { tileId, fromCellId, toCellId, playerId }) => {
+        if (!ctx.user) {
+            throw new Error("User not authenticated");
         }
 
-        const gameTiles = await TilesQueryRepository.instance.findAllInBagByGame(
-            game._id,
-        );
-        if (gameTiles.length > 0) {
-            gameTiles.sort(() => Math.random() - 0.5);
+        const useCase = new DisplaceTileUseCase(ctx);
+        const result = await useCase.execute(tileId, fromCellId, toCellId, playerId, ctx.user._id);
 
-            const movedTile = gameTiles[0];
-            await ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-                tileId: movedTile._id as Id<"tiles">,
-                playerId,
-            });
-
-            await ctx.runMutation(internal.mutations.internal.move.createMove, {
-                gameId: game._id,
-                type: MoveType.BAG_TO_PLAYER,
-                turn: game.currentTurn,
-                cellId: null,
-                tileId: movedTile._id as Id<"tiles">,
-                playerId: playerId,
-                moveScore: 0,
-            });
+        if (!result.success) {
+            throw new Error(result.error || "Failed to displace tile");
         }
     },
 });
