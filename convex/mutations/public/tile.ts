@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
 import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
+import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
 
 export const playToCell = withSessionMutation({
     args: {
@@ -63,6 +64,25 @@ export const displace = withSessionMutation({
 
         if (!result.success) {
             throw new Error(result.error || "Failed to displace tile");
+        }
+    },
+});
+
+export const cancelPlacement = withSessionMutation({
+    args: {
+        playerId: v.id("players"),
+        sessionId: vSessionId,
+    },
+    handler: async (ctx, { playerId }) => {
+        if (!ctx.user) {
+            throw new Error("User not authenticated");
+        }
+
+        const useCase = new CancelTilePlacementUseCase(ctx);
+        const result = await useCase.execute(playerId, ctx.user._id);
+
+        if (!result.success) {
+            throw new Error(result.error || "Failed to cancel tile placement");
         }
     },
 });
