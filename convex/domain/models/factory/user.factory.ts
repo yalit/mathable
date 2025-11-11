@@ -1,5 +1,5 @@
 import { User } from "../User.ts";
-import type { Doc, Id } from "../../../_generated/dataModel";
+import type { Doc } from "../../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
 
 /**

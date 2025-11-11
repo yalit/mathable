@@ -91,12 +91,22 @@ export class Tile {
    * Move tile to a cell on the board
    * @param cellId - The cell to place the tile on
    * @param playerId - The player moving the tile (for validation)
-   * @throws Error if tile doesn't belong to the player
+   * @throws Error if tile doesn't belong to the player or is in invalid state
+   *
+   * Handles two scenarios:
+   * 1. Placing from player's hand (tile location is "in_hand")
+   * 2. Displacing from another cell (tile location is "on_board")
    */
   moveToCell(cellId: Id<"cells">, playerId: Id<"players">): void {
-    // Validate the tile belongs to the player moving it
+    // Validate based on current location
     if (this._location === "in_hand") {
+      // Tile is being placed from player's hand - validate ownership
       this.validateBelongsToPlayer(playerId);
+    } else if (this._location === "on_board") {
+      // Tile is being displaced from another cell - no ownership validation needed
+      // (displacement validation happens at use case level)
+    } else if (this._location === "in_bag") {
+      throw new Error(`Cannot move tile ${this.id} from bag directly to board`);
     }
 
     this._location = "on_board";
@@ -106,13 +116,18 @@ export class Tile {
 
   /**
    * Move tile back to bag
-   * @throws Error if tile is not on board or in hand
+   * @throws Error if tile is already in bag
+   *
+   * Handles tiles from:
+   * 1. Board/cell (current implementation)
+   * 2. Player's hand (future support for returning tiles)
    */
   moveToBag(): void {
     if (this._location === "in_bag") {
       throw new Error(`Tile ${this.id} is already in the bag`);
     }
 
+    // Tile can come from "on_board" or "in_hand" - both are valid
     this._location = "in_bag";
     this._playerId = null;
     this._cellId = null;

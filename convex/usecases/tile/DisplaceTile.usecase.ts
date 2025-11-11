@@ -7,8 +7,6 @@ import { CellsQueryRepository } from "../../repository/query/cells.repository";
 import { GamesQueryRepository } from "../../repository/query/games.repository";
 import { MovesQueryRepository } from "../../repository/query/moves.repository";
 import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
-import { CellsMutationRepository } from "../../repository/mutations/cells.repository";
-import { TilesMutationRepository } from "../../repository/mutations/tiles.repository";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory";
@@ -134,12 +132,13 @@ export class DisplaceTileUseCase {
     }
 
     // 11. Move tile from source to destination cell
-    fromCell.setTileId(null);
-    toCell.setTileId(tileId);
-    await CellsMutationRepository.instance.save(fromCell);
-    await CellsMutationRepository.instance.save(toCell);
-    tile.moveToCell(toCellId, playerId);
-    await TilesMutationRepository.instance.save(tile);
+    // The moveToCell internal mutation now handles removing from old cell
+    // and adding to new cell automatically
+    await this.ctx.runMutation(internal.mutations.internal.tile.moveToCell, {
+      tileId,
+      cellId: toCellId,
+      playerId,
+    });
 
     // 12. Calculate new score for the new position
     const moveScore = this.calculateMoveScore(toCell, tile.value);

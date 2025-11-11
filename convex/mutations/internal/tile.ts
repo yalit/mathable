@@ -42,20 +42,34 @@ export const moveToPlayer = withRepositoryInternalMutation({
 export const moveToCell = withRepositoryInternalMutation({
   args: { tileId: v.id("tiles"), cellId: v.id("cells"), playerId: v.id("players") },
   handler: async (_, { tileId, cellId, playerId }) => {
-    // move the tile to cell
-    const cellDoc = await CellsQueryRepository.instance.find(cellId);
-    if (cellDoc) {
-      const cell = cellFromDoc(cellDoc);
-      cell.setTileId(tileId);
-      await CellsMutationRepository.instance.save(cell);
-    }
-    // remove the tile from the player
     const tileDoc = await TilesQueryRepository.instance.find(tileId);
-    if (tileDoc) {
-      const tile = tileFromDoc(tileDoc);
-      tile.moveToCell(cellId, playerId);
-      await TilesMutationRepository.instance.save(tile);
+    if (!tileDoc) {
+      return;
     }
+
+    // Handle tile coming from another cell (displacement)
+    // If tile is currently on a cell, remove it from the old cell
+    if (tileDoc.cellId) {
+      const oldCellDoc = await CellsQueryRepository.instance.find(tileDoc.cellId);
+      if (oldCellDoc) {
+        const oldCell = cellFromDoc(oldCellDoc);
+        oldCell.setTileId(null);
+        await CellsMutationRepository.instance.save(oldCell);
+      }
+    }
+
+    // Set tile on the new cell
+    const newCellDoc = await CellsQueryRepository.instance.find(cellId);
+    if (newCellDoc) {
+      const newCell = cellFromDoc(newCellDoc);
+      newCell.setTileId(tileId);
+      await CellsMutationRepository.instance.save(newCell);
+    }
+
+    // Update tile location (handles both from hand and from cell)
+    const tile = tileFromDoc(tileDoc);
+    tile.moveToCell(cellId, playerId);
+    await TilesMutationRepository.instance.save(tile);
   },
 });
 
@@ -67,6 +81,7 @@ export const moveToBag = withRepositoryInternalMutation({
       return;
     }
 
+    // Handle tile coming from cell - remove from cell
     if (tileDoc.cellId) {
       const cellDoc = await CellsQueryRepository.instance.find(tileDoc.cellId);
       if (cellDoc) {
@@ -75,6 +90,9 @@ export const moveToBag = withRepositoryInternalMutation({
         await CellsMutationRepository.instance.save(cell);
       }
     }
+
+    // Handle tile coming from player's hand - no additional cleanup needed
+    // (tile.playerId will be cleared by moveToBag())
 
     const tile = tileFromDoc(tileDoc);
     tile.moveToBag();
