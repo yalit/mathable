@@ -1,13 +1,12 @@
 import {Tile, type TileLocation} from "../Tile.ts";
-import {UUID} from "./uuid.factory.ts";
 import type {Doc, Id} from "../../../_generated/dataModel";
 
 export const createTile = (
-    id: Id<"tiles"> | null, gameId: Id<"games">,
+    gameId: Id<"games">,
     value: number,
     location: TileLocation = "in_bag",
 ): Tile => {
-    return new Tile(id ?? UUID() as Id<"tiles">, gameId, value, location, null, null)
+    return new Tile(null, gameId, value, location, null, null)
 };
 
 /**

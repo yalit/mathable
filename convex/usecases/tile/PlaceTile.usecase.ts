@@ -107,6 +107,7 @@ export class PlaceTileUseCase {
     await this.ctx.runMutation(internal.mutations.internal.tile.moveToCell, {
       tileId,
       cellId,
+      playerId,
     });
 
     // 10. Calculate and record the move with score

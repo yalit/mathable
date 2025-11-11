@@ -5,6 +5,8 @@ import { GamesQueryRepository } from "../../repository/query/games.repository.ts
 import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
 import { CellsMutationRepository } from "../../repository/mutations/cells.repository.ts";
 import { TilesMutationRepository } from "../../repository/mutations/tiles.repository.ts";
+import { cellFromDoc } from "../../domain/models/factory/cell.factory.ts";
+import { tileFromDoc } from "../../domain/models/factory/tile.factory.ts";
 
 export const moveToPlayer = withRepositoryInternalMutation({
   args: {
@@ -12,63 +14,70 @@ export const moveToPlayer = withRepositoryInternalMutation({
     playerId: v.id("players"),
   },
   handler: async (_, { tileId, playerId }) => {
-    const tile = await TilesQueryRepository.instance.find(tileId);
-    if (!tile) {
+    const tileDoc = await TilesQueryRepository.instance.find(tileId);
+    if (!tileDoc) {
       return;
     }
 
-    const game = await GamesQueryRepository.instance.find(tile.gameId);
+    const game = await GamesQueryRepository.instance.find(tileDoc.gameId);
     if (!game) {
       return;
     }
     // remove the tile from any Cell
-    const cell = await CellsQueryRepository.instance.findByTile(tileId);
+    const cellDoc = await CellsQueryRepository.instance.findByTile(tileId);
 
-    if (cell !== null) {
-      await CellsMutationRepository.instance.patch(cell._id, { tileId: null });
+    if (cellDoc !== null) {
+      const cell = cellFromDoc(cellDoc);
+      cell.setTileId(null);
+      await CellsMutationRepository.instance.save(cell);
     }
 
     // move the tile to the player and change its status
-    await TilesMutationRepository.instance.patch(tileId, {
-      playerId,
-      location: "in_hand",
-      cellId: null,
-    });
+    const tile = tileFromDoc(tileDoc);
+    tile.moveToPlayer(playerId);
+    await TilesMutationRepository.instance.save(tile);
   },
 });
 
 export const moveToCell = withRepositoryInternalMutation({
-  args: { tileId: v.id("tiles"), cellId: v.id("cells") },
-  handler: async (_, { tileId, cellId }) => {
+  args: { tileId: v.id("tiles"), cellId: v.id("cells"), playerId: v.id("players") },
+  handler: async (_, { tileId, cellId, playerId }) => {
     // move the tile to cell
-    await CellsMutationRepository.instance.patch(cellId, { tileId });
+    const cellDoc = await CellsQueryRepository.instance.find(cellId);
+    if (cellDoc) {
+      const cell = cellFromDoc(cellDoc);
+      cell.setTileId(tileId);
+      await CellsMutationRepository.instance.save(cell);
+    }
     // remove the tile from the player
-    await TilesMutationRepository.instance.patch(tileId, {
-      playerId: null,
-      cellId,
-      location: "on_board",
-    });
+    const tileDoc = await TilesQueryRepository.instance.find(tileId);
+    if (tileDoc) {
+      const tile = tileFromDoc(tileDoc);
+      tile.moveToCell(cellId, playerId);
+      await TilesMutationRepository.instance.save(tile);
+    }
   },
 });
 
 export const moveToBag = withRepositoryInternalMutation({
   args: { tileId: v.id("tiles") },
   handler: async (_, { tileId }) => {
-    const tile = await TilesQueryRepository.instance.find(tileId);
-    if (!tile) {
+    const tileDoc = await TilesQueryRepository.instance.find(tileId);
+    if (!tileDoc) {
       return;
     }
 
-    if (tile.cellId) {
-      await CellsMutationRepository.instance.patch(tile.cellId, {
-        tileId: null,
-      });
+    if (tileDoc.cellId) {
+      const cellDoc = await CellsQueryRepository.instance.find(tileDoc.cellId);
+      if (cellDoc) {
+        const cell = cellFromDoc(cellDoc);
+        cell.setTileId(null);
+        await CellsMutationRepository.instance.save(cell);
+      }
     }
 
-    await TilesMutationRepository.instance.patch(tileId, {
-      cellId: null,
-      playerId: null,
-      location: "in_bag",
-    });
+    const tile = tileFromDoc(tileDoc);
+    tile.moveToBag();
+    await TilesMutationRepository.instance.save(tile);
   },
 });

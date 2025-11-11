@@ -7,7 +7,7 @@ export type TileLocation = "in_bag" | "in_hand" | "on_board";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Tile {
-  public readonly id: Id<"tiles">;
+  public readonly id: Id<"tiles"> | null;
   public readonly gameId: Id<"games">;
   public readonly value: number;
   private _location: TileLocation;
@@ -15,7 +15,7 @@ export class Tile {
   private _cellId: Id<"cells"> | null;
 
   public constructor(
-    id: Id<"tiles">,
+    id: Id<"tiles"> | null,
     gameId: Id<"games">,
     value: number,
     location: TileLocation,

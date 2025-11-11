@@ -53,6 +53,7 @@ export const playToCell = withSessionMutation({
         await ctx.runMutation(internal.mutations.internal.tile.moveToCell, {
             tileId,
             cellId,
+            playerId,
         });
 
         const cellTileValue = tile.value * countItems(cell.allowedValues, tile.value)

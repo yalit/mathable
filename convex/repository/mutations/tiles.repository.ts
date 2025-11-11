@@ -1,9 +1,12 @@
 import type { MutationRepositoryInterface } from "../repositories.interface.ts";
 import type { GenericDatabaseWriter } from "convex/server";
 import type { DataModel, Doc, Id } from "../../_generated/dataModel";
+import type { Tile } from "../../domain/models/Tile";
 
 export interface TilesMutationRepositoryInterface
-  extends MutationRepositoryInterface<"tiles"> {}
+  extends MutationRepositoryInterface<"tiles"> {
+  save(tile: Tile): Promise<Id<"tiles">>;
+}
 
 export class TilesMutationRepository
   implements TilesMutationRepositoryInterface
@@ -24,14 +27,23 @@ export class TilesMutationRepository
     this.db = db;
   }
 
-  async new(
-    data: Omit<Doc<"tiles">, "_id" | "_creationTime">,
-  ): Promise<Id<"tiles">> {
-    return this.db.insert("tiles", data);
-  }
+  async save(tile: Tile): Promise<Id<"tiles">> {
+    const docData = {
+      gameId: tile.gameId,
+      value: tile.value,
+      location: tile.location,
+      playerId: tile.playerId,
+      cellId: tile.cellId
+    };
 
-  async patch(id: Id<"tiles">, tile: Partial<Doc<"tiles">>): Promise<void> {
-    await this.db.patch(id, tile);
+    if (tile.id === null) {
+      // Insert new tile - omit _id and _creationTime
+      return await this.db.insert("tiles", docData as Omit<Doc<"tiles">, "_id" | "_creationTime">);
+    } else {
+      // Update existing tile - patch all fields
+      await this.db.patch(tile.id, docData);
+      return tile.id;
+    }
   }
 
   async delete(id: Id<"tiles">): Promise<void> {
