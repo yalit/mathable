@@ -4,7 +4,6 @@ import {Game, type GameStatus} from "../Game.ts";
 import {Cell} from "../Cell.ts";
 import {Tile} from "../Tile.ts";
 import {createTile} from "./tile.factory.ts";
-import {UUID} from "./uuid.factory.ts";
 
 export const createGame = (token: string): Game => {
     return new Game(
@@ -128,12 +127,12 @@ export const getInitialGameTiles = (gameId: Id<"games">): Tile[] => {
 
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach((v) => {
         for (let n = 1; n <= 7; n++) {
-            tiles.push(createTile(null, gameId, v));
+            tiles.push(createTile(gameId, v));
         }
     });
     [
         0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 24, 25, 27, 28, 30, 32, 35,
         36, 40, 42, 45, 48, 49, 50, 54, 56, 60, 63, 64, 70, 72, 80, 81, 90,
-    ].forEach((n) => tiles.push(createTile(null, gameId, n)));
+    ].forEach((n) => tiles.push(createTile(gameId, n)));
     return tiles;
 };

@@ -224,6 +224,9 @@ export class EmptyCell extends Cell {
   toDoc(): Partial<Doc<"cells">> {
     return {
       type: this.type,
+      row: this.row,
+      column: this.column,
+      gameId: this.gameId,
       value: null,
       multiplier: null,
       operator: null,
@@ -263,6 +266,9 @@ export class ValueCell extends Cell {
   toDoc(): Partial<Doc<"cells">> {
     return {
       type: this.type,
+      row: this.row,
+      column: this.column,
+      gameId: this.gameId,
       value: this.value,
       multiplier: null,
       operator: null,
@@ -312,6 +318,9 @@ export class MultiplierCell extends Cell {
   toDoc(): Partial<Doc<"cells">> {
     return {
       type: this.type,
+      row: this.row,
+      column: this.column,
+      gameId: this.gameId,
       value: null,
       multiplier: this.multiplier,
       operator: null,
@@ -359,6 +368,9 @@ export class OperatorCell extends Cell {
   toDoc(): Partial<Doc<"cells">> {
     return {
       type: this.type,
+      row: this.row,
+      column: this.column,
+      gameId: this.gameId,
       value: null,
       multiplier: null,
       operator: this.operator,
