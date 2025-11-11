@@ -8,11 +8,10 @@ import {
     ValueCell
 } from "../Cell.ts";
 import type {Doc, Id} from "../../../_generated/dataModel";
-import { UUID } from "./uuid.factory.ts";
 
-export const createEmptyCell = (id: Id<"cells"> | null,  gameId: Id<"games">, row: number, column: number): EmptyCell => {
+export const createEmptyCell = (gameId: Id<"games">, row: number, column: number): EmptyCell => {
     return new EmptyCell(
-        id ?? UUID() as Id<"cells">,
+        null,
         gameId,
         row,
         column,
@@ -22,13 +21,13 @@ export const createEmptyCell = (id: Id<"cells"> | null,  gameId: Id<"games">, ro
 };
 
 export const createValueCell = (
-    id: Id<"cells"> | null,  gameId: Id<"games">,
+    gameId: Id<"games">,
     row: number,
     column: number,
     value: number,
 ): ValueCell => {
     return new ValueCell(
-        id ?? UUID() as Id<"cells">,
+        null,
         gameId,
         row,
         column,
@@ -38,13 +37,13 @@ export const createValueCell = (
 };
 
 export const createOperatorCell = (
-    id: Id<"cells"> | null,  gameId: Id<"games">,
+    gameId: Id<"games">,
     row: number,
     column: number,
     operator: CellOperator,
 ): OperatorCell => {
     return new OperatorCell(
-        id ?? UUID() as Id<"cells">,
+        null,
         gameId,
         row,
         column,
@@ -55,13 +54,13 @@ export const createOperatorCell = (
 };
 
 export const createMultiplierCell = (
-    id: Id<"cells"> | null,  gameId: Id<"games">,
+    gameId: Id<"games">,
     row: number,
     column: number,
     multiplier: number,
 ): MultiplierCell => {
     return new MultiplierCell(
-        id ?? UUID() as Id<"cells">,
+        null,
         gameId,
         row,
         column,

@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import { withRepositoryInternalMutation } from "../../middleware/repository.middleware.ts";
 import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
 import { CellsMutationRepository } from "../../repository/mutations/cells.repository.ts";
+import { cellFromDoc } from "../../domain/models/factory/cell.factory.ts";
 
 export const computeAllAllowedValues = withRepositoryInternalMutation({
     args: { gameId: v.id("games") },
@@ -117,8 +118,8 @@ export const computeAllowedValuesForCell = withRepositoryInternalMutation({
         );
 
         // update the cells with the allowedValues
-        await CellsMutationRepository.instance.patch(cell._id, {
-            allowedValues: Array.from(allowedValues),
-        });
+        const cellModel = cellFromDoc(cell);
+        cellModel.setAllowedValues(Array.from(allowedValues));
+        await CellsMutationRepository.instance.save(cellModel);
     },
 });

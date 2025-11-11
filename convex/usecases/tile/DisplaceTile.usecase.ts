@@ -134,9 +134,12 @@ export class DisplaceTileUseCase {
     }
 
     // 11. Move tile from source to destination cell
-    await CellsMutationRepository.instance.patch(fromCellId, { tileId: null });
-    await CellsMutationRepository.instance.patch(toCellId, { tileId });
-    await TilesMutationRepository.instance.patch(tileId, { cellId: toCellId });
+    fromCell.setTileId(null);
+    toCell.setTileId(tileId);
+    await CellsMutationRepository.instance.save(fromCell);
+    await CellsMutationRepository.instance.save(toCell);
+    tile.moveToCell(toCellId, playerId);
+    await TilesMutationRepository.instance.save(tile);
 
     // 12. Calculate new score for the new position
     const moveScore = this.calculateMoveScore(toCell, tile.value);

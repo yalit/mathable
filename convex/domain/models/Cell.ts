@@ -10,7 +10,7 @@ export type CellOperator = "+" | "-" | "*" | "/";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export abstract class Cell {
-  public readonly id: Id<"cells">;
+  public readonly id: Id<"cells"> | null;
   public readonly gameId: Id<"games">;
   public readonly row: number;
   public readonly column: number;
@@ -26,7 +26,7 @@ export abstract class Cell {
     allowedValues: number[],
     tileId: Id<"tiles"> | null
   ) {
-    this.id = id ?? ("" as Id<"cells">);
+    this.id = id;
     this.gameId = gameId;
     this.row = row;
     this.column = column;
@@ -137,6 +137,15 @@ export abstract class Cell {
    */
   setAllowedValues(allowedValues: number[]): void {
     this._allowedValues = allowedValues;
+  }
+
+  /**
+   * Set tile ID directly (for internal mutations)
+   * Use placeTile() and removeTile() for validated operations
+   * @param tileId - The tile ID to set (null to clear)
+   */
+  setTileId(tileId: Id<"tiles"> | null): void {
+    this._tileId = tileId;
   }
 
   /**
