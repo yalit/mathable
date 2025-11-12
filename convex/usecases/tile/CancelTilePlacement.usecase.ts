@@ -1,5 +1,4 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";

@@ -14,12 +14,12 @@ export const playToCell = appMutation({
         ...SessionArgs,
     },
     handler: async (ctx, { tileId, cellId, playerId }) => {
-        if (!ctx.user) {
+        if (!ctx.user?.id) {
             throw new Error("User not authenticated");
         }
 
         const useCase = new PlaceTileUseCase(ctx);
-        const result = await useCase.execute(tileId, cellId, playerId, ctx.user._id);
+        const result = await useCase.execute(tileId, cellId, playerId, ctx.user.id);
 
         if (!result.success) {
             throw new Error(result.error || "Failed to place tile");
@@ -34,12 +34,12 @@ export const pick = appMutation({
         ...SessionArgs,
     },
     handler: async (ctx, { playerId }) => {
-        if (!ctx.user) {
+        if (!ctx.user?.id) {
             throw new Error("User not authenticated");
         }
 
         const useCase = new PickTileUseCase(ctx);
-        const result = await useCase.execute(playerId, ctx.user._id);
+        const result = await useCase.execute(playerId, ctx.user.id);
 
         if (!result.success) {
             throw new Error(result.error || "Failed to pick tile");
@@ -57,12 +57,12 @@ export const displace = appMutation({
         ...SessionArgs,
     },
     handler: async (ctx, { tileId, fromCellId, toCellId, playerId }) => {
-        if (!ctx.user) {
+        if (!ctx.user?.id) {
             throw new Error("User not authenticated");
         }
 
         const useCase = new DisplaceTileUseCase(ctx);
-        const result = await useCase.execute(tileId, fromCellId, toCellId, playerId, ctx.user._id);
+        const result = await useCase.execute(tileId, fromCellId, toCellId, playerId, ctx.user.id);
 
         if (!result.success) {
             throw new Error(result.error || "Failed to displace tile");
@@ -77,12 +77,12 @@ export const cancelPlacement = appMutation({
         ...SessionArgs,
     },
     handler: async (ctx, { playerId }) => {
-        if (!ctx.user) {
+        if (!ctx.user?.id) {
             throw new Error("User not authenticated");
         }
 
         const useCase = new CancelTilePlacementUseCase(ctx);
-        const result = await useCase.execute(playerId, ctx.user._id);
+        const result = await useCase.execute(playerId, ctx.user.id);
 
         if (!result.success) {
             throw new Error(result.error || "Failed to cancel tile placement");

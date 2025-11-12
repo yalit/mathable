@@ -28,7 +28,7 @@ export const resetTurn = appMutation({
         const player = await playersQueryRepository.findCurrentPlayer(
             game._id,
         );
-        if (!player || player.userId !== ctx.user._id) {
+        if (!player || player.userId !== ctx.user.id) {
             return;
         }
 
@@ -70,13 +70,13 @@ export const resetTurn = appMutation({
 export const endTurn = appMutation({
     visibility: "public", security: "secure",
     args: { gameId: v.id("games"), ...SessionArgs },
-    handler: async (ctx, { gameId }) => {
-        if (!ctx.user) {
+    handler: async (ctx, { sessionId, gameId }) => {
+        if (!ctx.user?.id) {
             throw new Error("User not authenticated");
         }
 
         const useCase = new EndTurnUseCase(ctx, ctx.container);
-        const result = await useCase.execute(gameId, ctx.user._id, ctx.sessionId);
+        const result = await useCase.execute(gameId, ctx.user.id, sessionId);
 
         if (!result.success) {
             throw new Error(result.error || "Failed to end turn");

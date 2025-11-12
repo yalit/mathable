@@ -1,5 +1,4 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
 import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
@@ -138,7 +137,7 @@ export class StartGameUseCase {
       for (const tile of tilesToDistribute) {
         await this.ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
           tileId: tile._id as Id<"tiles">,
-          playerId: player.id,
+          playerId: player.id ?? "" as Id<"players">,
         });
       }
     }
