@@ -144,8 +144,17 @@ export class EndTurnUseCase {
    */
   private async switchToNextPlayer(gameId: Id<"games">): Promise<void> {
     const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(gameId);
+
     if (!nextPlayerDoc) {
-      throw new Error("No next player found");
+      // Provide more context for debugging
+      const allPlayers = await PlayersQueryRepository.instance.findByGame(gameId);
+      const currentPlayer = await PlayersQueryRepository.instance.findCurrentPlayer(gameId);
+
+      const debugInfo = `No next player found. Game has ${allPlayers.length} players. ` +
+        `Current player order: ${currentPlayer?.order || 'none'}. ` +
+        `Player orders: [${allPlayers.map(p => p.order).join(', ')}]`;
+
+      throw new Error(debugInfo);
     }
 
     const nextPlayer = playerFromDoc(nextPlayerDoc);
