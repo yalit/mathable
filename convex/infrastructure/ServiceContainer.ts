@@ -1,8 +1,9 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { GenericDatabaseReader, GenericDatabaseWriter } from "convex/server";
 import type { DataModel } from "../_generated/dataModel";
-import { ServiceRegistry, type ServiceTypeMap, type ServiceKey } from "./ServiceRegistry";
+import { ServiceRegistry } from "./ServiceRegistry";
 
+export const DB_ARGUMENT = "db_argument"
 /**
  * ServiceContainer - Generic Dependency Injection Container
  *
@@ -23,8 +24,8 @@ import { ServiceRegistry, type ServiceTypeMap, type ServiceKey } from "./Service
 export class ServiceContainer {
   private registry: ServiceRegistry;
   private instances = new Map<string, any>();
-  private db: GenericDatabaseReader<DataModel> | GenericDatabaseWriter<DataModel>;
-  private isMutationContext: boolean;
+  private readonly db: GenericDatabaseReader<DataModel> | GenericDatabaseWriter<DataModel>;
+  private readonly isMutationContext: boolean;
 
   /**
    * Create container from Convex context and service registry
@@ -36,6 +37,7 @@ export class ServiceContainer {
     this.db = ctx.db;
     // Check if we're in a mutation context by checking for mutation-specific methods
     this.isMutationContext = typeof (ctx.db as any).insert === "function";
+    this.instances.set(DB_ARGUMENT, this.db)
   }
 
   /**
@@ -44,16 +46,16 @@ export class ServiceContainer {
    *
    * Dependencies are resolved recursively from the container before instantiation.
    *
-   * @param identifier - Service identifier (use SERVICE_IDENTIFIERS constants)
+   * @param identifier - Service identifier string (interface name from config)
    * @returns The service instance
    *
    * @example
    * ```typescript
-   * const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
+   * const gamesRepo = container.get("GamesQueryRepositoryInterface");
    * const game = await gamesRepo.find(gameId);
    * ```
    */
-  get<K extends ServiceKey>(identifier: K): ServiceTypeMap[K] {
+  get<T = any>(identifier: string): T {
     // Return cached instance if available
     if (this.instances.has(identifier)) {
       return this.instances.get(identifier);
@@ -78,14 +80,46 @@ export class ServiceContainer {
       registration.definition.arguments || []
     );
 
-    // Create instance using constructor with db and resolved dependencies
+    // Create instance - check if it's a constructor or factory function
     const ServiceClass = registration.definition.class;
-    const instance = new ServiceClass(this.db, ...dependencies);
+    const instance = this.isConstructor(ServiceClass)
+      ? new (ServiceClass as new (...args: any[]) => T)(...dependencies)
+      : (ServiceClass as (...args: any[]) => T)(...dependencies);
 
     // Cache for this request
     this.instances.set(identifier, instance);
 
     return instance;
+  }
+
+  /**
+   * Check if a value is a constructor function (can be called with `new`)
+   * vs a regular function/factory
+   */
+  private isConstructor(fn: any): boolean {
+    // Check if it has a prototype (constructors and classes have it)
+    // Arrow functions and bound functions don't have prototype
+    if (!fn.prototype) {
+      return false;
+    }
+
+    // Check if it's likely a class (classes have non-enumerable prototype.constructor)
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(fn.prototype, 'constructor');
+      if (descriptor && !descriptor.enumerable) {
+        return true;
+      }
+    } catch {
+      // Ignore errors
+    }
+
+    // For regular constructor functions, check if prototype has methods
+    // This is a heuristic - regular functions typically have empty prototypes
+    const proto = fn.prototype;
+    const props = Object.getOwnPropertyNames(proto);
+
+    // If prototype has more than just 'constructor', it's likely a class/constructor
+    return props.length > 1 || (props.length === 1 && props[0] === 'constructor');
   }
 
   /**
@@ -109,7 +143,7 @@ export class ServiceContainer {
       }
 
       // Resolve the dependency (this will recursively resolve its dependencies)
-      const dependency = this.get(depIdentifier as ServiceKey);
+      const dependency = this.get(depIdentifier);
       dependencies.push(dependency);
     }
 
@@ -119,7 +153,7 @@ export class ServiceContainer {
   /**
    * Check if a service is available in this context
    */
-  has(identifier: ServiceKey): boolean {
+  has(identifier: string): boolean {
     const registration = this.registry.get(identifier);
     if (!registration) {
       return false;

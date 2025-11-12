@@ -1,5 +1,4 @@
 import type { ServicesConfig } from "./infrastructure/ServiceConfig.types";
-import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
 
 // Query Repository Imports
 import { PlayersQueryRepository } from "./repository/query/players.repository";
@@ -16,6 +15,7 @@ import { TilesMutationRepository } from "./repository/mutations/tiles.repository
 import { MovesMutationRepository } from "./repository/mutations/moves.repository";
 import { CellsMutationRepository } from "./repository/mutations/cells.repository";
 import { UsersMutationRepository } from "./repository/mutations/users.repository";
+import {DB_ARGUMENT} from "./infrastructure/ServiceContainer.ts";
 
 /**
  * Production service configuration
@@ -24,7 +24,7 @@ import { UsersMutationRepository } from "./repository/mutations/users.repository
  * The container will resolve dependencies and instantiate services as needed.
  *
  * Structure:
- * - key: Interface name (use SERVICE_IDENTIFIERS constants)
+ * - key: Interface name (string identifier for the service)
  * - value: { class: ClassConstructor, arguments?: [dependency interface names] }
  *
  * The 'arguments' array specifies other services that should be injected into the constructor.
@@ -32,56 +32,56 @@ import { UsersMutationRepository } from "./repository/mutations/users.repository
  */
 export const servicesConfig: ServicesConfig = {
   query: {
-    [SERVICE_IDENTIFIERS.PlayersQuery]: {
+    "PlayersQueryRepositoryInterface": {
       class: PlayersQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.GamesQuery]: {
+    "GamesQueryRepositoryInterface": {
       class: GamesQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.TilesQuery]: {
+    "TilesQueryRepositoryInterface": {
       class: TilesQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.MovesQuery]: {
+    "MovesQueryRepositoryInterface": {
       class: MovesQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.CellsQuery]: {
+    "CellsQueryRepositoryInterface": {
       class: CellsQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.UsersQuery]: {
+    "UsersQueryRepositoryInterface": {
       class: UsersQueryRepository,
-      arguments: [], // No service dependencies, only db
+      arguments: [DB_ARGUMENT],
     },
   },
 
   mutation: {
-    [SERVICE_IDENTIFIERS.PlayersMutation]: {
-      class: PlayersMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "PlayersMutationRepositoryInterface": {
+      class: PlayersMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.GamesMutation]: {
-      class: GamesMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "GamesMutationRepositoryInterface": {
+      class: GamesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.TilesMutation]: {
-      class: TilesMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "TilesMutationRepositoryInterface": {
+      class: TilesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.MovesMutation]: {
-      class: MovesMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "MovesMutationRepositoryInterface": {
+      class: MovesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.CellsMutation]: {
-      class: CellsMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "CellsMutationRepositoryInterface": {
+      class: CellsMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT],
     },
-    [SERVICE_IDENTIFIERS.UsersMutation]: {
-      class: UsersMutationRepository as any, // Type assertion needed for GenericDatabaseWriter
-      arguments: [], // No service dependencies, only db
+    "UsersMutationRepositoryInterface": {
+      class: UsersMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
+      arguments: [DB_ARGUMENT]
     },
   },
 };

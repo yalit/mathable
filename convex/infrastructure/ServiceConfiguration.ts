@@ -42,5 +42,11 @@ export function loadServiceConfiguration(config: ServicesConfig): ServiceRegistr
     registry.register(interfaceName, definition, "mutation");
   }
 
+  // Register mutation services
+  if (config.any) {
+    for (const [interfaceName, definition] of Object.entries(config.any)) {
+      registry.register(interfaceName, definition, "any");
+    }
+  }
   return registry;
 }

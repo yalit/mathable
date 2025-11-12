@@ -1,13 +1,9 @@
-import type { GenericDatabaseReader, GenericDatabaseWriter } from "convex/server";
-import type { DataModel } from "../_generated/dataModel";
-
 /**
  * Constructor type for services that require database access
  */
-export type ServiceConstructor<T> = new (
-  db: GenericDatabaseReader<DataModel> | GenericDatabaseWriter<DataModel>,
+export type ServiceConstructor<T = any> = (new (
   ...dependencies: any[]
-) => T;
+) => T) | ((...dependencies: any[]) => T);
 
 /**
  * Service definition entry
@@ -47,4 +43,5 @@ export type ScopeServiceConfig = Record<string, ServiceDefinition>;
 export interface ServicesConfig {
   query: ScopeServiceConfig;
   mutation: ScopeServiceConfig;
+  any?: ScopeServiceConfig
 }
