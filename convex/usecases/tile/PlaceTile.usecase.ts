@@ -1,11 +1,10 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { CellsQueryRepository } from "../../repository/query/cells.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
+import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { CellsQueryRepositoryInterface } from "../../repository/query/cells.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory";
@@ -13,6 +12,7 @@ import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { createPlayerToCellMove } from "../../domain/models/factory/move.factory";
 import { countItems } from "../../helpers/array";
 import {Cell} from "../../domain/models/Cell.ts";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface PlaceTileResult {
   success: boolean;
@@ -24,10 +24,30 @@ export interface PlaceTileResult {
  * Orchestrates placing a tile from player's hand to a board cell
  */
 export class PlaceTileUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get tilesQuery(): TilesQueryRepositoryInterface {
+    return this.ctx.container.get("TilesQueryRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get cellsQuery(): CellsQueryRepositoryInterface {
+    return this.ctx.container.get("CellsQueryRepositoryInterface");
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get movesMutation(): MovesMutationRepositoryInterface {
+    return this.ctx.container.get("MovesMutationRepositoryInterface");
   }
 
   async execute(
@@ -37,9 +57,9 @@ export class PlaceTileUseCase {
     userId: Id<"users">
   ): Promise<PlaceTileResult> {
     // 1. Load entities
-    const tileDoc = await TilesQueryRepository.instance.find(tileId);
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
-    const cellDoc = await CellsQueryRepository.instance.find(cellId);
+    const tileDoc = await this.tilesQuery.find(tileId);
+    const playerDoc = await this.playersQuery.find(playerId);
+    const cellDoc = await this.cellsQuery.find(cellId);
 
     if (!tileDoc || !cellDoc || !playerDoc) {
       return {
@@ -54,7 +74,7 @@ export class PlaceTileUseCase {
     const cell = cellFromDoc(cellDoc);
 
     // 3. Validate game context
-    const gameDoc = await GamesQueryRepository.instance.find(tile.gameId);
+    const gameDoc = await this.gamesQuery.find(tile.gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -169,6 +189,6 @@ export class PlaceTileUseCase {
       cellId,
       moveScore
     );
-    await MovesMutationRepository.instance.save(move);
+    await this.movesMutation.save(move);
   }
 }

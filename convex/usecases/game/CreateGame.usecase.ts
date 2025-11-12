@@ -1,18 +1,18 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
-import { GamesMutationRepository } from "../../repository/mutations/games.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { PlayersMutationRepository } from "../../repository/mutations/players.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { CellsMutationRepository } from "../../repository/mutations/cells.repository";
-import { TilesMutationRepository } from "../../repository/mutations/tiles.repository";
+import type { GamesMutationRepositoryInterface } from "../../repository/mutations/games.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { PlayersMutationRepositoryInterface } from "../../repository/mutations/players.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { CellsMutationRepositoryInterface } from "../../repository/mutations/cells.repository";
+import type { TilesMutationRepositoryInterface } from "../../repository/mutations/tiles.repository";
 import {createGame, getBoardCells, getInitialGameTiles} from "../../domain/models/factory/game.factory.ts";
 import type {Cell} from "../../domain/models/Cell.ts";
 import { UUID } from "../../domain/models/factory/uuid.factory.ts";
 import {createTile} from "../../domain/models/factory/tile.factory.ts";
 import {playerFromDoc} from "../../domain/models/factory/player.factory.ts";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface CreateGameResult {
   gameToken: string;
@@ -24,10 +24,34 @@ export interface CreateGameResult {
  * Orchestrates the creation of a new game with all required setup
  */
 export class CreateGameUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get gamesMutation(): GamesMutationRepositoryInterface {
+    return this.ctx.container.get("GamesMutationRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get playersMutation(): PlayersMutationRepositoryInterface {
+    return this.ctx.container.get("PlayersMutationRepositoryInterface");
+  }
+
+  private get cellsMutation(): CellsMutationRepositoryInterface {
+    return this.ctx.container.get("CellsMutationRepositoryInterface");
+  }
+
+  private get tilesMutation(): TilesMutationRepositoryInterface {
+    return this.ctx.container.get("TilesMutationRepositoryInterface");
   }
 
   async execute(
@@ -50,8 +74,8 @@ export class CreateGameUseCase {
     await this.computeAllowedValues(gameId);
 
     // 6. Retrieve created entities for return
-    const game = await GamesQueryRepository.instance.find(gameId);
-    const player = await PlayersQueryRepository.instance.find(playerId);
+    const game = await this.gamesQuery.find(gameId);
+    const player = await this.playersQuery.find(playerId);
 
     return {
       gameToken: game?.token ?? "",
@@ -64,7 +88,7 @@ export class CreateGameUseCase {
    */
   private async initializeGame(): Promise<Id<"games">> {
     const game = createGame(UUID());
-    return await GamesMutationRepository.instance.save(game);
+    return await this.gamesMutation.save(game);
   }
 
   /**
@@ -82,11 +106,11 @@ export class CreateGameUseCase {
     );
 
     // Set the player as owner
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    const playerDoc = await this.playersQuery.find(playerId);
     if (playerDoc) {
       const player = playerFromDoc(playerDoc);
       player.setAsOwner();
-      await PlayersMutationRepository.instance.save(player);
+      await this.playersMutation.save(player);
     }
 
     return playerId;
@@ -101,7 +125,7 @@ export class CreateGameUseCase {
 
     await Promise.all(
       boardCells.map(async (cell: Cell) => {
-        await CellsMutationRepository.instance.save(cell);
+        await this.cellsMutation.save(cell);
       })
     );
   }
@@ -115,7 +139,7 @@ export class CreateGameUseCase {
 
     for (const tileData of initialTiles) {
       const tile = createTile(gameId, tileData.value, tileData.location);
-      await TilesMutationRepository.instance.save(tile);
+      await this.tilesMutation.save(tile);
     }
   }
 

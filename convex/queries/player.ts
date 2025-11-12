@@ -1,19 +1,22 @@
 import { playerSchema, type Player } from "../../src/context/model/player";
 import { v } from "convex/values";
-import {withRepositoryQuery} from "../middleware/repository.middleware.ts";
-import {PlayersQueryRepository} from "../repository/query/players.repository.ts";
-import {TilesQueryRepository} from "../repository/query/tiles.repository.ts";
+import type {TilesQueryRepositoryInterface} from "../repository/query/tiles.repository.ts";
+import {appQuery} from "../middleware/app.middleware.ts";
 
-export const get = withRepositoryQuery({
+export const get = appQuery({
+  visibility: "public", security: "public",
   args: { playerToken: v.string() },
-  handler: async (_, args): Promise<Player | null> => {
-    const player = await PlayersQueryRepository.instance.findByToken(args.playerToken);
+  handler: async (ctx, args): Promise<Player | null> => {
+    const playersQueryRepository = ctx.container.get("PlayersQueryRepositoryInterface");
+    const tilesQueryRepository: TilesQueryRepositoryInterface = ctx.container.get("TilesQueryRepositoryInterface");
+
+    const player = await playersQueryRepository.findByToken(args.playerToken);
 
     if (!player) {
       return null;
     }
 
-    const tiles = await TilesQueryRepository.instance.findByPlayer(player._id)
+    const tiles = await tilesQueryRepository.findByPlayer(player._id)
 
     return playerSchema.parse({
       ...player,

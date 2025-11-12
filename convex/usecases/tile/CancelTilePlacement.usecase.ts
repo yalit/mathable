@@ -1,13 +1,13 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { MovesQueryRepository } from "../../repository/query/moves.repository";
-import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { MovesQueryRepositoryInterface } from "../../repository/query/moves.repository";
+import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { moveFromDoc } from "../../domain/models/factory/move.factory";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface CancelTilePlacementResult {
   success: boolean;
@@ -20,10 +20,26 @@ export interface CancelTilePlacementResult {
  * Moves tile from cell back to player's hand
  */
 export class CancelTilePlacementUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get movesQuery(): MovesQueryRepositoryInterface {
+    return this.ctx.container.get("MovesQueryRepositoryInterface");
+  }
+
+  private get movesMutation(): MovesMutationRepositoryInterface {
+    return this.ctx.container.get("MovesMutationRepositoryInterface");
   }
 
   async execute(
@@ -31,7 +47,7 @@ export class CancelTilePlacementUseCase {
     userId: Id<"users">
   ): Promise<CancelTilePlacementResult> {
     // 1. Load player
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    const playerDoc = await this.playersQuery.find(playerId);
     if (!playerDoc) {
       return {
         success: false,
@@ -42,7 +58,7 @@ export class CancelTilePlacementUseCase {
     const player = playerFromDoc(playerDoc);
 
     // 2. Load game
-    const gameDoc = await GamesQueryRepository.instance.find(player.gameId);
+    const gameDoc = await this.gamesQuery.find(player.gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -69,7 +85,7 @@ export class CancelTilePlacementUseCase {
     }
 
     // 5. Get all moves for current turn
-    const movesForTurn = await MovesQueryRepository.instance.findAllForCurrentTurn(gameDoc);
+    const movesForTurn = await this.movesQuery.findAllForCurrentTurn(gameDoc);
 
     if (movesForTurn.length === 0) {
       return {
@@ -127,7 +143,7 @@ export class CancelTilePlacementUseCase {
     );
 
     // 13. Delete the move record
-    await MovesMutationRepository.instance.delete(lastMoveDoc._id);
+    await this.movesMutation.delete(lastMoveDoc._id);
 
     return {
       success: true,

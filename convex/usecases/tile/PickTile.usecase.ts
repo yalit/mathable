@@ -1,13 +1,13 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
+import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { createBagToPlayerMove } from "../../domain/models/factory/move.factory";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface PickTileResult {
   success: boolean;
@@ -20,10 +20,26 @@ export interface PickTileResult {
  * Orchestrates picking a random tile from the bag and adding it to player's hand
  */
 export class PickTileUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get tilesQuery(): TilesQueryRepositoryInterface {
+    return this.ctx.container.get("TilesQueryRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get movesMutation(): MovesMutationRepositoryInterface {
+    return this.ctx.container.get("MovesMutationRepositoryInterface");
   }
 
   async execute(
@@ -31,7 +47,7 @@ export class PickTileUseCase {
     userId: Id<"users">
   ): Promise<PickTileResult> {
     // 1. Load player
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    const playerDoc = await this.playersQuery.find(playerId);
     if (!playerDoc) {
       return {
         success: false,
@@ -42,7 +58,7 @@ export class PickTileUseCase {
     const player = playerFromDoc(playerDoc);
 
     // 2. Load game
-    const gameDoc = await GamesQueryRepository.instance.find(player.gameId);
+    const gameDoc = await this.gamesQuery.find(player.gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -76,7 +92,7 @@ export class PickTileUseCase {
     }
 
     // 5. Get available tiles from bag
-    const tilesInBag = await TilesQueryRepository.instance.findAllInBagByGame(
+    const tilesInBag = await this.tilesQuery.findAllInBagByGame(
       game.id
     );
 
@@ -104,7 +120,7 @@ export class PickTileUseCase {
       pickedTile._id as Id<"tiles">,
       playerId
     );
-    await MovesMutationRepository.instance.save(move);
+    await this.movesMutation.save(move);
 
     return {
       success: true,

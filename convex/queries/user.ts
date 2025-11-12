@@ -1,11 +1,10 @@
-import type { Doc } from "../_generated/dataModel";
-import { withSessionQuery } from "../middleware/sessions";
-import { SessionIdArg } from "convex-helpers/server/sessions";
-import {UsersQueryRepository} from "../repository/query/users.repository.ts";
+import {appQuery, SessionArgs} from "../middleware/app.middleware.ts";
+import type {User} from "../domain/models/User.ts";
 
-export const getForSession = withSessionQuery({
-  args: SessionIdArg,
-  handler: async (ctx): Promise<Doc<"users"> | null> => {
-    return await UsersQueryRepository.instance.findBySessionId(ctx.sessionId);
+export const getForSession = appQuery({
+  visibility: "public", security: "secure",
+  args: SessionArgs,
+  handler: async (ctx): Promise<User | null> => {
+    return ctx.user ?? null
   },
 });

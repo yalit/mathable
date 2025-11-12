@@ -11,7 +11,7 @@ export class PlayersMutationRepository implements PlayersMutationRepositoryInter
     static instance: PlayersMutationRepository;
     private db: GenericDatabaseWriter<DataModel>;
 
-    constructor(db: GenericDatabaseWriter<DataModel>) {
+    private constructor(db: GenericDatabaseWriter<DataModel>) {
         this.db = db;
     }
 

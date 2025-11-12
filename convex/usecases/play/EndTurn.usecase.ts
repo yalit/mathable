@@ -1,13 +1,15 @@
 import { api, internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { PlayersMutationRepository } from "../../repository/mutations/players.repository";
-import { GamesMutationRepository } from "../../repository/mutations/games.repository";
+import type { SessionId } from "convex-helpers/server/sessions";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
+import type { ServiceContainer } from "../../infrastructure/ServiceContainer";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { GamesMutationRepositoryInterface } from "../../repository/mutations/games.repository";
+import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
+import type { PlayersMutationRepositoryInterface } from "../../repository/mutations/players.repository";
 
 export interface EndTurnResult {
   success: boolean;
@@ -18,21 +20,30 @@ export interface EndTurnResult {
 /**
  * EndTurnUseCase
  * Orchestrates ending a player's turn and transitioning to the next player
+ *
+ * Uses dependency injection for all repository access via ServiceContainer
  */
 export class EndTurnUseCase {
   private ctx: MutationCtx;
+  private container: ServiceContainer;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: MutationCtx, container: ServiceContainer) {
     this.ctx = ctx;
+    this.container = container;
   }
 
   async execute(
     gameId: Id<"games">,
     userId: Id<"users">,
-    sessionId: string
+    sessionId: SessionId
   ): Promise<EndTurnResult> {
+    // Get repositories from container
+    const gamesQuery = this.container.get<GameQueryRepositoryInterface>("GamesQueryRepositoryInterface");
+    const playersQuery = this.container.get<PlayersQueryRepositoryInterface>("PlayersQueryRepositoryInterface");
+    const gamesMutation = this.container.get<GamesMutationRepositoryInterface>("GamesMutationRepositoryInterface");
+
     // 1. Load game
-    const gameDoc = await GamesQueryRepository.instance.find(gameId);
+    const gameDoc = await gamesQuery.find(gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -51,7 +62,7 @@ export class EndTurnUseCase {
     }
 
     // 3. Load current player
-    const currentPlayerDoc = await PlayersQueryRepository.instance.findCurrentPlayer(game.id);
+    const currentPlayerDoc = await playersQuery.findCurrentPlayer(game.id);
     if (!currentPlayerDoc) {
       return {
         success: false,
@@ -70,7 +81,7 @@ export class EndTurnUseCase {
     }
 
     // 5. Check if game is won
-    if (await GamesQueryRepository.instance.isGameWon(gameId, currentPlayerDoc._id)) {
+    if (await gamesQuery.isGameWon(gameId, currentPlayerDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameWithWinner, {
         gameId: gameId,
         playerId: currentPlayerDoc._id,
@@ -82,7 +93,7 @@ export class EndTurnUseCase {
     }
 
     // 6. Check if game is idle
-    if (await GamesQueryRepository.instance.isGameIdle(gameDoc._id)) {
+    if (await gamesQuery.isGameIdle(gameDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameAsIdle, {
         gameId: gameId,
       });
@@ -109,7 +120,7 @@ export class EndTurnUseCase {
 
     // 11. Increment turn counter
     game.incrementTurn();
-    await GamesMutationRepository.instance.save(game);
+    await gamesMutation.save(game);
 
     return {
       success: true,
@@ -125,19 +136,23 @@ export class EndTurnUseCase {
     playerId: Id<"players">,
     turnScore: number
   ): Promise<void> {
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    const playersQuery = this.container.get<PlayersQueryRepositoryInterface>("PlayersQueryRepositoryInterface");
+    const tilesQuery = this.container.get<TilesQueryRepositoryInterface>("TilesQueryRepositoryInterface");
+    const playersMutation = this.container.get<PlayersMutationRepositoryInterface>("PlayersMutationRepositoryInterface");
+
+    const playerDoc = await playersQuery.find(playerId);
     if (!playerDoc) {
       return;
     }
 
     // Check if player has empty hand (bonus points)
-    const playerTiles = await TilesQueryRepository.instance.findByPlayer(playerId);
+    const playerTiles = await tilesQuery.findByPlayer(playerId);
     const emptyHandBonus = playerTiles.length === 0 ? 50 : 0;
 
     const player = playerFromDoc(playerDoc);
     // Don't remove current flag here - let switchToNextPlayer handle it
     player.addScore(turnScore + emptyHandBonus);
-    await PlayersMutationRepository.instance.save(player);
+    await playersMutation.save(player);
   }
 
   /**
@@ -145,17 +160,20 @@ export class EndTurnUseCase {
    * Removes current flag from old player and sets it on new player
    */
   private async switchToNextPlayer(gameId: Id<"games">): Promise<void> {
+    const playersQuery = this.container.get<PlayersQueryRepositoryInterface>("PlayersQueryRepositoryInterface");
+    const playersMutation = this.container.get<PlayersMutationRepositoryInterface>("PlayersMutationRepositoryInterface");
+
     // 1. Find current player first
-    const currentPlayerDoc = await PlayersQueryRepository.instance.findCurrentPlayer(gameId);
+    const currentPlayerDoc = await playersQuery.findCurrentPlayer(gameId);
     if (!currentPlayerDoc) {
       throw new Error("No current player found when trying to switch turns");
     }
 
     // 2. Find next player
-    const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(gameId);
+    const nextPlayerDoc = await playersQuery.findNextPlayer(gameId);
     if (!nextPlayerDoc) {
       // Provide more context for debugging
-      const allPlayers = await PlayersQueryRepository.instance.findByGame(gameId);
+      const allPlayers = await playersQuery.findByGame(gameId);
 
       const debugInfo = `No next player found. Game has ${allPlayers.length} players. ` +
         `Current player order: ${currentPlayerDoc.order}. ` +
@@ -167,12 +185,12 @@ export class EndTurnUseCase {
     // 3. Remove current flag from old player
     const currentPlayer = playerFromDoc(currentPlayerDoc);
     currentPlayer.removeAsCurrent();
-    await PlayersMutationRepository.instance.save(currentPlayer);
+    await playersMutation.save(currentPlayer);
 
     // 4. Set current flag on next player
     const nextPlayer = playerFromDoc(nextPlayerDoc);
     nextPlayer.setAsCurrent();
-    await PlayersMutationRepository.instance.save(nextPlayer);
+    await playersMutation.save(nextPlayer);
   }
 
   /**
@@ -182,11 +200,13 @@ export class EndTurnUseCase {
     gameId: Id<"games">,
     playerId: Id<"players">
   ): Promise<void> {
-    const currentTiles = await TilesQueryRepository.instance.findByPlayer(playerId);
+    const tilesQuery = this.container.get<TilesQueryRepositoryInterface>("TilesQueryRepositoryInterface");
+
+    const currentTiles = await tilesQuery.findByPlayer(playerId);
     const neededTiles = 7 - currentTiles.length;
 
     for (let i = 0; i < neededTiles; i++) {
-      const tilesInBag = await TilesQueryRepository.instance.findAllInBagByGame(gameId);
+      const tilesInBag = await tilesQuery.findAllInBagByGame(gameId);
 
       if (tilesInBag.length === 0) {
         break; // No more tiles in bag

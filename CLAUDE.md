@@ -55,7 +55,7 @@ Three custom middleware functions wrap Convex functions:
 - `convex/queries/` - Public query endpoints (e.g., `queries.game.get`)
 - `convex/mutations/public/` - Public mutation endpoints callable from frontend
 - `convex/mutations/internal/` - Internal mutations only callable from backend code via `ctx.runMutation(internal.*)`
-- Session management via `convex-helpers/server/sessions` in `convex/middleware/sessions.ts`
+- Session management via `convex-helpers/server/sessions` in `convex/middleware/app.middleware.ts`
 
 #### Data Model
 
