@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-import { withRepositoryInternalMutation } from "../../middleware/repository.middleware.ts";
 import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts";
 import { GamesQueryRepository } from "../../repository/query/games.repository.ts";
 import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
@@ -7,8 +6,10 @@ import { CellsMutationRepository } from "../../repository/mutations/cells.reposi
 import { TilesMutationRepository } from "../../repository/mutations/tiles.repository.ts";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory.ts";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory.ts";
+import {appMutation} from "../../middleware/app.middleware.ts";
 
-export const moveToPlayer = withRepositoryInternalMutation({
+export const moveToPlayer = appMutation({
+  visibility: "internal", security: "internal",
   args: {
     tileId: v.id("tiles"),
     playerId: v.id("players"),
@@ -39,7 +40,8 @@ export const moveToPlayer = withRepositoryInternalMutation({
   },
 });
 
-export const moveToCell = withRepositoryInternalMutation({
+export const moveToCell = appMutation({
+  visibility: "internal", security: "internal",
   args: { tileId: v.id("tiles"), cellId: v.id("cells"), playerId: v.id("players") },
   handler: async (_, { tileId, cellId, playerId }) => {
     const tileDoc = await TilesQueryRepository.instance.find(tileId);
@@ -73,7 +75,8 @@ export const moveToCell = withRepositoryInternalMutation({
   },
 });
 
-export const moveToBag = withRepositoryInternalMutation({
+export const moveToBag = appMutation({
+  visibility: "internal", security: "internal",
   args: { tileId: v.id("tiles") },
   handler: async (_, { tileId }) => {
     const tileDoc = await TilesQueryRepository.instance.find(tileId);

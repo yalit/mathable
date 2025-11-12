@@ -1,5 +1,4 @@
 import { internal } from "../../_generated/api";
-import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
 import { GamesMutationRepository } from "../../repository/mutations/games.repository";
@@ -13,6 +12,7 @@ import type {Cell} from "../../domain/models/Cell.ts";
 import { UUID } from "../../domain/models/factory/uuid.factory.ts";
 import {createTile} from "../../domain/models/factory/tile.factory.ts";
 import {playerFromDoc} from "../../domain/models/factory/player.factory.ts";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface CreateGameResult {
   gameToken: string;
@@ -24,9 +24,9 @@ export interface CreateGameResult {
  * Orchestrates the creation of a new game with all required setup
  */
 export class CreateGameUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
   }
 

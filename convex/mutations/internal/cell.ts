@@ -1,14 +1,15 @@
-import { internal } from "../../_generated/api";
-import type { Doc } from "../../_generated/dataModel";
-import { getNumericValue } from "../../helpers/cell";
-import { v } from "convex/values";
-import { withRepositoryInternalMutation } from "../../middleware/repository.middleware.ts";
-import { CellsQueryRepository } from "../../repository/query/cells.repository.ts";
-import { CellsMutationRepository } from "../../repository/mutations/cells.repository.ts";
-import { cellFromDoc } from "../../domain/models/factory/cell.factory.ts";
+import {internal} from "../../_generated/api";
+import type {Doc} from "../../_generated/dataModel";
+import {getNumericValue} from "../../helpers/cell";
+import {v} from "convex/values";
+import {CellsQueryRepository} from "../../repository/query/cells.repository.ts";
+import {CellsMutationRepository} from "../../repository/mutations/cells.repository.ts";
+import {cellFromDoc} from "../../domain/models/factory/cell.factory.ts";
+import {appMutation} from "../../middleware/app.middleware.ts";
 
-export const computeAllAllowedValues = withRepositoryInternalMutation({
-    args: { gameId: v.id("games") },
+export const computeAllAllowedValues = appMutation({
+    visibility: "internal", security: "internal",
+    args: {gameId: v.id("games")},
     handler: async (ctx, args) => {
         const cells = await CellsQueryRepository.instance.findAllForGame(
             args.gameId,
@@ -23,8 +24,9 @@ export const computeAllAllowedValues = withRepositoryInternalMutation({
 });
 
 export const computeAllowedValuesFromUpdatedCell =
-    withRepositoryInternalMutation({
-        args: { cellId: v.id("cells") },
+    appMutation({
+        visibility: "internal", security: "internal",
+        args: {cellId: v.id("cells")},
         handler: async (ctx, args) => {
             const cell: null | Doc<"cells"> =
                 await CellsQueryRepository.instance.find(args.cellId);
@@ -46,8 +48,9 @@ export const computeAllowedValuesFromUpdatedCell =
         },
     });
 
-export const computeAllowedValuesForCell = withRepositoryInternalMutation({
-    args: { cellId: v.id("cells") },
+export const computeAllowedValuesForCell = appMutation({
+    visibility: "internal", security: "internal",
+    args: {cellId: v.id("cells")},
     handler: async (_, args) => {
         const cell: null | Doc<"cells"> = await CellsQueryRepository.instance.find(
             args.cellId,

@@ -1,11 +1,12 @@
-import {withRepositoryInternalMutation} from "../../middleware/repository.middleware.ts";
 import {v} from "convex/values";
 import {GamesMutationRepository} from "../../repository/mutations/games.repository.ts";
 import {GamesQueryRepository} from "../../repository/query/games.repository.ts";
 import {createGameFromDoc} from "../../domain/models/factory/game.factory.ts";
+import {appMutation} from "../../middleware/app.middleware.ts";
 
-export const endGameWithWinner = withRepositoryInternalMutation({
-    args: { gameId: v.id("games"), playerId: v.id("players") },
+export const endGameWithWinner = appMutation({
+    visibility: "internal", security: "internal",
+    args: {gameId: v.id("games"), playerId: v.id("players")},
     handler: async (_, args) => {
         const gameDoc = await GamesQueryRepository.instance.find(args.gameId);
         if (!gameDoc) return;
@@ -16,8 +17,9 @@ export const endGameWithWinner = withRepositoryInternalMutation({
     },
 });
 
-export const endGameAsIdle = withRepositoryInternalMutation({
-    args: { gameId: v.id("games") },
+export const endGameAsIdle = appMutation({
+    visibility: "internal", security: "internal",
+    args: {gameId: v.id("games")},
     handler: async (_, args) => {
         const gameDoc = await GamesQueryRepository.instance.find(args.gameId);
         if (!gameDoc) return;

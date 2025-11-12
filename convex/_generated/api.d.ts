@@ -20,7 +20,6 @@ import type * as infrastructure_ContainerFactory from "../infrastructure/Contain
 import type * as infrastructure_ServiceConfiguration from "../infrastructure/ServiceConfiguration.js";
 import type * as infrastructure_ServiceContainer from "../infrastructure/ServiceContainer.js";
 import type * as infrastructure_ServiceRegistry from "../infrastructure/ServiceRegistry.js";
-import type * as middleware_sessions from "../middleware/sessions.js";
 import type * as mutations_internal_cell from "../mutations/internal/cell.js";
 import type * as mutations_internal_game from "../mutations/internal/game.js";
 import type * as mutations_internal_move from "../mutations/internal/move.js";
@@ -54,7 +53,6 @@ declare const fullApi: ApiFromModules<{
   "infrastructure/ServiceConfiguration": typeof infrastructure_ServiceConfiguration;
   "infrastructure/ServiceContainer": typeof infrastructure_ServiceContainer;
   "infrastructure/ServiceRegistry": typeof infrastructure_ServiceRegistry;
-  "middleware/sessions": typeof middleware_sessions;
   "mutations/internal/cell": typeof mutations_internal_cell;
   "mutations/internal/game": typeof mutations_internal_game;
   "mutations/internal/move": typeof mutations_internal_move;

@@ -9,6 +9,7 @@ import { PlayersMutationRepository } from "../../repository/mutations/players.re
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { Player } from "../../domain/models/Player";
+import type {User} from "../../domain/models/User.ts";
 
 export interface StartGameResult {
   success: boolean;
@@ -28,7 +29,7 @@ export class StartGameUseCase {
 
   async execute(
     gameId: Id<"games">,
-    userId: Id<"users">
+    user: User,
   ): Promise<StartGameResult> {
     // 1. Validate game exists
     const gameDoc = await GamesQueryRepository.instance.find(gameId);
@@ -55,7 +56,7 @@ export class StartGameUseCase {
       };
     }
 
-    if (!owner.isSameUser(userId)) {
+    if (user.id && !owner.isSameUser(user.id)) {
       return {
         success: false,
         error: "Only the game owner can start the game",

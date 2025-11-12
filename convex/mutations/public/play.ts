@@ -1,4 +1,3 @@
-import { withSessionMutation } from "../../middleware/sessions";
 import { v } from "convex/values";
 import { MoveType } from "../internal/move";
 import { internal } from "../../_generated/api";
@@ -9,6 +8,7 @@ import { MovesMutationRepository } from "../../repository/mutations/moves.reposi
 import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
 import { createContainer } from "../../infrastructure/ContainerFactory";
 
+/*
 export const resetTurn = withSessionMutation({
     args: { gameId: v.id("games") },
     handler: async (ctx, { gameId }) => {
@@ -79,3 +79,5 @@ export const endTurn = withSessionMutation({
         }
     },
 });
+
+ */

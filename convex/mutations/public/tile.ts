@@ -1,4 +1,3 @@
-import { withSessionMutation } from "../../middleware/sessions";
 import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
 import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
@@ -6,6 +5,7 @@ import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
 import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
 
+/*
 export const playToCell = withSessionMutation({
     args: {
         tileId: v.id("tiles"),
@@ -86,3 +86,4 @@ export const cancelPlacement = withSessionMutation({
         }
     },
 });
+ */

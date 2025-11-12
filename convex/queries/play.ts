@@ -1,10 +1,11 @@
-import { withSessionQuery } from "../middleware/sessions";
+import {appQuery, SessionArgs} from "../middleware/app.middleware.ts";
 import { v } from "convex/values";
 import { GamesQueryRepository } from "../repository/query/games.repository.ts";
 import { MovesQueryRepository } from "../repository/query/moves.repository.ts";
 
-export const getCurrentTurnScore = withSessionQuery({
-    args: { gameId: v.id("games") },
+export const getCurrentTurnScore = appQuery({
+    visibility: "public", security: "secure",
+    args: {...SessionArgs, gameId: v.id("games") },
     handler: async (_, { gameId }): Promise<number> => {
         const game = await GamesQueryRepository.instance.find(gameId)
         if (!game) {
