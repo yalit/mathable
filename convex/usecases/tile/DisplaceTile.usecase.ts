@@ -1,12 +1,12 @@
 import { internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { CellsQueryRepository } from "../../repository/query/cells.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { MovesQueryRepository } from "../../repository/query/moves.repository";
-import { MovesMutationRepository } from "../../repository/mutations/moves.repository";
+import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { CellsQueryRepositoryInterface } from "../../repository/query/cells.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { MovesQueryRepositoryInterface } from "../../repository/query/moves.repository";
+import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
 import { tileFromDoc } from "../../domain/models/factory/tile.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { cellFromDoc } from "../../domain/models/factory/cell.factory";
@@ -14,6 +14,7 @@ import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { moveFromDoc, createPlayerToCellMove } from "../../domain/models/factory/move.factory";
 import { countItems } from "../../helpers/array";
 import {Cell} from "../../domain/models/Cell.ts";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface DisplaceTileResult {
   success: boolean;
@@ -26,10 +27,34 @@ export interface DisplaceTileResult {
  * This is only allowed for tiles placed in the current turn (Last-Move-Only approach)
  */
 export class DisplaceTileUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get tilesQuery(): TilesQueryRepositoryInterface {
+    return this.ctx.container.get("TilesQueryRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get cellsQuery(): CellsQueryRepositoryInterface {
+    return this.ctx.container.get("CellsQueryRepositoryInterface");
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get movesQuery(): MovesQueryRepositoryInterface {
+    return this.ctx.container.get("MovesQueryRepositoryInterface");
+  }
+
+  private get movesMutation(): MovesMutationRepositoryInterface {
+    return this.ctx.container.get("MovesMutationRepositoryInterface");
   }
 
   async execute(
@@ -40,10 +65,10 @@ export class DisplaceTileUseCase {
     userId: Id<"users">
   ): Promise<DisplaceTileResult> {
     // 1. Load entities
-    const tileDoc = await TilesQueryRepository.instance.find(tileId);
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
-    const fromCellDoc = await CellsQueryRepository.instance.find(fromCellId);
-    const toCellDoc = await CellsQueryRepository.instance.find(toCellId);
+    const tileDoc = await this.tilesQuery.find(tileId);
+    const playerDoc = await this.playersQuery.find(playerId);
+    const fromCellDoc = await this.cellsQuery.find(fromCellId);
+    const toCellDoc = await this.cellsQuery.find(toCellId);
 
     if (!tileDoc || !fromCellDoc || !toCellDoc || !playerDoc) {
       return {
@@ -59,7 +84,7 @@ export class DisplaceTileUseCase {
     const toCell = cellFromDoc(toCellDoc);
 
     // 3. Validate game context
-    const gameDoc = await GamesQueryRepository.instance.find(tile.gameId);
+    const gameDoc = await this.gamesQuery.find(tile.gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -127,7 +152,7 @@ export class DisplaceTileUseCase {
 
     // 10. Validate tile can be displaced (Last-Move-Only approach)
     // The tile must have been placed in the current turn
-    const movesForTurn = await MovesQueryRepository.instance.findAllForCurrentTurn(gameDoc);
+    const movesForTurn = await this.movesQuery.findAllForCurrentTurn(gameDoc);
     const tileWasPlacedThisTurn = movesForTurn.some(moveDoc => {
       const move = moveFromDoc(moveDoc);
       return move.tileId === tileId && move.isPlayerToCell();
@@ -168,10 +193,10 @@ export class DisplaceTileUseCase {
         toCellId,
         moveScore
       );
-      await MovesMutationRepository.instance.save(updatedMove);
+      await this.movesMutation.save(updatedMove);
 
       // Delete old move
-      await MovesMutationRepository.instance.delete(moveToUpdate._id);
+      await this.movesMutation.delete(moveToUpdate._id);
     }
 
     // 14. Recompute allowed values for both affected cells
