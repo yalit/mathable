@@ -1,15 +1,16 @@
 import { internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { GamesMutationRepository } from "../../repository/mutations/games.repository";
-import { PlayersMutationRepository } from "../../repository/mutations/players.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
+import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
+import type { GamesMutationRepositoryInterface } from "../../repository/mutations/games.repository";
+import type { PlayersMutationRepositoryInterface } from "../../repository/mutations/players.repository";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { Player } from "../../domain/models/Player";
 import type {User} from "../../domain/models/User.ts";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface StartGameResult {
   success: boolean;
@@ -21,10 +22,30 @@ export interface StartGameResult {
  * Orchestrates starting a game that's in waiting status
  */
 export class StartGameUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get gamesMutation(): GamesMutationRepositoryInterface {
+    return this.ctx.container.get("GamesMutationRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
+  }
+
+  private get playersMutation(): PlayersMutationRepositoryInterface {
+    return this.ctx.container.get("PlayersMutationRepositoryInterface");
+  }
+
+  private get tilesQuery(): TilesQueryRepositoryInterface {
+    return this.ctx.container.get("TilesQueryRepositoryInterface");
   }
 
   async execute(
@@ -32,7 +53,7 @@ export class StartGameUseCase {
     user: User,
   ): Promise<StartGameResult> {
     // 1. Validate game exists
-    const gameDoc = await GamesQueryRepository.instance.find(gameId);
+    const gameDoc = await this.gamesQuery.find(gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -44,7 +65,7 @@ export class StartGameUseCase {
     const game = createGameFromDoc(gameDoc);
 
     // 3. Load players
-    const playerDocs = await PlayersQueryRepository.instance.findByGame(gameId);
+    const playerDocs = await this.playersQuery.findByGame(gameId);
     const players = playerDocs.map((doc) => playerFromDoc(doc));
 
     // 4. Validate user is the game owner
@@ -83,11 +104,11 @@ export class StartGameUseCase {
     game.start(players);
 
     // 8. Persist game state changes
-    await GamesMutationRepository.instance.save(game);
+    await this.gamesMutation.save(game);
 
     // 9. Persist player state changes (order and current status)
     for (const player of players) {
-      await PlayersMutationRepository.instance.save(player);
+      await this.playersMutation.save(player);
     }
 
     // 10. Distribute initial tiles to all players
@@ -106,7 +127,7 @@ export class StartGameUseCase {
     players: Player[]
   ): Promise<void> {
     for (const player of players) {
-      const tiles = await TilesQueryRepository.instance.findAllInBagByGame(
+      const tiles = await this.tilesQuery.findAllInBagByGame(
         gameId
       );
 

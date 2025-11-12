@@ -2,9 +2,10 @@ import { internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
+import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
+import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
 
 export interface JoinGameResult {
   success: boolean;
@@ -17,10 +18,18 @@ export interface JoinGameResult {
  * Orchestrates a player joining an existing game
  */
 export class JoinGameUseCase {
-  private ctx: MutationCtx;
+  private ctx: AppMutationCtx;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
+  }
+
+  private get gamesQuery(): GameQueryRepositoryInterface {
+    return this.ctx.container.get("GameQueryRepositoryInterface");
+  }
+
+  private get playersQuery(): PlayersQueryRepositoryInterface {
+    return this.ctx.container.get("PlayersQueryRepositoryInterface");
   }
 
   async execute(
@@ -29,7 +38,7 @@ export class JoinGameUseCase {
     sessionId: SessionId
   ): Promise<JoinGameResult> {
     // 1. Validate game exists
-    const gameDoc = await GamesQueryRepository.instance.find(gameId);
+    const gameDoc = await this.gamesQuery.find(gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -51,7 +60,7 @@ export class JoinGameUseCase {
     }
 
     // 4. Validate there's room for more players
-    const players = await PlayersQueryRepository.instance.findByGame(gameId);
+    const players = await this.playersQuery.findByGame(gameId);
     if (players.length >= 4) {
       return {
         success: false,
@@ -64,7 +73,7 @@ export class JoinGameUseCase {
     const playerId = await this.createPlayer(gameId, playerName, sessionId);
 
     // 6. Retrieve created player for return
-    const player = await PlayersQueryRepository.instance.find(playerId);
+    const player = await this.playersQuery.find(playerId);
 
     return {
       success: true,
