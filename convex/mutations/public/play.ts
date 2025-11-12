@@ -2,8 +2,6 @@ import { withSessionMutation } from "../../middleware/sessions";
 import { v } from "convex/values";
 import { MoveType } from "../internal/move";
 import { internal } from "../../_generated/api";
-import type { Id } from "../../_generated/dataModel";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository.ts";
 import { PlayersQueryRepository } from "../../repository/query/players.repository.ts";
 import { MovesQueryRepository } from "../../repository/query/moves.repository.ts";
 import { GamesQueryRepository } from "../../repository/query/games.repository.ts";

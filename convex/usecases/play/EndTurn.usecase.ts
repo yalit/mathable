@@ -119,6 +119,7 @@ export class EndTurnUseCase {
 
   /**
    * Update current player's score with turn score and bonus
+   * Note: Does NOT remove current flag - that's handled in switchToNextPlayer
    */
   private async updateCurrentPlayerScore(
     playerId: Id<"players">,
@@ -134,29 +135,41 @@ export class EndTurnUseCase {
     const emptyHandBonus = playerTiles.length === 0 ? 50 : 0;
 
     const player = playerFromDoc(playerDoc);
-    player.removeAsCurrent();
+    // Don't remove current flag here - let switchToNextPlayer handle it
     player.addScore(turnScore + emptyHandBonus);
     await PlayersMutationRepository.instance.save(player);
   }
 
   /**
    * Switch turn to next player
+   * Removes current flag from old player and sets it on new player
    */
   private async switchToNextPlayer(gameId: Id<"games">): Promise<void> {
-    const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(gameId);
+    // 1. Find current player first
+    const currentPlayerDoc = await PlayersQueryRepository.instance.findCurrentPlayer(gameId);
+    if (!currentPlayerDoc) {
+      throw new Error("No current player found when trying to switch turns");
+    }
 
+    // 2. Find next player
+    const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(gameId);
     if (!nextPlayerDoc) {
       // Provide more context for debugging
       const allPlayers = await PlayersQueryRepository.instance.findByGame(gameId);
-      const currentPlayer = await PlayersQueryRepository.instance.findCurrentPlayer(gameId);
 
       const debugInfo = `No next player found. Game has ${allPlayers.length} players. ` +
-        `Current player order: ${currentPlayer?.order || 'none'}. ` +
+        `Current player order: ${currentPlayerDoc.order}. ` +
         `Player orders: [${allPlayers.map(p => p.order).join(', ')}]`;
 
       throw new Error(debugInfo);
     }
 
+    // 3. Remove current flag from old player
+    const currentPlayer = playerFromDoc(currentPlayerDoc);
+    currentPlayer.removeAsCurrent();
+    await PlayersMutationRepository.instance.save(currentPlayer);
+
+    // 4. Set current flag on next player
     const nextPlayer = playerFromDoc(nextPlayerDoc);
     nextPlayer.setAsCurrent();
     await PlayersMutationRepository.instance.save(nextPlayer);
