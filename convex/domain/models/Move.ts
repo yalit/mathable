@@ -168,6 +168,7 @@ export class PlayerToCellMove extends Move {
 
   toDoc(): Partial<Doc<"moves">> {
     return {
+      gameId: this.gameId,
       type: this.type,
       turn: this.turn,
       tileId: this.tileId,
@@ -233,6 +234,7 @@ export class BagToPlayerMove extends Move {
 
   toDoc(): Partial<Doc<"moves">> {
     return {
+      gameId: this.gameId,
       type: this.type,
       turn: this.turn,
       tileId: this.tileId,
@@ -296,6 +298,7 @@ export class CellToPlayerMove extends Move {
 
   toDoc(): Partial<Doc<"moves">> {
     return {
+      gameId: this.gameId,
       type: this.type,
       turn: this.turn,
       tileId: this.tileId,
@@ -361,6 +364,7 @@ export class PlayerToBagMove extends Move {
 
   toDoc(): Partial<Doc<"moves">> {
     return {
+      gameId: this.gameId,
       type: this.type,
       turn: this.turn,
       tileId: this.tileId,
