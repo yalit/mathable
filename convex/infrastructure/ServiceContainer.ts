@@ -42,6 +42,8 @@ export class ServiceContainer {
    * Get a service instance by its identifier
    * Services are lazily instantiated and cached per request
    *
+   * Dependencies are resolved recursively from the container before instantiation.
+   *
    * @param identifier - Service identifier (use SERVICE_IDENTIFIERS constants)
    * @returns The service instance
    *
@@ -70,13 +72,48 @@ export class ServiceContainer {
       );
     }
 
-    // Create instance using factory
-    const instance = registration.factory(this.db);
+    // Resolve dependencies
+    const dependencies = this.resolveDependencies(
+      identifier,
+      registration.definition.arguments || []
+    );
+
+    // Create instance using constructor with db and resolved dependencies
+    const ServiceClass = registration.definition.class;
+    const instance = new ServiceClass(this.db, ...dependencies);
 
     // Cache for this request
     this.instances.set(identifier, instance);
 
     return instance;
+  }
+
+  /**
+   * Resolve service dependencies recursively
+   * @param requestingService - The service that is requesting dependencies (for circular detection)
+   * @param dependencyIdentifiers - Array of service identifiers to resolve
+   * @returns Array of resolved service instances
+   */
+  private resolveDependencies(
+    requestingService: string,
+    dependencyIdentifiers: string[]
+  ): any[] {
+    const dependencies: any[] = [];
+
+    for (const depIdentifier of dependencyIdentifiers) {
+      // Check for circular dependencies
+      if (depIdentifier === requestingService) {
+        throw new Error(
+          `Circular dependency detected: Service '${requestingService}' depends on itself`
+        );
+      }
+
+      // Resolve the dependency (this will recursively resolve its dependencies)
+      const dependency = this.get(depIdentifier as ServiceKey);
+      dependencies.push(dependency);
+    }
+
+    return dependencies;
   }
 
   /**

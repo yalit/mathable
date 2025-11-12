@@ -1,8 +1,9 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ServiceContainer } from "./ServiceContainer";
-import { loadServiceConfiguration, type ServiceConfigurationData } from "./ServiceConfiguration";
+import { loadServiceConfiguration } from "./ServiceConfiguration";
 import type { ServiceRegistry } from "./ServiceRegistry";
-import servicesConfig from "../services.config.json";
+import type { ServicesConfig } from "./ServiceConfig.types";
+import { servicesConfig } from "../services.config";
 
 /**
  * Global service registry cache
@@ -11,12 +12,12 @@ import servicesConfig from "../services.config.json";
 let cachedRegistry: ServiceRegistry | null = null;
 
 /**
- * Load the service registry from convex/services.config.json
+ * Load the service registry from convex/services.config.ts
  * Configuration is loaded once and cached for the lifetime of the process
  */
 function loadDefaultRegistry(): ServiceRegistry {
   if (!cachedRegistry) {
-    cachedRegistry = loadServiceConfiguration(servicesConfig as ServiceConfigurationData);
+    cachedRegistry = loadServiceConfiguration(servicesConfig);
   }
   return cachedRegistry;
 }
@@ -27,7 +28,7 @@ function loadDefaultRegistry(): ServiceRegistry {
  * This is the primary entry point for accessing repositories and services.
  * Creates a request-scoped container with all dependencies properly initialized.
  *
- * By default, loads configuration from convex/services.config.json.
+ * By default, loads configuration from convex/services.config.ts.
  * For testing, you can provide a custom configuration object.
  *
  * @param ctx - Convex MutationCtx or QueryCtx
@@ -35,26 +36,29 @@ function loadDefaultRegistry(): ServiceRegistry {
  * @returns ServiceContainer with all services initialized according to configuration
  *
  * @example
- * // In a mutation (production) - loads from convex/services.config.json
+ * // In a mutation (production) - loads from convex/services.config.ts
  * const container = createContainer(ctx);
  * const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
  * const game = await gamesRepo.find(gameId);
  *
  * @example
  * // In tests with custom configuration
- * const testConfig = {
+ * import { MockGamesQueryRepository } from "./mocks/MockGamesQueryRepository";
+ *
+ * const testConfig: ServicesConfig = {
  *   query: {
- *     [SERVICE_IDENTIFIERS.GamesQuery]: "MockGamesQueryRepository"
+ *     [SERVICE_IDENTIFIERS.GamesQuery]: {
+ *       class: MockGamesQueryRepository,
+ *       arguments: []
+ *     }
  *   },
- *   mutation: {
- *     [SERVICE_IDENTIFIERS.GamesMutation]: "MockGamesMutationRepository"
- *   }
+ *   mutation: {}
  * };
  * const container = createContainer(ctx, testConfig);
  */
 export function createContainer(
   ctx: MutationCtx | QueryCtx,
-  config?: ServiceConfigurationData
+  config?: ServicesConfig
 ): ServiceContainer {
   const registry = config
     ? loadServiceConfiguration(config)

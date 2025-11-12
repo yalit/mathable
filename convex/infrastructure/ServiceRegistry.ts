@@ -1,5 +1,4 @@
-import type { GenericDatabaseReader, GenericDatabaseWriter } from "convex/server";
-import type { DataModel } from "../_generated/dataModel";
+import type { ServiceDefinition } from "./ServiceConfig.types";
 import type { PlayersQueryRepositoryInterface } from "../repository/query/players.repository";
 import type { GameQueryRepositoryInterface } from "../repository/query/games.repository";
 import type { TilesQueryRepositoryInterface } from "../repository/query/tiles.repository";
@@ -14,41 +13,34 @@ import type { CellsMutationRepositoryInterface } from "../repository/mutations/c
 import type { UsersMutationRepositoryInterface } from "../repository/mutations/users.repository";
 
 /**
- * Service identifier type - uses the interface type as a key
- * This allows type-safe service resolution
- */
-export type ServiceIdentifier<T> = abstract new (...args: any[]) => T;
-
-/**
- * Factory function type for creating service instances
- */
-export type ServiceFactory<T> = (db: GenericDatabaseReader<DataModel> | GenericDatabaseWriter<DataModel>) => T;
-
-/**
  * Service registration entry
+ * Contains the service definition and metadata
  */
 export interface ServiceRegistration<T = any> {
   identifier: string;
-  factory: ServiceFactory<T>;
+  definition: ServiceDefinition<T>;
   scope: "query" | "mutation";
 }
 
 /**
  * Service registry configuration
- * Maps service identifiers (interface names) to their factory functions
+ * Maps service identifiers (interface names) to their service definitions
  */
 export class ServiceRegistry {
   private services = new Map<string, ServiceRegistration>();
 
   /**
-   * Register a service with its factory
+   * Register a service with its definition
+   * @param identifier - Service interface name
+   * @param definition - Service definition with class and dependencies
+   * @param scope - Service scope (query or mutation)
    */
   register<T>(
     identifier: string,
-    factory: ServiceFactory<T>,
+    definition: ServiceDefinition<T>,
     scope: "query" | "mutation" = "query"
   ): void {
-    this.services.set(identifier, { identifier, factory, scope });
+    this.services.set(identifier, { identifier, definition, scope });
   }
 
   /**

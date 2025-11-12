@@ -6,44 +6,61 @@ This directory contains the dependency injection (DI) container implementation f
 
 The DI container provides:
 - **Generic `get<T>()` method** for type-safe service resolution
-- **Configuration-based** service loading from `convex/services.config.json`
+- **TypeScript configuration** with direct class references
+- **Constructor dependency injection** with automatic resolution
 - **Interface-based** dependency injection
 - **Request-scoped** lifecycle (not singleton)
 - **Easy testing** with mock implementations
 
 ## Core Files
 
-- `ServiceContainer.ts` - Main DI container with generic `get<T>()` method
-- `ServiceRegistry.ts` - Registry for mapping interfaces to implementations
-- `ServiceConfiguration.ts` - Configuration loader
+- `ServiceContainer.ts` - Main DI container with generic `get<T>()` and dependency resolution
+- `ServiceRegistry.ts` - Registry for mapping interfaces to service definitions
+- `ServiceConfiguration.ts` - Configuration loader for TypeScript configs
+- `ServiceConfig.types.ts` - TypeScript types for service configuration
 - `ContainerFactory.ts` - Factory functions for creating containers
-- `../services.config.json` - **Production configuration** (loaded by default)
-- `config.example.json` - Configuration format reference
-- `config.test.example.json` - Test configuration example with mocks
+- `../services.config.ts` - **Production configuration** (loaded by default)
+- `services.config.example.ts` - Configuration format reference
+- `services.config.test.example.ts` - Test configuration example with mocks
 
 ## Configuration
 
 ### Production Configuration
 
-The production configuration is located at `convex/services.config.json` and is automatically loaded when you call `createContainer(ctx)` without arguments.
+The production configuration is located at `convex/services.config.ts` and is automatically loaded when you call `createContainer(ctx)` without arguments.
 
-**convex/services.config.json:**
-```json
-{
-  "query": {
-    "PlayersQueryRepositoryInterface": "PlayersQueryRepository",
-    "GamesQueryRepositoryInterface": "GamesQueryRepository",
-    ...
+**convex/services.config.ts:**
+```typescript
+import type { ServicesConfig } from "./infrastructure/ServiceConfig.types";
+import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
+import { PlayersQueryRepository } from "./repository/query/players.repository";
+import { GamesQueryRepository } from "./repository/query/games.repository";
+
+export const servicesConfig: ServicesConfig = {
+  query: {
+    [SERVICE_IDENTIFIERS.PlayersQuery]: {
+      class: PlayersQueryRepository,
+      arguments: [], // No service dependencies, only db
+    },
+    [SERVICE_IDENTIFIERS.GamesQuery]: {
+      class: GamesQueryRepository,
+      arguments: [], // Can specify dependencies: [SERVICE_IDENTIFIERS.PlayersQuery]
+    },
   },
-  "mutation": {
-    "PlayersMutationRepositoryInterface": "PlayersMutationRepository",
-    "GamesMutationRepositoryInterface": "GamesMutationRepository",
-    ...
-  }
-}
+  mutation: {
+    [SERVICE_IDENTIFIERS.PlayersMutation]: {
+      class: PlayersMutationRepository,
+      arguments: [],
+    },
+  },
+};
 ```
 
-This file maps interface names to their implementation class names. The configuration is loaded once at startup and cached for the lifetime of the process.
+**Key Features:**
+- **Direct class references** - No string lookups, TypeScript validates class types
+- **Constructor dependencies** - Specify service dependencies in `arguments` array
+- **Automatic resolution** - Container resolves and injects dependencies recursively
+- **Type-safe** - Full TypeScript support with type checking
 
 ## Usage
 
@@ -56,7 +73,7 @@ import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
 // In a Convex mutation
 export const endTurn = mutation({
   handler: async (ctx, args) => {
-    // Automatically loads from convex/services.config.json
+    // Automatically loads from convex/services.config.ts
     const container = createContainer(ctx);
 
     // Get services using SERVICE_IDENTIFIERS
@@ -66,7 +83,8 @@ export const endTurn = mutation({
     const game = await gamesRepo.find(args.gameId);
     const player = await playersRepo.findCurrentPlayer(args.gameId);
 
-    // ... rest of logic
+    // Dependencies are automatically resolved!
+    // If GamesRepo needed PlayersRepo, container would inject it
   }
 });
 ```
@@ -76,16 +94,23 @@ export const endTurn = mutation({
 ```typescript
 import { createContainer } from "./infrastructure/ContainerFactory";
 import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
+import type { ServicesConfig } from "./infrastructure/ServiceConfig.types";
+import { MockGamesQueryRepository } from "./mocks/MockGamesQueryRepository";
+import { MockPlayersQueryRepository } from "./mocks/MockPlayersQueryRepository";
 
-// Create test configuration
-const testConfig = {
+// Create test configuration with mock classes
+const testConfig: ServicesConfig = {
   query: {
-    [SERVICE_IDENTIFIERS.GamesQuery]: "MockGamesQueryRepository",
-    [SERVICE_IDENTIFIERS.PlayersQuery]: "MockPlayersQueryRepository",
+    [SERVICE_IDENTIFIERS.GamesQuery]: {
+      class: MockGamesQueryRepository,
+      arguments: [],
+    },
+    [SERVICE_IDENTIFIERS.PlayersQuery]: {
+      class: MockPlayersQueryRepository,
+      arguments: [],
+    },
   },
-  mutation: {
-    [SERVICE_IDENTIFIERS.GamesMutation]: "MockGamesMutationRepository",
-  }
+  mutation: {},
 };
 
 // Create container with test config
@@ -93,26 +118,48 @@ const container = createContainer(ctx, testConfig);
 
 // Services will be mocked
 const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
-// gamesRepo is now MockGamesQueryRepository
+// gamesRepo is now an instance of MockGamesQueryRepository
 ```
 
-### Loading Configuration from File
+### Constructor Dependency Injection
 
-By default, `createContainer(ctx)` loads from `convex/services.config.json`. You can also load from a custom file:
+Services can depend on other services through constructor injection:
 
 ```typescript
-import { loadServiceConfigurationFromJSON } from "./infrastructure/ServiceConfiguration";
-import { createContainerWithRegistry } from "./infrastructure/ContainerFactory";
-import { readFileSync } from "fs";
-import { join } from "path";
+// Example service that depends on other services
+class GameLogicService {
+  constructor(
+    private db: GenericDatabaseReader<DataModel>,
+    private gamesRepo: GameQueryRepositoryInterface,
+    private playersRepo: PlayersQueryRepositoryInterface
+  ) {}
 
-// Load config from custom file
-const configPath = join(__dirname, "./config.test.json");
-const configJson = readFileSync(configPath, "utf-8");
-const registry = loadServiceConfigurationFromJSON(configJson);
+  async calculateScore(gameId: Id<"games">): Promise<number> {
+    const game = await this.gamesRepo.find(gameId);
+    const players = await this.playersRepo.findByGame(gameId);
+    // ... logic
+  }
+}
 
-// Create container with loaded config
-const container = createContainerWithRegistry(ctx, registry);
+// Configuration
+const config: ServicesConfig = {
+  query: {
+    [SERVICE_IDENTIFIERS.GamesQuery]: {
+      class: GamesQueryRepository,
+      arguments: [],
+    },
+    [SERVICE_IDENTIFIERS.PlayersQuery]: {
+      class: PlayersQueryRepository,
+      arguments: [],
+    },
+    "GameLogicService": {
+      class: GameLogicService,
+      // Container will resolve these dependencies automatically
+      arguments: [SERVICE_IDENTIFIERS.GamesQuery, SERVICE_IDENTIFIERS.PlayersQuery],
+    },
+  },
+  mutation: {},
+};
 ```
 
 ## Service Identifiers
@@ -141,20 +188,29 @@ SERVICE_IDENTIFIERS.UsersMutation
 
 ## Configuration Format
 
-Configuration files (JSON) map interface names to implementation class names:
+Configuration is a TypeScript object that maps interface names to service definitions:
 
-```json
-{
-  "query": {
-    "GamesQueryRepositoryInterface": "GamesQueryRepository"
+```typescript
+import type { ServicesConfig, ServiceDefinition } from "./infrastructure/ServiceConfig.types";
+import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
+import { YourRepository } from "./repository/YourRepository";
+
+export const config: ServicesConfig = {
+  query: {
+    [SERVICE_IDENTIFIERS.SomeQuery]: {
+      class: YourRepository,           // Direct class reference
+      arguments: [],                    // Array of service dependencies
+    },
   },
-  "mutation": {
-    "GamesMutationRepositoryInterface": "GamesMutationRepository"
-  }
-}
+  mutation: {},
+};
 ```
 
-**Important:** All implementation classes referenced in the configuration must be registered in the `IMPLEMENTATION_REGISTRY` in `ServiceConfiguration.ts`.
+**Service Definition Structure:**
+- `class`: The constructor function for the service
+- `arguments`: Array of service identifiers that should be injected into the constructor
+  - These are resolved from the container before instantiation
+  - Services are constructed with: `new ServiceClass(db, ...resolvedDependencies)`
 
 ## Creating Mock Implementations
 
@@ -219,12 +275,14 @@ const container = createContainer(ctx, testConfig);
 
 ## Benefits
 
-1. **Type Safety**: TypeScript ensures you get the correct type from `container.get()`
-2. **Testability**: Easy to swap implementations for testing
-3. **Configuration File**: Services configured in `convex/services.config.json`
-4. **Centralized**: All service creation happens in one place
-5. **Request Scoped**: New container per request, services cached within request
-6. **Performance**: Configuration loaded once and cached for process lifetime
+1. **Type Safety**: TypeScript validates class types at compile time
+2. **No String Lookups**: Direct class references, no need for string-based registries
+3. **Dependency Injection**: Constructor dependencies automatically resolved
+4. **Testability**: Easy to swap implementations for testing
+5. **Circular Dependency Detection**: Container detects and prevents circular dependencies
+6. **Centralized Configuration**: All services configured in one place
+7. **Request Scoped**: New container per request, services cached within request
+8. **Performance**: Configuration loaded once and cached for process lifetime
 
 ## Migration Guide
 
