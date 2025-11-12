@@ -1,17 +1,17 @@
-import { vSessionId } from "convex-helpers/server/sessions";
 import { v } from "convex/values";
 import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
 import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
 import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
+import { appMutation, SessionArgs } from "../../middleware/app.middleware.ts";
 
-/*
-export const playToCell = withSessionMutation({
+export const playToCell = appMutation({
+    visibility: "public", security: "secure",
     args: {
         tileId: v.id("tiles"),
         cellId: v.id("cells"),
         playerId: v.id("players"),
-        sessionId: vSessionId,
+        ...SessionArgs,
     },
     handler: async (ctx, { tileId, cellId, playerId }) => {
         if (!ctx.user) {
@@ -27,10 +27,11 @@ export const playToCell = withSessionMutation({
     },
 });
 
-export const pick = withSessionMutation({
+export const pick = appMutation({
+    visibility: "public", security: "secure",
     args: {
         playerId: v.id("players"),
-        sessionId: vSessionId,
+        ...SessionArgs,
     },
     handler: async (ctx, { playerId }) => {
         if (!ctx.user) {
@@ -46,13 +47,14 @@ export const pick = withSessionMutation({
     },
 });
 
-export const displace = withSessionMutation({
+export const displace = appMutation({
+    visibility: "public", security: "secure",
     args: {
         tileId: v.id("tiles"),
         fromCellId: v.id("cells"),
         toCellId: v.id("cells"),
         playerId: v.id("players"),
-        sessionId: vSessionId,
+        ...SessionArgs,
     },
     handler: async (ctx, { tileId, fromCellId, toCellId, playerId }) => {
         if (!ctx.user) {
@@ -68,10 +70,11 @@ export const displace = withSessionMutation({
     },
 });
 
-export const cancelPlacement = withSessionMutation({
+export const cancelPlacement = appMutation({
+    visibility: "public", security: "secure",
     args: {
         playerId: v.id("players"),
-        sessionId: vSessionId,
+        ...SessionArgs,
     },
     handler: async (ctx, { playerId }) => {
         if (!ctx.user) {
@@ -86,4 +89,3 @@ export const cancelPlacement = withSessionMutation({
         }
     },
 });
- */
