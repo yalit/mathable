@@ -1,155 +1,106 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import type { PlayersQueryRepositoryInterface } from "../repository/query/players.repository";
-import type { GamesQueryRepositoryInterface } from "../repository/query/games.repository";
-import type { TilesQueryRepositoryInterface } from "../repository/query/tiles.repository";
-import type { MovesQueryRepositoryInterface } from "../repository/query/moves.repository";
-import type { CellsQueryRepositoryInterface } from "../repository/query/cells.repository";
-import type { UsersQueryRepositoryInterface } from "../repository/query/users.repository";
-import type { PlayersMutationRepositoryInterface } from "../repository/mutations/players.repository";
-import type { GamesMutationRepositoryInterface } from "../repository/mutations/games.repository";
-import type { TilesMutationRepositoryInterface } from "../repository/mutations/tiles.repository";
-import type { MovesMutationRepositoryInterface } from "../repository/mutations/moves.repository";
-import type { CellsMutationRepositoryInterface } from "../repository/mutations/cells.repository";
-import type { UsersMutationRepositoryInterface } from "../repository/mutations/users.repository";
-import { PlayersQueryRepository } from "../repository/query/players.repository";
-import { GamesQueryRepository } from "../repository/query/games.repository";
-import { TilesQueryRepository } from "../repository/query/tiles.repository";
-import { MovesQueryRepository } from "../repository/query/moves.repository";
-import { CellsQueryRepository } from "../repository/query/cells.repository";
-import { UsersQueryRepository } from "../repository/query/users.repository";
-import { PlayersMutationRepository } from "../repository/mutations/players.repository";
-import { GamesMutationRepository } from "../repository/mutations/games.repository";
-import { TilesMutationRepository } from "../repository/mutations/tiles.repository";
-import { MovesMutationRepository } from "../repository/mutations/moves.repository";
-import { CellsMutationRepository } from "../repository/mutations/cells.repository";
-import { UsersMutationRepository } from "../repository/mutations/users.repository";
+import type { GenericDatabaseReader, GenericDatabaseWriter } from "convex/server";
+import type { DataModel } from "../_generated/dataModel";
+import { ServiceRegistry, type ServiceTypeMap, type ServiceKey } from "./ServiceRegistry";
 
 /**
- * ServiceContainer - Dependency Injection Container
+ * ServiceContainer - Generic Dependency Injection Container
  *
  * Manages all service instances (repositories, future services) with:
+ * - Generic get<T>() method for type-safe service resolution
+ * - Configuration-based service loading (JSON/YAML support)
  * - Interface-based dependency injection
- * - Type-safe service resolution
  * - Request-scoped lifecycle (not singleton)
- * - Centralized service creation
+ * - Easy to mock/test with alternative implementations
  *
  * Usage:
+ * ```typescript
  * const container = createContainer(ctx);
- * const game = await container.gamesQuery.find(gameId);
+ * const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
+ * const game = await gamesRepo.find(gameId);
+ * ```
  */
 export class ServiceContainer {
-  // Query Repositories
-  private _playersQuery: PlayersQueryRepositoryInterface;
-  private _gamesQuery: GamesQueryRepositoryInterface;
-  private _tilesQuery: TilesQueryRepositoryInterface;
-  private _movesQuery: MovesQueryRepositoryInterface;
-  private _cellsQuery: CellsQueryRepositoryInterface;
-  private _usersQuery: UsersQueryRepositoryInterface;
-
-  // Mutation Repositories (only available in mutation context)
-  private _playersMutation?: PlayersMutationRepositoryInterface;
-  private _gamesMutation?: GamesMutationRepositoryInterface;
-  private _tilesMutation?: TilesMutationRepositoryInterface;
-  private _movesMutation?: MovesMutationRepositoryInterface;
-  private _cellsMutation?: CellsMutationRepositoryInterface;
-  private _usersMutation?: UsersMutationRepositoryInterface;
+  private registry: ServiceRegistry;
+  private instances = new Map<string, any>();
+  private db: GenericDatabaseReader<DataModel> | GenericDatabaseWriter<DataModel>;
+  private isMutationContext: boolean;
 
   /**
-   * Create container from Convex context
+   * Create container from Convex context and service registry
    * @param ctx - MutationCtx or QueryCtx
+   * @param registry - Service registry with configured mappings
    */
-  constructor(ctx: MutationCtx | QueryCtx) {
-    // Initialize Query Repositories (available in both query and mutation contexts)
-    this._playersQuery = PlayersQueryRepository.create(ctx.db);
-    this._gamesQuery = GamesQueryRepository.create(ctx.db);
-    this._tilesQuery = TilesQueryRepository.create(ctx.db);
-    this._movesQuery = MovesQueryRepository.create(ctx.db);
-    this._cellsQuery = CellsQueryRepository.create(ctx.db);
-    this._usersQuery = UsersQueryRepository.create(ctx.db);
+  constructor(ctx: MutationCtx | QueryCtx, registry: ServiceRegistry) {
+    this.registry = registry;
+    this.db = ctx.db;
+    // Check if we're in a mutation context by checking for mutation-specific methods
+    this.isMutationContext = typeof (ctx.db as any).insert === "function";
+  }
 
-    // Initialize Mutation Repositories (only in mutation context)
-    if ("db" in ctx && typeof ctx.db.insert === "function") {
-      const mutationCtx = ctx as MutationCtx;
-      this._playersMutation = PlayersMutationRepository.create(mutationCtx.db);
-      this._gamesMutation = GamesMutationRepository.create(mutationCtx.db);
-      this._tilesMutation = TilesMutationRepository.create(mutationCtx.db);
-      this._movesMutation = MovesMutationRepository.create(mutationCtx.db);
-      this._cellsMutation = CellsMutationRepository.create(mutationCtx.db);
-      this._usersMutation = UsersMutationRepository.create(mutationCtx.db);
+  /**
+   * Get a service instance by its identifier
+   * Services are lazily instantiated and cached per request
+   *
+   * @param identifier - Service identifier (use SERVICE_IDENTIFIERS constants)
+   * @returns The service instance
+   *
+   * @example
+   * ```typescript
+   * const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
+   * const game = await gamesRepo.find(gameId);
+   * ```
+   */
+  get<K extends ServiceKey>(identifier: K): ServiceTypeMap[K] {
+    // Return cached instance if available
+    if (this.instances.has(identifier)) {
+      return this.instances.get(identifier);
     }
-  }
 
-  // ========================================
-  // Query Repository Getters
-  // ========================================
-
-  get playersQuery(): PlayersQueryRepositoryInterface {
-    return this._playersQuery;
-  }
-
-  get gamesQuery(): GamesQueryRepositoryInterface {
-    return this._gamesQuery;
-  }
-
-  get tilesQuery(): TilesQueryRepositoryInterface {
-    return this._tilesQuery;
-  }
-
-  get movesQuery(): MovesQueryRepositoryInterface {
-    return this._movesQuery;
-  }
-
-  get cellsQuery(): CellsQueryRepositoryInterface {
-    return this._cellsQuery;
-  }
-
-  get usersQuery(): UsersQueryRepositoryInterface {
-    return this._usersQuery;
-  }
-
-  // ========================================
-  // Mutation Repository Getters
-  // ========================================
-
-  get playersMutation(): PlayersMutationRepositoryInterface {
-    if (!this._playersMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
+    // Get service registration
+    const registration = this.registry.get(identifier);
+    if (!registration) {
+      throw new Error(`Service '${identifier}' is not registered in the container`);
     }
-    return this._playersMutation;
+
+    // Check if mutation service is requested in query context
+    if (registration.scope === "mutation" && !this.isMutationContext) {
+      throw new Error(
+        `Service '${identifier}' is a mutation service and can only be resolved in a mutation context`
+      );
+    }
+
+    // Create instance using factory
+    const instance = registration.factory(this.db);
+
+    // Cache for this request
+    this.instances.set(identifier, instance);
+
+    return instance;
   }
 
-  get gamesMutation(): GamesMutationRepositoryInterface {
-    if (!this._gamesMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
+  /**
+   * Check if a service is available in this context
+   */
+  has(identifier: ServiceKey): boolean {
+    const registration = this.registry.get(identifier);
+    if (!registration) {
+      return false;
     }
-    return this._gamesMutation;
+
+    // Mutation services are only available in mutation context
+    if (registration.scope === "mutation" && !this.isMutationContext) {
+      return false;
+    }
+
+    return true;
   }
 
-  get tilesMutation(): TilesMutationRepositoryInterface {
-    if (!this._tilesMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
-    }
-    return this._tilesMutation;
-  }
-
-  get movesMutation(): MovesMutationRepositoryInterface {
-    if (!this._movesMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
-    }
-    return this._movesMutation;
-  }
-
-  get cellsMutation(): CellsMutationRepositoryInterface {
-    if (!this._cellsMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
-    }
-    return this._cellsMutation;
-  }
-
-  get usersMutation(): UsersMutationRepositoryInterface {
-    if (!this._usersMutation) {
-      throw new Error("Mutation repositories are only available in mutation context");
-    }
-    return this._usersMutation;
+  /**
+   * Clear all cached instances
+   * Generally not needed as containers are request-scoped
+   */
+  clear(): void {
+    this.instances.clear();
   }
 }

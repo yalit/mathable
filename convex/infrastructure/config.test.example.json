@@ -1,0 +1,18 @@
+{
+  "query": {
+    "PlayersQueryRepositoryInterface": "MockPlayersQueryRepository",
+    "GamesQueryRepositoryInterface": "MockGamesQueryRepository",
+    "TilesQueryRepositoryInterface": "MockTilesQueryRepository",
+    "MovesQueryRepositoryInterface": "MockMovesQueryRepository",
+    "CellsQueryRepositoryInterface": "MockCellsQueryRepository",
+    "UsersQueryRepositoryInterface": "MockUsersQueryRepository"
+  },
+  "mutation": {
+    "PlayersMutationRepositoryInterface": "MockPlayersMutationRepository",
+    "GamesMutationRepositoryInterface": "MockGamesMutationRepository",
+    "TilesMutationRepositoryInterface": "MockTilesMutationRepository",
+    "MovesMutationRepositoryInterface": "MockMovesMutationRepository",
+    "CellsMutationRepositoryInterface": "MockCellsMutationRepository",
+    "UsersMutationRepositoryInterface": "MockUsersMutationRepository"
+  }
+}

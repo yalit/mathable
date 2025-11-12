@@ -10,6 +10,8 @@ import {MovesQueryRepository} from "../../repository/query/moves.repository.ts";
 export interface GameQueryRepositoryInterface extends QueryRepositoryInterface<"games"> {
     findByToken: (token: string) => Promise<Doc<"games"> | null>;
     findNonFinishedGamesForSessionId: (sessionId: SessionId) => Promise<Doc<"games">[]>;
+    isGameWon: (id: Id<"games">, playerId: Id<"players">) => Promise<boolean>;
+    isGameIdle: (id: Id<"games">) => Promise<boolean>;
 }
 
 export class GamesQueryRepository implements GameQueryRepositoryInterface {

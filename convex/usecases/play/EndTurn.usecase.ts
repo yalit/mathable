@@ -1,9 +1,11 @@
 import { api, internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
+import type { SessionId } from "convex-helpers/server/sessions";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
 import type { ServiceContainer } from "../../infrastructure/ServiceContainer";
+import { SERVICE_IDENTIFIERS } from "../../infrastructure/ServiceRegistry";
 
 export interface EndTurnResult {
   success: boolean;
@@ -29,10 +31,15 @@ export class EndTurnUseCase {
   async execute(
     gameId: Id<"games">,
     userId: Id<"users">,
-    sessionId: string
+    sessionId: SessionId
   ): Promise<EndTurnResult> {
+    // Get repositories from container
+    const gamesQuery = this.container.get(SERVICE_IDENTIFIERS.GamesQuery);
+    const playersQuery = this.container.get(SERVICE_IDENTIFIERS.PlayersQuery);
+    const gamesMutation = this.container.get(SERVICE_IDENTIFIERS.GamesMutation);
+
     // 1. Load game
-    const gameDoc = await this.container.gamesQuery.find(gameId);
+    const gameDoc = await gamesQuery.find(gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -51,7 +58,7 @@ export class EndTurnUseCase {
     }
 
     // 3. Load current player
-    const currentPlayerDoc = await this.container.playersQuery.findCurrentPlayer(game.id);
+    const currentPlayerDoc = await playersQuery.findCurrentPlayer(game.id);
     if (!currentPlayerDoc) {
       return {
         success: false,
@@ -70,7 +77,7 @@ export class EndTurnUseCase {
     }
 
     // 5. Check if game is won
-    if (await this.container.gamesQuery.isGameWon(gameId, currentPlayerDoc._id)) {
+    if (await gamesQuery.isGameWon(gameId, currentPlayerDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameWithWinner, {
         gameId: gameId,
         playerId: currentPlayerDoc._id,
@@ -82,7 +89,7 @@ export class EndTurnUseCase {
     }
 
     // 6. Check if game is idle
-    if (await this.container.gamesQuery.isGameIdle(gameDoc._id)) {
+    if (await gamesQuery.isGameIdle(gameDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameAsIdle, {
         gameId: gameId,
       });
@@ -109,7 +116,7 @@ export class EndTurnUseCase {
 
     // 11. Increment turn counter
     game.incrementTurn();
-    await this.container.gamesMutation.save(game);
+    await gamesMutation.save(game);
 
     return {
       success: true,
@@ -125,19 +132,23 @@ export class EndTurnUseCase {
     playerId: Id<"players">,
     turnScore: number
   ): Promise<void> {
-    const playerDoc = await this.container.playersQuery.find(playerId);
+    const playersQuery = this.container.get(SERVICE_IDENTIFIERS.PlayersQuery);
+    const tilesQuery = this.container.get(SERVICE_IDENTIFIERS.TilesQuery);
+    const playersMutation = this.container.get(SERVICE_IDENTIFIERS.PlayersMutation);
+
+    const playerDoc = await playersQuery.find(playerId);
     if (!playerDoc) {
       return;
     }
 
     // Check if player has empty hand (bonus points)
-    const playerTiles = await this.container.tilesQuery.findByPlayer(playerId);
+    const playerTiles = await tilesQuery.findByPlayer(playerId);
     const emptyHandBonus = playerTiles.length === 0 ? 50 : 0;
 
     const player = playerFromDoc(playerDoc);
     // Don't remove current flag here - let switchToNextPlayer handle it
     player.addScore(turnScore + emptyHandBonus);
-    await this.container.playersMutation.save(player);
+    await playersMutation.save(player);
   }
 
   /**
@@ -145,17 +156,20 @@ export class EndTurnUseCase {
    * Removes current flag from old player and sets it on new player
    */
   private async switchToNextPlayer(gameId: Id<"games">): Promise<void> {
+    const playersQuery = this.container.get(SERVICE_IDENTIFIERS.PlayersQuery);
+    const playersMutation = this.container.get(SERVICE_IDENTIFIERS.PlayersMutation);
+
     // 1. Find current player first
-    const currentPlayerDoc = await this.container.playersQuery.findCurrentPlayer(gameId);
+    const currentPlayerDoc = await playersQuery.findCurrentPlayer(gameId);
     if (!currentPlayerDoc) {
       throw new Error("No current player found when trying to switch turns");
     }
 
     // 2. Find next player
-    const nextPlayerDoc = await this.container.playersQuery.findNextPlayer(gameId);
+    const nextPlayerDoc = await playersQuery.findNextPlayer(gameId);
     if (!nextPlayerDoc) {
       // Provide more context for debugging
-      const allPlayers = await this.container.playersQuery.findByGame(gameId);
+      const allPlayers = await playersQuery.findByGame(gameId);
 
       const debugInfo = `No next player found. Game has ${allPlayers.length} players. ` +
         `Current player order: ${currentPlayerDoc.order}. ` +
@@ -167,12 +181,12 @@ export class EndTurnUseCase {
     // 3. Remove current flag from old player
     const currentPlayer = playerFromDoc(currentPlayerDoc);
     currentPlayer.removeAsCurrent();
-    await this.container.playersMutation.save(currentPlayer);
+    await playersMutation.save(currentPlayer);
 
     // 4. Set current flag on next player
     const nextPlayer = playerFromDoc(nextPlayerDoc);
     nextPlayer.setAsCurrent();
-    await this.container.playersMutation.save(nextPlayer);
+    await playersMutation.save(nextPlayer);
   }
 
   /**
@@ -182,11 +196,13 @@ export class EndTurnUseCase {
     gameId: Id<"games">,
     playerId: Id<"players">
   ): Promise<void> {
-    const currentTiles = await this.container.tilesQuery.findByPlayer(playerId);
+    const tilesQuery = this.container.get(SERVICE_IDENTIFIERS.TilesQuery);
+
+    const currentTiles = await tilesQuery.findByPlayer(playerId);
     const neededTiles = 7 - currentTiles.length;
 
     for (let i = 0; i < neededTiles; i++) {
-      const tilesInBag = await this.container.tilesQuery.findAllInBagByGame(gameId);
+      const tilesInBag = await tilesQuery.findAllInBagByGame(gameId);
 
       if (tilesInBag.length === 0) {
         break; // No more tiles in bag
