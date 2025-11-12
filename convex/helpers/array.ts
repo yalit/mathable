@@ -2,7 +2,7 @@ export function countItems<T extends string | number>(arr: T[], value: T): numbe
     if (!arr.includes(value)) {
         return 0
     }
-    let counts: { [k: string | number]: number } = {}
+    const counts: { [k: string | number]: number } = {}
 
     arr.forEach((v: T) => {
         if (!(v in counts)) {

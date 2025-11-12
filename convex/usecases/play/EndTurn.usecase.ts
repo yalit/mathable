@@ -1,13 +1,9 @@
 import { api, internal } from "../../_generated/api";
 import type { MutationCtx } from "../../_generated/server";
 import type { Id } from "../../_generated/dataModel";
-import { PlayersQueryRepository } from "../../repository/query/players.repository";
-import { GamesQueryRepository } from "../../repository/query/games.repository";
-import { TilesQueryRepository } from "../../repository/query/tiles.repository";
-import { PlayersMutationRepository } from "../../repository/mutations/players.repository";
-import { GamesMutationRepository } from "../../repository/mutations/games.repository";
 import { playerFromDoc } from "../../domain/models/factory/player.factory";
 import { createGameFromDoc } from "../../domain/models/factory/game.factory";
+import type { ServiceContainer } from "../../infrastructure/ServiceContainer";
 
 export interface EndTurnResult {
   success: boolean;
@@ -18,12 +14,16 @@ export interface EndTurnResult {
 /**
  * EndTurnUseCase
  * Orchestrates ending a player's turn and transitioning to the next player
+ *
+ * Uses dependency injection for all repository access via ServiceContainer
  */
 export class EndTurnUseCase {
   private ctx: MutationCtx;
+  private container: ServiceContainer;
 
-  constructor(ctx: MutationCtx) {
+  constructor(ctx: MutationCtx, container: ServiceContainer) {
     this.ctx = ctx;
+    this.container = container;
   }
 
   async execute(
@@ -32,7 +32,7 @@ export class EndTurnUseCase {
     sessionId: string
   ): Promise<EndTurnResult> {
     // 1. Load game
-    const gameDoc = await GamesQueryRepository.instance.find(gameId);
+    const gameDoc = await this.container.gamesQuery.find(gameId);
     if (!gameDoc) {
       return {
         success: false,
@@ -51,7 +51,7 @@ export class EndTurnUseCase {
     }
 
     // 3. Load current player
-    const currentPlayerDoc = await PlayersQueryRepository.instance.findCurrentPlayer(game.id);
+    const currentPlayerDoc = await this.container.playersQuery.findCurrentPlayer(game.id);
     if (!currentPlayerDoc) {
       return {
         success: false,
@@ -70,7 +70,7 @@ export class EndTurnUseCase {
     }
 
     // 5. Check if game is won
-    if (await GamesQueryRepository.instance.isGameWon(gameId, currentPlayerDoc._id)) {
+    if (await this.container.gamesQuery.isGameWon(gameId, currentPlayerDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameWithWinner, {
         gameId: gameId,
         playerId: currentPlayerDoc._id,
@@ -82,7 +82,7 @@ export class EndTurnUseCase {
     }
 
     // 6. Check if game is idle
-    if (await GamesQueryRepository.instance.isGameIdle(gameDoc._id)) {
+    if (await this.container.gamesQuery.isGameIdle(gameDoc._id)) {
       await this.ctx.runMutation(internal.mutations.internal.game.endGameAsIdle, {
         gameId: gameId,
       });
@@ -109,7 +109,7 @@ export class EndTurnUseCase {
 
     // 11. Increment turn counter
     game.incrementTurn();
-    await GamesMutationRepository.instance.save(game);
+    await this.container.gamesMutation.save(game);
 
     return {
       success: true,
@@ -125,19 +125,19 @@ export class EndTurnUseCase {
     playerId: Id<"players">,
     turnScore: number
   ): Promise<void> {
-    const playerDoc = await PlayersQueryRepository.instance.find(playerId);
+    const playerDoc = await this.container.playersQuery.find(playerId);
     if (!playerDoc) {
       return;
     }
 
     // Check if player has empty hand (bonus points)
-    const playerTiles = await TilesQueryRepository.instance.findByPlayer(playerId);
+    const playerTiles = await this.container.tilesQuery.findByPlayer(playerId);
     const emptyHandBonus = playerTiles.length === 0 ? 50 : 0;
 
     const player = playerFromDoc(playerDoc);
     // Don't remove current flag here - let switchToNextPlayer handle it
     player.addScore(turnScore + emptyHandBonus);
-    await PlayersMutationRepository.instance.save(player);
+    await this.container.playersMutation.save(player);
   }
 
   /**
@@ -146,16 +146,16 @@ export class EndTurnUseCase {
    */
   private async switchToNextPlayer(gameId: Id<"games">): Promise<void> {
     // 1. Find current player first
-    const currentPlayerDoc = await PlayersQueryRepository.instance.findCurrentPlayer(gameId);
+    const currentPlayerDoc = await this.container.playersQuery.findCurrentPlayer(gameId);
     if (!currentPlayerDoc) {
       throw new Error("No current player found when trying to switch turns");
     }
 
     // 2. Find next player
-    const nextPlayerDoc = await PlayersQueryRepository.instance.findNextPlayer(gameId);
+    const nextPlayerDoc = await this.container.playersQuery.findNextPlayer(gameId);
     if (!nextPlayerDoc) {
       // Provide more context for debugging
-      const allPlayers = await PlayersQueryRepository.instance.findByGame(gameId);
+      const allPlayers = await this.container.playersQuery.findByGame(gameId);
 
       const debugInfo = `No next player found. Game has ${allPlayers.length} players. ` +
         `Current player order: ${currentPlayerDoc.order}. ` +
@@ -167,12 +167,12 @@ export class EndTurnUseCase {
     // 3. Remove current flag from old player
     const currentPlayer = playerFromDoc(currentPlayerDoc);
     currentPlayer.removeAsCurrent();
-    await PlayersMutationRepository.instance.save(currentPlayer);
+    await this.container.playersMutation.save(currentPlayer);
 
     // 4. Set current flag on next player
     const nextPlayer = playerFromDoc(nextPlayerDoc);
     nextPlayer.setAsCurrent();
-    await PlayersMutationRepository.instance.save(nextPlayer);
+    await this.container.playersMutation.save(nextPlayer);
   }
 
   /**
@@ -182,11 +182,11 @@ export class EndTurnUseCase {
     gameId: Id<"games">,
     playerId: Id<"players">
   ): Promise<void> {
-    const currentTiles = await TilesQueryRepository.instance.findByPlayer(playerId);
+    const currentTiles = await this.container.tilesQuery.findByPlayer(playerId);
     const neededTiles = 7 - currentTiles.length;
 
     for (let i = 0; i < neededTiles; i++) {
-      const tilesInBag = await TilesQueryRepository.instance.findAllInBagByGame(gameId);
+      const tilesInBag = await this.container.tilesQuery.findAllInBagByGame(gameId);
 
       if (tilesInBag.length === 0) {
         break; // No more tiles in bag

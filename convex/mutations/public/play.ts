@@ -7,6 +7,7 @@ import { MovesQueryRepository } from "../../repository/query/moves.repository.ts
 import { GamesQueryRepository } from "../../repository/query/games.repository.ts";
 import { MovesMutationRepository } from "../../repository/mutations/moves.repository.ts";
 import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
+import { createContainer } from "../../infrastructure/ContainerFactory";
 
 export const resetTurn = withSessionMutation({
     args: { gameId: v.id("games") },
@@ -68,7 +69,9 @@ export const endTurn = withSessionMutation({
             throw new Error("User not authenticated");
         }
 
-        const useCase = new EndTurnUseCase(ctx);
+        // Create service container with dependency injection
+        const container = createContainer(ctx);
+        const useCase = new EndTurnUseCase(ctx, container);
         const result = await useCase.execute(gameId, ctx.user._id, ctx.sessionId);
 
         if (!result.success) {
