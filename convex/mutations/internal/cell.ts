@@ -2,8 +2,8 @@ import {internal} from "../../_generated/api";
 import type {Doc} from "../../_generated/dataModel";
 import {getNumericValue} from "../../helpers/cell";
 import {v} from "convex/values";
-import {CellsQueryRepository} from "../../repository/query/cells.repository.ts";
-import {CellsMutationRepository} from "../../repository/mutations/cells.repository.ts";
+import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";
+import type {CellsMutationRepositoryInterface} from "../../repository/mutations/cells.repository.ts";
 import {cellFromDoc} from "../../domain/models/factory/cell.factory.ts";
 import {appMutation} from "../../middleware/app.middleware.ts";
 
@@ -11,7 +11,9 @@ export const computeAllAllowedValues = appMutation({
     visibility: "internal", security: "internal",
     args: {gameId: v.id("games")},
     handler: async (ctx, args) => {
-        const cells = await CellsQueryRepository.instance.findAllForGame(
+        const cellsQueryRepository: CellsQueryRepositoryInterface = ctx.container.get("CellsQueryRepositoryInterface");
+
+        const cells = await cellsQueryRepository.findAllForGame(
             args.gameId,
         );
         for (const cell of cells) {
@@ -28,14 +30,16 @@ export const computeAllowedValuesFromUpdatedCell =
         visibility: "internal", security: "internal",
         args: {cellId: v.id("cells")},
         handler: async (ctx, args) => {
+            const cellsQueryRepository: CellsQueryRepositoryInterface = ctx.container.get("CellsQueryRepositoryInterface");
+
             const cell: null | Doc<"cells"> =
-                await CellsQueryRepository.instance.find(args.cellId);
+                await cellsQueryRepository.find(args.cellId);
             if (!cell) {
                 return;
             }
 
             const impactingDirections =
-                await CellsQueryRepository.instance.findCellInCrossFromCell(cell);
+                await cellsQueryRepository.findCellInCrossFromCell(cell);
 
             for (const arr of impactingDirections) {
                 for (const c of arr) {
@@ -51,8 +55,11 @@ export const computeAllowedValuesFromUpdatedCell =
 export const computeAllowedValuesForCell = appMutation({
     visibility: "internal", security: "internal",
     args: {cellId: v.id("cells")},
-    handler: async (_, args) => {
-        const cell: null | Doc<"cells"> = await CellsQueryRepository.instance.find(
+    handler: async (ctx, args) => {
+        const cellsQueryRepository: CellsQueryRepositoryInterface = ctx.container.get("CellsQueryRepositoryInterface");
+        const cellsMutationRepository: CellsMutationRepositoryInterface = ctx.container.get("CellsMutationRepositoryInterface");
+
+        const cell: null | Doc<"cells"> = await cellsQueryRepository.find(
             args.cellId,
         );
         if (!cell) {
@@ -66,7 +73,7 @@ export const computeAllowedValuesForCell = appMutation({
         const allowedValues: Array<number> = [];
 
         const impactingDirections =
-            await CellsQueryRepository.instance.findAllImpactingCellsForCellInEachDirection(
+            await cellsQueryRepository.findAllImpactingCellsForCellInEachDirection(
                 cell,
             );
 
@@ -123,6 +130,6 @@ export const computeAllowedValuesForCell = appMutation({
         // update the cells with the allowedValues
         const cellModel = cellFromDoc(cell);
         cellModel.setAllowedValues(Array.from(allowedValues));
-        await CellsMutationRepository.instance.save(cellModel);
+        await cellsMutationRepository.save(cellModel);
     },
 });

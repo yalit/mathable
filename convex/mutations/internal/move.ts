@@ -1,5 +1,5 @@
 import {v} from "convex/values";
-import {MovesMutationRepository} from "../../repository/mutations/moves.repository.ts";
+import type {MovesMutationRepositoryInterface} from "../../repository/mutations/moves.repository.ts";
 import {
     createPlayerToCellMove,
     createBagToPlayerMove,
@@ -30,7 +30,8 @@ export const createMove = appMutation({
         cellId: v.optional(v.union(v.null(), v.id("cells"))),
         moveScore: v.number(),
     },
-    handler: async (_, args) => {
+    handler: async (ctx, args) => {
+        const movesMutationRepository: MovesMutationRepositoryInterface = ctx.container.get("MovesMutationRepositoryInterface");
         const {gameId, type, turn, tileId, playerId, cellId, moveScore} = args;
 
         let move;
@@ -67,6 +68,6 @@ export const createMove = appMutation({
                 throw new Error(`Unknown move type: ${type}`);
         }
 
-        await MovesMutationRepository.instance.save(move);
+        await movesMutationRepository.save(move);
     },
 });
