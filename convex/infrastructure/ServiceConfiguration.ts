@@ -1,4 +1,4 @@
-import { ServiceRegistry, SERVICE_IDENTIFIERS } from "./ServiceRegistry";
+import { ServiceRegistry } from "./ServiceRegistry";
 import { PlayersQueryRepository } from "../repository/query/players.repository";
 import { GamesQueryRepository } from "../repository/query/games.repository";
 import { TilesQueryRepository } from "../repository/query/tiles.repository";
@@ -20,29 +20,6 @@ export interface ServiceConfigurationData {
   query: Record<string, string>;
   mutation: Record<string, string>;
 }
-
-/**
- * Default production configuration
- * Maps service identifiers to their default implementations
- */
-export const DEFAULT_SERVICE_CONFIG: ServiceConfigurationData = {
-  query: {
-    [SERVICE_IDENTIFIERS.PlayersQuery]: "PlayersQueryRepository",
-    [SERVICE_IDENTIFIERS.GamesQuery]: "GamesQueryRepository",
-    [SERVICE_IDENTIFIERS.TilesQuery]: "TilesQueryRepository",
-    [SERVICE_IDENTIFIERS.MovesQuery]: "MovesQueryRepository",
-    [SERVICE_IDENTIFIERS.CellsQuery]: "CellsQueryRepository",
-    [SERVICE_IDENTIFIERS.UsersQuery]: "UsersQueryRepository",
-  },
-  mutation: {
-    [SERVICE_IDENTIFIERS.PlayersMutation]: "PlayersMutationRepository",
-    [SERVICE_IDENTIFIERS.GamesMutation]: "GamesMutationRepository",
-    [SERVICE_IDENTIFIERS.TilesMutation]: "TilesMutationRepository",
-    [SERVICE_IDENTIFIERS.MovesMutation]: "MovesMutationRepository",
-    [SERVICE_IDENTIFIERS.CellsMutation]: "CellsMutationRepository",
-    [SERVICE_IDENTIFIERS.UsersMutation]: "UsersMutationRepository",
-  },
-};
 
 /**
  * Registry of available implementation classes
@@ -72,7 +49,7 @@ const IMPLEMENTATION_REGISTRY = {
  * @returns Configured ServiceRegistry
  */
 export function loadServiceConfiguration(
-  config: ServiceConfigurationData = DEFAULT_SERVICE_CONFIG
+  config: ServiceConfigurationData
 ): ServiceRegistry {
   const registry = new ServiceRegistry();
 

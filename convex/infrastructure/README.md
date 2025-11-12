@@ -6,7 +6,7 @@ This directory contains the dependency injection (DI) container implementation f
 
 The DI container provides:
 - **Generic `get<T>()` method** for type-safe service resolution
-- **Configuration-based** service loading (JSON/YAML support)
+- **Configuration-based** service loading from `convex/services.config.json`
 - **Interface-based** dependency injection
 - **Request-scoped** lifecycle (not singleton)
 - **Easy testing** with mock implementations
@@ -15,10 +15,35 @@ The DI container provides:
 
 - `ServiceContainer.ts` - Main DI container with generic `get<T>()` method
 - `ServiceRegistry.ts` - Registry for mapping interfaces to implementations
-- `ServiceConfiguration.ts` - Configuration loader with default mappings
+- `ServiceConfiguration.ts` - Configuration loader
 - `ContainerFactory.ts` - Factory functions for creating containers
-- `config.example.json` - Production configuration example
+- `../services.config.json` - **Production configuration** (loaded by default)
+- `config.example.json` - Configuration format reference
 - `config.test.example.json` - Test configuration example with mocks
+
+## Configuration
+
+### Production Configuration
+
+The production configuration is located at `convex/services.config.json` and is automatically loaded when you call `createContainer(ctx)` without arguments.
+
+**convex/services.config.json:**
+```json
+{
+  "query": {
+    "PlayersQueryRepositoryInterface": "PlayersQueryRepository",
+    "GamesQueryRepositoryInterface": "GamesQueryRepository",
+    ...
+  },
+  "mutation": {
+    "PlayersMutationRepositoryInterface": "PlayersMutationRepository",
+    "GamesMutationRepositoryInterface": "GamesMutationRepository",
+    ...
+  }
+}
+```
+
+This file maps interface names to their implementation class names. The configuration is loaded once at startup and cached for the lifetime of the process.
 
 ## Usage
 
@@ -31,6 +56,7 @@ import { SERVICE_IDENTIFIERS } from "./infrastructure/ServiceRegistry";
 // In a Convex mutation
 export const endTurn = mutation({
   handler: async (ctx, args) => {
+    // Automatically loads from convex/services.config.json
     const container = createContainer(ctx);
 
     // Get services using SERVICE_IDENTIFIERS
@@ -70,15 +96,19 @@ const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
 // gamesRepo is now MockGamesQueryRepository
 ```
 
-### Loading Configuration from JSON
+### Loading Configuration from File
+
+By default, `createContainer(ctx)` loads from `convex/services.config.json`. You can also load from a custom file:
 
 ```typescript
 import { loadServiceConfigurationFromJSON } from "./infrastructure/ServiceConfiguration";
 import { createContainerWithRegistry } from "./infrastructure/ContainerFactory";
-import fs from "fs";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-// Load config from file
-const configJson = fs.readFileSync("./config.test.json", "utf-8");
+// Load config from custom file
+const configPath = join(__dirname, "./config.test.json");
+const configJson = readFileSync(configPath, "utf-8");
 const registry = loadServiceConfigurationFromJSON(configJson);
 
 // Create container with loaded config
@@ -111,7 +141,7 @@ SERVICE_IDENTIFIERS.UsersMutation
 
 ## Configuration Format
 
-Configuration files map interface names to implementation class names:
+Configuration files (JSON) map interface names to implementation class names:
 
 ```json
 {
@@ -123,6 +153,8 @@ Configuration files map interface names to implementation class names:
   }
 }
 ```
+
+**Important:** All implementation classes referenced in the configuration must be registered in the `IMPLEMENTATION_REGISTRY` in `ServiceConfiguration.ts`.
 
 ## Creating Mock Implementations
 
@@ -189,9 +221,10 @@ const container = createContainer(ctx, testConfig);
 
 1. **Type Safety**: TypeScript ensures you get the correct type from `container.get()`
 2. **Testability**: Easy to swap implementations for testing
-3. **Flexibility**: Configuration-based, can be changed without code changes
+3. **Configuration File**: Services configured in `convex/services.config.json`
 4. **Centralized**: All service creation happens in one place
 5. **Request Scoped**: New container per request, services cached within request
+6. **Performance**: Configuration loaded once and cached for process lifetime
 
 ## Migration Guide
 

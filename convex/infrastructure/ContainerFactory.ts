@@ -1,23 +1,24 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ServiceContainer } from "./ServiceContainer";
-import { loadServiceConfiguration, type ServiceConfigurationData, DEFAULT_SERVICE_CONFIG } from "./ServiceConfiguration";
+import { loadServiceConfiguration, type ServiceConfigurationData } from "./ServiceConfiguration";
 import type { ServiceRegistry } from "./ServiceRegistry";
+import servicesConfig from "../services.config.json";
 
 /**
  * Global service registry cache
  * Registries are stateless and can be reused across requests
  */
-let defaultRegistry: ServiceRegistry | null = null;
+let cachedRegistry: ServiceRegistry | null = null;
 
 /**
- * Get or create the default service registry
- * Lazy initialization with caching
+ * Load the service registry from convex/services.config.json
+ * Configuration is loaded once and cached for the lifetime of the process
  */
-function getDefaultRegistry(): ServiceRegistry {
-  if (!defaultRegistry) {
-    defaultRegistry = loadServiceConfiguration(DEFAULT_SERVICE_CONFIG);
+function loadDefaultRegistry(): ServiceRegistry {
+  if (!cachedRegistry) {
+    cachedRegistry = loadServiceConfiguration(servicesConfig as ServiceConfigurationData);
   }
-  return defaultRegistry;
+  return cachedRegistry;
 }
 
 /**
@@ -26,12 +27,15 @@ function getDefaultRegistry(): ServiceRegistry {
  * This is the primary entry point for accessing repositories and services.
  * Creates a request-scoped container with all dependencies properly initialized.
  *
+ * By default, loads configuration from convex/services.config.json.
+ * For testing, you can provide a custom configuration object.
+ *
  * @param ctx - Convex MutationCtx or QueryCtx
  * @param config - Optional custom service configuration (useful for testing)
  * @returns ServiceContainer with all services initialized according to configuration
  *
  * @example
- * // In a mutation (production)
+ * // In a mutation (production) - loads from convex/services.config.json
  * const container = createContainer(ctx);
  * const gamesRepo = container.get(SERVICE_IDENTIFIERS.GamesQuery);
  * const game = await gamesRepo.find(gameId);
@@ -54,7 +58,7 @@ export function createContainer(
 ): ServiceContainer {
   const registry = config
     ? loadServiceConfiguration(config)
-    : getDefaultRegistry();
+    : loadDefaultRegistry();
 
   return new ServiceContainer(ctx, registry);
 }
@@ -75,9 +79,9 @@ export function createContainerWithRegistry(
 }
 
 /**
- * Reset the default registry cache
- * Useful for testing to ensure clean state
+ * Reset the cached registry
+ * Useful for testing to ensure clean state or to reload configuration
  */
-export function resetDefaultRegistry(): void {
-  defaultRegistry = null;
+export function resetCachedRegistry(): void {
+  cachedRegistry = null;
 }
