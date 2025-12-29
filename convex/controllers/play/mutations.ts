@@ -6,7 +6,7 @@ import { appMutation, SessionArgs } from "../../middleware/app.middleware";
 import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
 import { ResetTurnUseCase } from "../../usecases/play/ResetTurn.usecase";
 import { v, type Infer } from "convex/values";
-import { APIReturn } from "../return.type";
+import { APIReturn, APIError } from "../return.type";
 import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 
@@ -26,8 +26,8 @@ export const resetTurn = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof resetTurnReturn>> => {
         const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
-        if (!game) return { status: "error", data: "No Game found" };
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!game) return APIError("No Game found");
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new ResetTurnUseCase(ctx);
@@ -38,7 +38,7 @@ export const resetTurn = appMutation({
                 data
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });
@@ -59,12 +59,12 @@ export const endTurn = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof endTurnReturn>> => {
         const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
-        if (!game) return { status: "error", data: "No Game found" };
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!game) return APIError("No Game found");
+        if (!ctx.user) return APIError("User not authenticated");
 
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
         const currentPlayer = await playersQuery.findCurrentPlayer(game);
-        if (!currentPlayer) return { status: "error", data: "No current player found" };
+        if (!currentPlayer) return APIError("No current player found");
 
         try {
             const useCase = new EndTurnUseCase(ctx);
@@ -75,7 +75,7 @@ export const endTurn = appMutation({
                 data
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });

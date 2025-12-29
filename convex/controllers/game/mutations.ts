@@ -5,7 +5,7 @@
 import { appMutation, SessionArgs } from "../../middleware/app.middleware";
 import {CreateGameUseCase} from "../../usecases/game/CreateGame.usecase.ts";
 import {v, type Infer} from "convex/values";
-import {APIReturn} from "../return.type.ts";
+import {APIReturn, APIError} from "../return.type.ts";
 import {JoinGameUseCase} from "../../usecases/game/JoinGame.usecase.ts";
 import {StartGameUseCase} from "../../usecases/game/StartGame.usecase.ts";
 import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
@@ -26,7 +26,7 @@ export const create = appMutation({
             const data = await useCase.execute(args.playerName, args.sessionId);
             return {status: "success", data}
         } catch (e: any) {
-            return {status: "error", data: e.message}
+            return APIError(e.message);
         }
     },
 });
@@ -51,8 +51,8 @@ export const join = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof joinGameReturn>> => {
         const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface")
         const game = await gamesQuery.find(args.gameId)
-        if (!game) return {status: "error", data: "No Game found"}
-        if (!ctx.user) return {status: "error", data: "No User found"}
+        if (!game) return APIError("No Game found");
+        if (!ctx.user) return APIError("No User found");
 
         try {
             const useCase = new JoinGameUseCase(ctx);
@@ -63,7 +63,7 @@ export const join = appMutation({
                 data: playerToken
             };
         } catch (e: any) {
-            return {status: "error", data: e.message};
+            return APIError(e.message);
         }
     },
 });
@@ -82,8 +82,8 @@ export const start = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof startGameReturn>> => {
         const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
-        if (!game) return {status: "error", data: "No Game found"};
-        if (!ctx.user) return {status: "error", data: "User not authenticated"};
+        if (!game) return APIError("No Game found");
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new StartGameUseCase(ctx);
@@ -94,7 +94,7 @@ export const start = appMutation({
                 data: null
             };
         } catch (e: any) {
-            return {status: "error", data: e.message};
+            return APIError(e.message);
         }
     },
 });

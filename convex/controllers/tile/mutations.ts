@@ -8,7 +8,7 @@ import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
 import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
 import { v, type Infer } from "convex/values";
-import { APIReturn } from "../return.type";
+import { APIReturn, APIError } from "../return.type";
 import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
 import type { CellsQueryRepositoryInterface } from "../../repository/query/cells.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
@@ -32,17 +32,17 @@ export const playToCell = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof playToCellReturn>> => {
         const tilesQuery: TilesQueryRepositoryInterface = ctx.container.get("TilesQueryRepositoryInterface");
         const tile = await tilesQuery.find(args.tileId);
-        if (!tile) return { status: "error", data: "Tile not found" };
+        if (!tile) return APIError("Tile not found");
 
         const cellsQuery: CellsQueryRepositoryInterface = ctx.container.get("CellsQueryRepositoryInterface");
         const cell = await cellsQuery.find(args.cellId);
-        if (!cell) return { status: "error", data: "Cell not found" };
+        if (!cell) return APIError("Cell not found");
 
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
         const player = await playersQuery.find(args.playerId);
-        if (!player) return { status: "error", data: "Player not found" };
+        if (!player) return APIError("Player not found");
 
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new PlaceTileUseCase(ctx);
@@ -53,7 +53,7 @@ export const playToCell = appMutation({
                 data: null
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });
@@ -77,9 +77,9 @@ export const pick = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof pickReturn>> => {
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
         const player = await playersQuery.find(args.playerId);
-        if (!player) return { status: "error", data: "Player not found" };
+        if (!player) return APIError("Player not found");
 
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new PickTileUseCase(ctx);
@@ -90,7 +90,7 @@ export const pick = appMutation({
                 data
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });
@@ -115,20 +115,20 @@ export const displace = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof displaceReturn>> => {
         const tilesQuery: TilesQueryRepositoryInterface = ctx.container.get("TilesQueryRepositoryInterface");
         const tile = await tilesQuery.find(args.tileId);
-        if (!tile) return { status: "error", data: "Tile not found" };
+        if (!tile) return APIError("Tile not found");
 
         const cellsQuery: CellsQueryRepositoryInterface = ctx.container.get("CellsQueryRepositoryInterface");
         const fromCell = await cellsQuery.find(args.fromCellId);
-        if (!fromCell) return { status: "error", data: "Source cell not found" };
+        if (!fromCell) return APIError("Source cell not found");
 
         const toCell = await cellsQuery.find(args.toCellId);
-        if (!toCell) return { status: "error", data: "Destination cell not found" };
+        if (!toCell) return APIError("Destination cell not found");
 
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
         const player = await playersQuery.find(args.playerId);
-        if (!player) return { status: "error", data: "Player not found" };
+        if (!player) return APIError("Player not found");
 
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new DisplaceTileUseCase(ctx);
@@ -139,7 +139,7 @@ export const displace = appMutation({
                 data: null
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });
@@ -161,9 +161,9 @@ export const cancelPlacement = appMutation({
     handler: async (ctx, args): Promise<Infer<typeof cancelPlacementReturn>> => {
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
         const player = await playersQuery.find(args.playerId);
-        if (!player) return { status: "error", data: "Player not found" };
+        if (!player) return APIError("Player not found");
 
-        if (!ctx.user) return { status: "error", data: "User not authenticated" };
+        if (!ctx.user) return APIError("User not authenticated");
 
         try {
             const useCase = new CancelTilePlacementUseCase(ctx);
@@ -174,7 +174,7 @@ export const cancelPlacement = appMutation({
                 data: null
             };
         } catch (e: any) {
-            return { status: "error", data: e.message };
+            return APIError(e.message);
         }
     },
 });
