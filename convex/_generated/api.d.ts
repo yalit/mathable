@@ -13,6 +13,7 @@ import type * as controllers_game_mutations from "../controllers/game/mutations.
 import type * as controllers_game_queries from "../controllers/game/queries.js";
 import type * as controllers_play_mutations from "../controllers/play/mutations.js";
 import type * as controllers_player_queries from "../controllers/player/queries.js";
+import type * as controllers_tile_mutations from "../controllers/tile/mutations.js";
 import type * as controllers_tile_queries from "../controllers/tile/queries.js";
 import type * as controllers_user_queries from "../controllers/user/queries.js";
 import type * as domain_models_Cell from "../domain/models/Cell.js";
@@ -26,7 +27,6 @@ import type * as infrastructure_ContainerFactory from "../infrastructure/Contain
 import type * as infrastructure_ServiceConfiguration from "../infrastructure/ServiceConfiguration.js";
 import type * as infrastructure_ServiceContainer from "../infrastructure/ServiceContainer.js";
 import type * as infrastructure_ServiceRegistry from "../infrastructure/ServiceRegistry.js";
-import type * as mutations_public_tile from "../mutations/public/tile.js";
 
 import type {
   ApiFromModules,
@@ -40,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "controllers/game/queries": typeof controllers_game_queries;
   "controllers/play/mutations": typeof controllers_play_mutations;
   "controllers/player/queries": typeof controllers_player_queries;
+  "controllers/tile/mutations": typeof controllers_tile_mutations;
   "controllers/tile/queries": typeof controllers_tile_queries;
   "controllers/user/queries": typeof controllers_user_queries;
   "domain/models/Cell": typeof domain_models_Cell;
@@ -53,7 +54,6 @@ declare const fullApi: ApiFromModules<{
   "infrastructure/ServiceConfiguration": typeof infrastructure_ServiceConfiguration;
   "infrastructure/ServiceContainer": typeof infrastructure_ServiceContainer;
   "infrastructure/ServiceRegistry": typeof infrastructure_ServiceRegistry;
-  "mutations/public/tile": typeof mutations_public_tile;
 }>;
 
 /**
