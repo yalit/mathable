@@ -1,10 +1,14 @@
 import type {GenericDatabaseWriter} from "convex/server";
-import type {DataModel, Doc, Id} from "../../_generated/dataModel";
-import type {MutationRepositoryInterface} from "../../repository/repositories.interface.ts";
+import type {DataModel} from "../../_generated/dataModel";
+import type {DocData, MutationRepositoryInterface} from "../../repository/repositories.interface.ts";
 import type {Player} from "../../domain/models/Player";
+import {playerFromDoc} from "../../domain/models/factory/player.factory.ts";
+import type {Game} from "../../domain/models/Game.ts";
+import {UUID} from "../../domain/models/factory/uuid.factory.ts";
+import type {User} from "../../domain/models/User.ts";
 
-export interface PlayersMutationRepositoryInterface extends MutationRepositoryInterface<"players"> {
-    save(player: Player): Promise<Id<"players">>;
+export interface PlayersMutationRepositoryInterface extends MutationRepositoryInterface<Player, "players"> {
+    newFromName(game: Game, user: User, name: string): Promise<Player>;
 }
 
 export class PlayersMutationRepository implements PlayersMutationRepositoryInterface {
@@ -23,11 +27,29 @@ export class PlayersMutationRepository implements PlayersMutationRepositoryInter
         return PlayersMutationRepository.instance;
     }
 
-    async delete(id: Id<"players">): Promise<void> {
-        return this.db.delete(id);
+    async delete(player: Player): Promise<void> {
+        return this.db.delete(player.id);
     }
 
-    async save(player: Player): Promise<Id<"players">> {
+    async newFromName(game: Game, user: User, name: string): Promise<Player> {
+        return this.new({
+            gameId: game.id,
+            userId: user.id,
+            owner: true,
+            name: name,
+            token: UUID(),
+            current:  false,
+            score:  0,
+            order: 0
+        })
+    }
+
+    async new(data: DocData<"players">): Promise<Player> {
+        const id = await this.db.insert("players", data);
+        return playerFromDoc({...data, _id: id, _creationTime: 0})
+    }
+
+    async save(player: Player): Promise<Player> {
         const docData = {
             gameId: player.gameId,
             userId: player.userId,
@@ -39,13 +61,8 @@ export class PlayersMutationRepository implements PlayersMutationRepositoryInter
             order: player.order
         };
 
-        if (player.id === null) {
-            // Insert new player - omit _id and _creationTime
-            return await this.db.insert("players", docData as Omit<Doc<"players">, "_id" | "_creationTime">);
-        } else {
-            // Update existing player - patch all fields
-            await this.db.patch(player.id, docData);
-            return player.id;
-        }
+        // Update existing player - patch all fields
+        await this.db.patch(player.id, docData);
+        return player;
     }
 }

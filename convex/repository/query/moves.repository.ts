@@ -1,9 +1,13 @@
 import type {DataModel, Doc, Id} from "../../_generated/dataModel";
 import type {GenericDatabaseReader} from "convex/server";
 import type {QueryRepositoryInterface} from "../../repository/repositories.interface.ts";
+import type {Move} from "../../domain/models/Move.ts";
+import type {Game} from "../../domain/models/Game.ts";
+import {moveFromDoc} from "../../domain/models/factory/move.factory.ts";
 
-export interface MovesQueryRepositoryInterface extends QueryRepositoryInterface<"moves"> {
-    findAllForCurrentTurn: (game: Doc<"games">) => Promise<Doc<"moves">[]>;
+export interface MovesQueryRepositoryInterface extends QueryRepositoryInterface<Move, "moves"> {
+    findAllForCurrentTurn: (game: Game) => Promise<Move[]>;
+    findLast: (game: Game) => Promise<Move | null>;
 }
 
 export class MovesQueryRepository implements MovesQueryRepositoryInterface {
@@ -22,29 +26,46 @@ export class MovesQueryRepository implements MovesQueryRepositoryInterface {
         return MovesQueryRepository.instance;
     }
 
-    async findAll(): Promise<Doc<"moves">[]> {
-        return this.db.query("moves").collect();
+    async fromDocs(docs: Doc<"moves">[]): Promise<Move[]> {
+        return docs.map((d: Doc<"moves">) => moveFromDoc(d))
+    }
+    async findAll(): Promise<Move[]> {
+        return this.fromDocs(await this.db.query("moves").collect());
     }
 
-    async find(id: Id<"moves">): Promise<Doc<"moves"> | null> {
-        return this.db.get(id);
+    async find(id: Id<"moves">): Promise<Move | null> {
+        const move = await this.db.get(id);
+
+        if(!move) return null
+        return moveFromDoc(move)
     }
 
-    async findAllForCurrentTurn(game: Doc<"games">): Promise<Doc<"moves">[]> {
-        return this.db
+    async findAllForCurrentTurn(game: Game): Promise<Move[]> {
+        const gameId = game.id
+        if(!gameId) return []
+
+        return this.fromDocs(await this.db
             .query("moves")
             .withIndex("by_turn", (q) =>
-                q.eq("gameId", game._id).eq("turn", game.currentTurn),
+                q.eq("gameId", gameId).eq("turn", game.currentTurn),
             )
             .order("desc")
-            .collect();
+            .collect()
+        );
     }
 
-    async findLast(game: Doc<"games">): Promise<Doc<"moves">[]> {
-        return this.db
+    async findLast(game: Game): Promise<Move | null> {
+        const gameId = game.id
+        if(!gameId) return null
+
+        const lastMoves = await this.fromDocs(await this.db
             .query("moves")
-            .withIndex("by_game", (q => q.eq("gameId", game._id)))
+            .withIndex("by_game", (q => q.eq("gameId", gameId)))
             .order("desc")
-            .take(1);
+            .take(1)
+        );
+
+        if (lastMoves.length == 0) return null;
+        return lastMoves[0];
     }
 }

@@ -1,11 +1,15 @@
 import type {Doc, Id, TableNames} from "../_generated/dataModel";
 
-export interface QueryRepositoryInterface<T extends TableNames> {
-    findAll: () => Promise<Doc<T>[]>;
-    find: (id: Id<T>) => Promise<Doc<T> | null>;
+export interface QueryRepositoryInterface<T, D extends TableNames> {
+    findAll: () => Promise<T[]>;
+    find: (id: Id<D>) => Promise<T | null>;
 }
 
-export interface MutationRepositoryInterface<T extends TableNames> {
+export type DocData<T extends TableNames> = Omit<Doc<T>, "_id"|"_creationTime">
+
+export interface MutationRepositoryInterface<T, D extends TableNames> {
     // save function to be added when all the repositories will be updated
-    delete: (id: Id<T>) => Promise<void>;
+    new: (data: DocData<D>) => Promise<T>;
+    delete: (t: T) => Promise<void>;
+    save: (t: T) => Promise<T>
 }

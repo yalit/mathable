@@ -1,11 +1,10 @@
-import type {MutationRepositoryInterface} from "../repositories.interface.ts";
+import type {DocData, MutationRepositoryInterface} from "../repositories.interface.ts";
 import type {GenericDatabaseWriter} from "convex/server";
-import type {DataModel, Doc, Id} from "../../_generated/dataModel";
+import type {DataModel} from "../../_generated/dataModel";
 import type {Game} from "../../domain/models/Game";
+import {gameFromDoc} from "../../domain/models/factory/game.factory.ts";
 
-export interface GamesMutationRepositoryInterface extends MutationRepositoryInterface<"games"> {
-    save(game: Game): Promise<Id<"games">>;
-}
+export interface GamesMutationRepositoryInterface extends MutationRepositoryInterface<Game, "games"> {}
 
 
 export class GamesMutationRepository implements GamesMutationRepositoryInterface {
@@ -26,11 +25,16 @@ export class GamesMutationRepository implements GamesMutationRepositoryInterface
         return GamesMutationRepository.instance;
     }
 
-    async delete(id: Id<"games">): Promise<void> {
-        await this.db.delete(id);
+    async delete(game: Game): Promise<void> {
+        await this.db.delete(game.id);
     }
 
-    async save(game: Game): Promise<Id<"games">> {
+    async new(data: DocData<"games">): Promise<Game> {
+        const gameId = await this.db.insert("games", data);
+        return gameFromDoc({...data, _id: gameId, _creationTime: 0})
+    }
+
+    async save(game: Game): Promise<Game> {
         const docData = {
             token: game.token,
             status: game.status,
@@ -38,13 +42,8 @@ export class GamesMutationRepository implements GamesMutationRepositoryInterface
             winner: game.winner
         };
 
-        if (game.id === null) {
-            // Insert new game - omit _id and _creationTime
-            return await this.db.insert("games", docData as Omit<Doc<"games">, "_id" | "_creationTime">);
-        } else {
-            // Update existing game - patch all fields
-            await this.db.patch(game.id, docData);
-            return game.id;
-        }
+        // Update existing game - patch all fields
+        await this.db.patch(game.id, docData);
+        return game;
     }
 }

@@ -2,16 +2,20 @@ import type {GenericDatabaseReader} from "convex/server";
 import type {SessionId} from "convex-helpers/server/sessions";
 import type {QueryRepositoryInterface} from "../repositories.interface.ts";
 import type {DataModel, Doc, Id} from "../../_generated/dataModel";
-import {UsersQueryRepository} from "../query/users.repository.ts";
-import {PlayersQueryRepository} from "../query/players.repository.ts";
-import {TilesQueryRepository} from "../../repository/query/tiles.repository.ts";
-import {MovesQueryRepository} from "../../repository/query/moves.repository.ts";
+import {UsersQueryRepository} from "./users.repository.ts";
+import {PlayersQueryRepository} from "./players.repository.ts";
+import {TilesQueryRepository} from "./tiles.repository.ts";
+import {MovesQueryRepository} from "./moves.repository.ts";
+import type { Game } from "../../domain/models/Game.ts";
+import type {Player} from "../../domain/models/Player.ts";
+import {gameFromDoc} from "../../domain/models/factory/game.factory.ts";
+import type {User} from "../../domain/models/User.ts";
 
-export interface GameQueryRepositoryInterface extends QueryRepositoryInterface<"games"> {
-    findByToken: (token: string) => Promise<Doc<"games"> | null>;
-    findNonFinishedGamesForSessionId: (sessionId: SessionId) => Promise<Doc<"games">[]>;
-    isGameWon: (id: Id<"games">, playerId: Id<"players">) => Promise<boolean>;
-    isGameIdle: (id: Id<"games">) => Promise<boolean>;
+export interface GameQueryRepositoryInterface extends QueryRepositoryInterface<Game, "games"> {
+    findByToken: (token: string) => Promise<Game | null>;
+    findNonFinishedGamesForSessionId: (sessionId: SessionId) => Promise<Game[]>;
+    isGameWon: (game: Game, player: Player) => Promise<boolean>;
+    isGameIdle: (game: Game) => Promise<boolean>;
 }
 
 export class GamesQueryRepository implements GameQueryRepositoryInterface {
@@ -30,34 +34,44 @@ export class GamesQueryRepository implements GameQueryRepositoryInterface {
         return GamesQueryRepository.instance;
     }
 
-    async findAll(): Promise<Doc<"games">[]> {
-        return this.db.query("games").collect();
+    async fromDocs(docs: Doc<"games">[]): Promise<Game[]> {
+        return docs.map((d) => gameFromDoc(d))
     }
 
-    async find(id: Id<"games">): Promise<Doc<"games"> | null> {
-        return this.db.get(id);
+    async findAll(): Promise<Game[]> {
+        return this.fromDocs(await this.db.query("games").collect());
     }
 
-    async findByToken(token: string): Promise<Doc<"games"> | null> {
-        return this.db
+    async find(id: Id<"games">): Promise<Game | null> {
+        const game = await this.db.get(id);
+
+        if (!game) return null;
+        return gameFromDoc(game);
+    }
+
+    async findByToken(token: string): Promise<Game | null> {
+        const game = await this.db
             .query("games")
             .withIndex("by_token", (q) => q.eq("token", token))
             .unique();
+
+        if (!game) return null;
+        return gameFromDoc(game);
     }
 
-    async findNonFinishedGamesForSessionId(sessionId: SessionId): Promise<Doc<"games">[]> {
-        const userWithSession: Doc<"users"> | null = await UsersQueryRepository.instance.findBySessionId(sessionId);
+    async findNonFinishedGamesForSessionId(sessionId: SessionId): Promise<Game[]> {
+        const userWithSession: User | null = await UsersQueryRepository.instance.findBySessionId(sessionId);
 
         if (!userWithSession) {
             return [];
         }
 
-        const playersWithSession: Doc<"players">[] = await PlayersQueryRepository.instance.findAllByUserId(userWithSession._id)
+        const playersWithSession: Player[] = await PlayersQueryRepository.instance.findAllByUserId(userWithSession)
 
         const gamesID: Set<Id<"games">> = new Set();
         playersWithSession.forEach((p) => gamesID.add(p.gameId));
 
-        const games: Doc<"games">[] = [];
+        const games: Game[] = [];
         await Promise.all(
             Array.from(gamesID).map(async (id: Id<"games">) => {
                 const game = await this.find(id)
@@ -69,31 +83,28 @@ export class GamesQueryRepository implements GameQueryRepositoryInterface {
         );
         return games;
     }
-    async isGameWon(id: Id<"games">, playerId: Id<"players">): Promise<boolean> {
-        const bagTiles = await TilesQueryRepository.instance.findAllInBagByGame(id);
+
+    // TODO : refactor that into a service in the domain
+    async isGameWon(game: Game, player: Player): Promise<boolean> {
+        const bagTiles = await TilesQueryRepository.instance.findAllInBagByGame(game);
         if (bagTiles.length > 0) {
             return false
         }
 
-        const playerTiles = await TilesQueryRepository.instance.findByPlayer(playerId)
+        const playerTiles = await TilesQueryRepository.instance.findByPlayer(player)
 
         return playerTiles.length === 0;
     }
 
-    async isGameIdle(id: Id<"games">): Promise<boolean> {
-        const game = await this.find(id)
-        if (!game) {
-            return false
-        }
+    // TODO : refactor that into a service in the domain
+    async isGameIdle(game: Game): Promise<boolean> {
+        const lastMove = await MovesQueryRepository.instance.findLast(game);
 
-        const lastMoves = await MovesQueryRepository.instance.findLast(game);
-
-        if (lastMoves.length === 0) {
+        if (!lastMove) {
             return false;
         }
 
-        const lastMove = lastMoves[lastMoves.length - 1];
-        const gamePlayers = await PlayersQueryRepository.instance.findByGame(id)
+        const gamePlayers = await PlayersQueryRepository.instance.findByGame(game)
 
         return lastMove.turn < game.currentTurn - (2 * gamePlayers.length); // 2 turn by players not doing any moves
     }

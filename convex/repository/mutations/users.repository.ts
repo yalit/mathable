@@ -1,11 +1,10 @@
-import type {DataModel, Doc, Id} from "../../_generated/dataModel";
+import type {DataModel} from "../../_generated/dataModel";
 import type {GenericDatabaseWriter} from "convex/server";
-import type {MutationRepositoryInterface} from "../repositories.interface.ts";
+import type {DocData, MutationRepositoryInterface} from "../repositories.interface.ts";
 import type {User} from "../../domain/models/User";
+import {userFromDoc} from "../../domain/models/factory/user.factory.ts";
 
-export interface UsersMutationRepositoryInterface extends MutationRepositoryInterface<"users"> {
-    save(user: User): Promise<Id<"users">>;
-}
+export interface UsersMutationRepositoryInterface extends MutationRepositoryInterface<User, "users"> {}
 
 export class UsersMutationRepository implements UsersMutationRepositoryInterface {
     static instance: UsersMutationRepository;
@@ -24,23 +23,23 @@ export class UsersMutationRepository implements UsersMutationRepositoryInterface
         return UsersMutationRepository.instance;
     }
 
-    async save(user: User): Promise<Id<"users">> {
+    async delete(user: User): Promise<void> {
+        return this.db.delete(user.id);
+    }
+
+    async new(data: DocData<"users">): Promise<User> {
+        const userId = await this.db.insert("users", data)
+        return userFromDoc({...data, _id:userId, _creationTime: 0})
+    }
+
+    async save(user: User): Promise<User> {
         const docData = {
             sessionId: user.sessionId,
             name: user.name
         };
 
-        if (user.id === null) {
-            // Insert new user - omit _id and _creationTime
-            return await this.db.insert("users", docData as Omit<Doc<"users">, "_id" | "_creationTime">);
-        } else {
-            // Update existing user - patch all fields
-            await this.db.patch(user.id, docData);
-            return user.id;
-        }
-    }
-
-    async delete(id: Id<"users">): Promise<void> {
-        return this.db.delete(id);
+        // Update existing user - patch all fields
+        await this.db.patch(user.id, docData);
+        return user;
     }
 }

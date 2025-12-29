@@ -1,11 +1,11 @@
-import type { DataModel, Doc, Id } from "../../_generated/dataModel";
-import type { MutationRepositoryInterface } from "../repositories.interface.ts";
+import type { DataModel } from "../../_generated/dataModel";
+import type {DocData, MutationRepositoryInterface} from "../repositories.interface.ts";
 import type { GenericDatabaseWriter } from "convex/server";
 import type { Cell } from "../../domain/models/Cell";
+import {cellFromDoc} from "../../domain/models/factory/cell.factory.ts";
 
 export interface CellsMutationRepositoryInterface
-  extends MutationRepositoryInterface<"cells"> {
-  save(cell: Cell): Promise<Id<"cells">>;
+  extends MutationRepositoryInterface<Cell, "cells"> {
 }
 
 export class CellsMutationRepository
@@ -24,21 +24,21 @@ export class CellsMutationRepository
     this.db = db;
   }
 
-  async delete(id: Id<"cells">): Promise<void> {
-    await this.db.delete(id);
+  async delete(cell: Cell): Promise<void> {
+    await this.db.delete(cell.id);
   }
 
-  async save(cell: Cell): Promise<Id<"cells">> {
+  async new(data: DocData<"cells">): Promise<Cell> {
+    const cellId = await this.db.insert("cells", data);
+    return cellFromDoc({...data, _id: cellId, _creationTime: 0})
+  }
+
+  async save(cell: Cell): Promise<Cell> {
     const docData = cell.toDoc();
 
-    if (cell.id === null) {
-      // Insert new cell - omit _id and _creationTime
-      return await this.db.insert("cells", docData as Omit<Doc<"cells">, "_id" | "_creationTime">);
-    } else {
-      // Update existing cell - patch all fields
-      await this.db.patch(cell.id, docData);
-      return cell.id;
-    }
+    // Update existing cell - patch all fields
+    await this.db.patch(cell.id, docData);
+    return cell;
   }
 }
 
