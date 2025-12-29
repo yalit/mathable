@@ -50,7 +50,7 @@ export const servicesConfig: ServicesConfig = {
     },
     "CellsQueryRepositoryInterface": {
       class: CellsQueryRepository,
-      arguments: [DB_ARGUMENT],
+      arguments: [DB_ARGUMENT, "TilesQueryRepositoryInterface"],
     },
     "UsersQueryRepositoryInterface": {
       class: UsersQueryRepository,
