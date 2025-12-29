@@ -8,7 +8,7 @@ import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
 import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
 import { v, type Infer } from "convex/values";
-import { APIReturn, APIError } from "../return.type";
+import { APIReturn, APIError, APISuccess } from "../return.type";
 import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
 import type { CellsQueryRepositoryInterface } from "../../repository/query/cells.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
@@ -48,10 +48,7 @@ export const playToCell = appMutation({
             const useCase = new PlaceTileUseCase(ctx);
             await useCase.execute(tile, cell, player, ctx.user);
 
-            return {
-                status: "success",
-                data: null
-            };
+            return APISuccess(null);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -85,10 +82,7 @@ export const pick = appMutation({
             const useCase = new PickTileUseCase(ctx);
             const data = await useCase.execute(player, ctx.user);
 
-            return {
-                status: "success",
-                data
-            };
+            return APISuccess(data);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -134,10 +128,7 @@ export const displace = appMutation({
             const useCase = new DisplaceTileUseCase(ctx);
             await useCase.execute(tile, fromCell, toCell, player, ctx.user);
 
-            return {
-                status: "success",
-                data: null
-            };
+            return APISuccess(null);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -169,10 +160,7 @@ export const cancelPlacement = appMutation({
             const useCase = new CancelTilePlacementUseCase(ctx);
             await useCase.execute(player, ctx.user);
 
-            return {
-                status: "success",
-                data: null
-            };
+            return APISuccess(null);
         } catch (e: any) {
             return APIError(e.message);
         }

@@ -5,7 +5,7 @@
 import { appMutation, SessionArgs } from "../../middleware/app.middleware";
 import {CreateGameUseCase} from "../../usecases/game/CreateGame.usecase.ts";
 import {v, type Infer} from "convex/values";
-import {APIReturn, APIError} from "../return.type.ts";
+import {APIReturn, APIError, APISuccess} from "../return.type.ts";
 import {JoinGameUseCase} from "../../usecases/game/JoinGame.usecase.ts";
 import {StartGameUseCase} from "../../usecases/game/StartGame.usecase.ts";
 import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
@@ -24,7 +24,7 @@ export const create = appMutation({
         const useCase = new CreateGameUseCase(ctx);
         try {
             const data = await useCase.execute(args.playerName, args.sessionId);
-            return {status: "success", data}
+            return APISuccess(data);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -58,10 +58,7 @@ export const join = appMutation({
             const useCase = new JoinGameUseCase(ctx);
             const playerToken = await useCase.execute(game, ctx.user, args.playerName);
 
-            return {
-                status: "success",
-                data: playerToken
-            };
+            return APISuccess(playerToken);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -89,10 +86,7 @@ export const start = appMutation({
             const useCase = new StartGameUseCase(ctx);
             await useCase.execute(game, ctx.user);
 
-            return {
-                status: "success",
-                data: null
-            };
+            return APISuccess(null);
         } catch (e: any) {
             return APIError(e.message);
         }

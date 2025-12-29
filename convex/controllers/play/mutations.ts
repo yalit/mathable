@@ -6,7 +6,7 @@ import { appMutation, SessionArgs } from "../../middleware/app.middleware";
 import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
 import { ResetTurnUseCase } from "../../usecases/play/ResetTurn.usecase";
 import { v, type Infer } from "convex/values";
-import { APIReturn, APIError } from "../return.type";
+import { APIReturn, APIError, APISuccess } from "../return.type";
 import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 
@@ -33,10 +33,7 @@ export const resetTurn = appMutation({
             const useCase = new ResetTurnUseCase(ctx);
             const data = await useCase.execute(game, ctx.user);
 
-            return {
-                status: "success",
-                data
-            };
+            return APISuccess(data);
         } catch (e: any) {
             return APIError(e.message);
         }
@@ -70,10 +67,7 @@ export const endTurn = appMutation({
             const useCase = new EndTurnUseCase(ctx);
             const data = await useCase.execute(game, ctx.user, currentPlayer);
 
-            return {
-                status: "success",
-                data
-            };
+            return APISuccess(data);
         } catch (e: any) {
             return APIError(e.message);
         }
