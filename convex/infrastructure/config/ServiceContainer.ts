@@ -1,7 +1,7 @@
-import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import type { GenericDatabaseReader, GenericDatabaseWriter } from "convex/server";
-import type { DataModel } from "../_generated/dataModel";
-import { ServiceRegistry } from "./ServiceRegistry";
+import type { DataModel } from "../../_generated/dataModel";
+import { ServiceRegistry } from "./ServiceRegistry.ts";
 
 export const DB_ARGUMENT = "db_argument"
 /**

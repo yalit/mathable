@@ -22,11 +22,11 @@ import type * as domain_models_Move from "../domain/models/Move.js";
 import type * as domain_models_Player from "../domain/models/Player.js";
 import type * as domain_models_Tile from "../domain/models/Tile.js";
 import type * as domain_models_User from "../domain/models/User.js";
-import type * as helpers_array from "../helpers/array.js";
 import type * as infrastructure_ContainerFactory from "../infrastructure/ContainerFactory.js";
-import type * as infrastructure_ServiceConfiguration from "../infrastructure/ServiceConfiguration.js";
-import type * as infrastructure_ServiceContainer from "../infrastructure/ServiceContainer.js";
-import type * as infrastructure_ServiceRegistry from "../infrastructure/ServiceRegistry.js";
+import type * as infrastructure_config_ServiceConfiguration from "../infrastructure/config/ServiceConfiguration.js";
+import type * as infrastructure_config_ServiceContainer from "../infrastructure/config/ServiceContainer.js";
+import type * as infrastructure_config_ServiceRegistry from "../infrastructure/config/ServiceRegistry.js";
+import type * as lib_array from "../lib/array.js";
 
 import type {
   ApiFromModules,
@@ -49,11 +49,11 @@ declare const fullApi: ApiFromModules<{
   "domain/models/Player": typeof domain_models_Player;
   "domain/models/Tile": typeof domain_models_Tile;
   "domain/models/User": typeof domain_models_User;
-  "helpers/array": typeof helpers_array;
   "infrastructure/ContainerFactory": typeof infrastructure_ContainerFactory;
-  "infrastructure/ServiceConfiguration": typeof infrastructure_ServiceConfiguration;
-  "infrastructure/ServiceContainer": typeof infrastructure_ServiceContainer;
-  "infrastructure/ServiceRegistry": typeof infrastructure_ServiceRegistry;
+  "infrastructure/config/ServiceConfiguration": typeof infrastructure_config_ServiceConfiguration;
+  "infrastructure/config/ServiceContainer": typeof infrastructure_config_ServiceContainer;
+  "infrastructure/config/ServiceRegistry": typeof infrastructure_config_ServiceRegistry;
+  "lib/array": typeof lib_array;
 }>;
 
 /**

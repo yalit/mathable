@@ -1,8 +1,8 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { ServiceContainer } from "./ServiceContainer";
-import { loadServiceConfiguration } from "./ServiceConfiguration";
-import type { ServiceRegistry } from "./ServiceRegistry";
-import type { ServicesConfig } from "./ServiceConfig.types";
+import { ServiceContainer } from "./config/ServiceContainer.ts";
+import { loadServiceConfiguration } from "./config/ServiceConfiguration.ts";
+import type { ServiceRegistry } from "./config/ServiceRegistry.ts";
+import type { ServicesConfig } from "./config/ServiceConfig.types.ts";
 import { servicesConfig } from "../services.config";
 
 /**

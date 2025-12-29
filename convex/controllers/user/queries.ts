@@ -1,4 +1,4 @@
-import {appQuery, SessionArgs} from "../../middleware/app.middleware.ts";
+import {appQuery, SessionArgs} from "../../infrastructure/middleware/app.middleware.ts";
 import type {User} from "../../domain/models/User.ts";
 
 export const getForSession = appQuery({

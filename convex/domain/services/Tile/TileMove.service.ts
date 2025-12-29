@@ -1,4 +1,4 @@
-import type {AppMutationCtx} from "../../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middleware.ts";
 import type {Player} from "../../models/Player.ts";
 import type { Tile } from "../../models/Tile.ts";
 import type { CellsQueryRepositoryInterface } from "../../../repository/query/cells.repository.ts";

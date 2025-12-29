@@ -2,7 +2,7 @@ import type {PlayersQueryRepositoryInterface} from "../../repository/query/playe
 import type {GamesMutationRepositoryInterface} from "../../repository/mutations/games.repository";
 import type {PlayersMutationRepositoryInterface} from "../../repository/mutations/players.repository";
 import type {User} from "../../domain/models/User.ts";
-import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import { TileDistributionService } from "../../domain/services/Tile/TileDistribution.service.ts";
 

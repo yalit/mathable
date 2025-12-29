@@ -7,7 +7,7 @@ import {getBoardCells, getInitialGameTiles} from "../../domain/models/factory/ga
 import type {Cell} from "../../domain/models/Cell.ts";
 import {UUID} from "../../domain/models/factory/uuid.factory.ts";
 import {createTile} from "../../domain/models/factory/tile.factory.ts";
-import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import type {UsersQueryRepositoryInterface} from "../../repository/query/users.repository.ts";
 import type {Player} from "../../domain/models/Player.ts";

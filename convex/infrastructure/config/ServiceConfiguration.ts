@@ -1,5 +1,5 @@
-import { ServiceRegistry } from "./ServiceRegistry";
-import type { ServicesConfig } from "./ServiceConfig.types";
+import { ServiceRegistry } from "./ServiceRegistry.ts";
+import type { ServicesConfig } from "./ServiceConfig.types.ts";
 
 /**
  * Load service configuration and create a ServiceRegistry

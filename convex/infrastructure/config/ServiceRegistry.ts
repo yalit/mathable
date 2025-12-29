@@ -1,4 +1,4 @@
-import type { ServiceDefinition } from "./ServiceConfig.types";
+import type { ServiceDefinition } from "./ServiceConfig.types.ts";
 
 export type ServiceRegistrationScope = "query" | "mutation" | "any"
  /**

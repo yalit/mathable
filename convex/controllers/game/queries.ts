@@ -1,5 +1,5 @@
 import type { Game } from "../../domain/models/Game.ts";
-import {appQuery, SessionArgs} from "../../middleware/app.middleware.ts";
+import {appQuery, SessionArgs} from "../../infrastructure/middleware/app.middleware.ts";
 import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
 import {v} from "convex/values";
 

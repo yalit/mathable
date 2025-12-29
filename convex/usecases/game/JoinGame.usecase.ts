@@ -1,5 +1,5 @@
 import type {PlayersQueryRepositoryInterface} from "../../repository/query/players.repository";
-import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import type {PlayersMutationRepositoryInterface} from "../../repository/mutations/players.repository.ts";
 import type {User} from "../../domain/models/User.ts";

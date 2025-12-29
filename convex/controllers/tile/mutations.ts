@@ -2,7 +2,7 @@
  * Tile mutations controller
  * Thin adapters that delegate to tile use cases
  */
-import { appMutation, SessionArgs } from "../../middleware/app.middleware";
+import { appMutation, SessionArgs } from "../../infrastructure/middleware/app.middleware";
 import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
 import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
 import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";

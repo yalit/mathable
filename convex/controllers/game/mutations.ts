@@ -2,7 +2,7 @@
  * Create a new game
  * Thin adapter that delegates to CreateGameUseCase
  */
-import { appMutation, SessionArgs } from "../../middleware/app.middleware";
+import { appMutation, SessionArgs } from "../../infrastructure/middleware/app.middleware";
 import {CreateGameUseCase} from "../../usecases/game/CreateGame.usecase.ts";
 import {v, type Infer} from "convex/values";
 import {APIReturn, APIError, APISuccess} from "../return.type.ts";

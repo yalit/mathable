@@ -13,18 +13,19 @@ export type ReturnResult = "success" | "error";
  * // Type: {status: "success", data: {id: string, name: string}} | {status: "error", data: string}
  */
 
-const APIReturnError: Validator<never, never, never> = v.object({
+const APIReturnError: Validator<any, any, any> = v.object({
     status: v.literal("error"),
     data: v.string()
 })
 
-const APIReturnSuccess = <T extends Validator<never, never, never>>(dataValidator: T) => {
+const APIReturnSuccess = <T extends Validator<any, any, any>>(dataValidator: T) => {
     return v.object({
         status: v.literal("success"),
         data: dataValidator
     })
 }
-export const APIReturn = <T extends Validator<never, never, never>>(dataValidator: T) => {
+
+export const APIReturn = <T extends Validator<any, any, any>>(dataValidator: T) => {
     return v.union(APIReturnError, APIReturnSuccess(dataValidator));
 };
 

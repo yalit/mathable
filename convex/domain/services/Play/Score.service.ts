@@ -1,4 +1,4 @@
-import type {AppMutationCtx} from "../../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../models/Game.ts";
 import type {MovesQueryRepositoryInterface} from "../../../repository/query/moves.repository.ts";
 import type {Player} from "../../models/Player.ts";
@@ -6,7 +6,7 @@ import type { TilesQueryRepositoryInterface } from "../../../repository/query/ti
 import type { PlayersMutationRepositoryInterface } from "../../../repository/mutations/players.repository.ts";
 import type { Cell } from "../../models/Cell.ts";
 import type {Tile} from "../../models/Tile.ts";
-import {countItems} from "../../../helpers/array.ts";
+import {countItems} from "../../../lib/array.ts";
 
 export class ScoreService {
     private readonly ctx: AppMutationCtx

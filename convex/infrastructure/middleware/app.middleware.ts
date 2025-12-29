@@ -7,11 +7,11 @@ import type {
     GenericQueryCtx, RegisteredMutation, RegisteredQuery,
     ReturnValueForOptionalValidator
 } from "convex/server";
-import type {DataModel} from "../_generated/dataModel";
-import type {ServiceContainer} from "../infrastructure/ServiceContainer.ts";
-import {internalMutation, internalQuery, mutation, query} from "../_generated/server";
-import type {User} from "../domain/models/User.ts";
-import {createContainer} from "../infrastructure/ContainerFactory.ts";
+import type {DataModel} from "../../_generated/dataModel";
+import type {ServiceContainer} from "../config/ServiceContainer.ts";
+import {internalMutation, internalQuery, mutation, query} from "../../_generated/server";
+import type {User} from "../../domain/models/User.ts";
+import {createContainer} from "../ContainerFactory.ts";
 
 /*
 export const withSessionQuery = customQuery(withContainerQuery, {

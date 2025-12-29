@@ -1,10 +1,10 @@
-import type { ServicesConfig } from "./ServiceConfig.types";
+import type { ServicesConfig } from "./ServiceConfig.types.ts";
 
 // Import your actual repository classes
-import { PlayersQueryRepository } from "../repository/query/players.repository";
-import { GamesQueryRepository } from "../repository/query/games.repository";
-import { PlayersMutationRepository } from "../repository/mutations/players.repository";
-import {DB_ARGUMENT} from "@cvx/infrastructure/ServiceContainer.ts";
+import { PlayersQueryRepository } from "../../repository/query/players.repository.ts";
+import { GamesQueryRepository } from "../../repository/query/games.repository.ts";
+import { PlayersMutationRepository } from "../../repository/mutations/players.repository.ts";
+import {DB_ARGUMENT} from "./ServiceContainer.ts";
 
 /**
  * Example production service configuration

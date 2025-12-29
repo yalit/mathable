@@ -1,4 +1,4 @@
-import type { ServicesConfig } from "./infrastructure/ServiceConfig.types";
+import type { ServicesConfig } from "./infrastructure/config/ServiceConfig.types.ts";
 
 // Query Repository Imports
 import { PlayersQueryRepository } from "./repository/query/players.repository";
@@ -15,7 +15,7 @@ import { TilesMutationRepository } from "./repository/mutations/tiles.repository
 import { MovesMutationRepository } from "./repository/mutations/moves.repository";
 import { CellsMutationRepository } from "./repository/mutations/cells.repository";
 import { UsersMutationRepository } from "./repository/mutations/users.repository";
-import {DB_ARGUMENT} from "./infrastructure/ServiceContainer.ts";
+import {DB_ARGUMENT} from "./infrastructure/config/ServiceContainer.ts";
 
 /**
  * Production service configuration

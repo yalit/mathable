@@ -2,7 +2,7 @@
  * Play mutations controller
  * Thin adapters that delegate to play use cases
  */
-import { appMutation, SessionArgs } from "../../middleware/app.middleware";
+import { appMutation, SessionArgs } from "../../infrastructure/middleware/app.middleware";
 import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
 import { ResetTurnUseCase } from "../../usecases/play/ResetTurn.usecase";
 import { v, type Infer } from "convex/values";

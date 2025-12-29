@@ -1,4 +1,4 @@
-import {appQuery} from "../../middleware/app.middleware.ts";
+import {appQuery} from "../../infrastructure/middleware/app.middleware.ts";
 import {v} from "convex/values";
 import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
 import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";

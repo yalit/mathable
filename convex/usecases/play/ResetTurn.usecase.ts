@@ -2,7 +2,7 @@ import type {PlayersQueryRepositoryInterface} from "../../repository/query/playe
 import type {MovesQueryRepositoryInterface} from "../../repository/query/moves.repository";
 import type {User} from "../../domain/models/User.ts";
 import type {Game} from "../../domain/models/Game.ts";
-import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
 import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
 import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.repository.ts";

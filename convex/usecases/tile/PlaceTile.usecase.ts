@@ -1,7 +1,7 @@
 import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository";
 import type {MovesMutationRepositoryInterface} from "../../repository/mutations/moves.repository";
 import {Cell} from "../../domain/models/Cell.ts";
-import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Tile} from "../../domain/models/Tile.ts";
 import type {User} from "../../domain/models/User.ts";
 import type { Player } from "../../domain/models/Player.ts";
