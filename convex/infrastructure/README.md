@@ -130,7 +130,7 @@ Services can depend on other services through constructor injection:
 class GameLogicService {
   constructor(
     private db: GenericDatabaseReader<DataModel>,
-    private gamesRepo: GameQueryRepositoryInterface,
+    private gamesRepo: GamesQueryRepositoryInterface,
     private playersRepo: PlayersQueryRepositoryInterface
   ) {}
 

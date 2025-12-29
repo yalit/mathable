@@ -1,4 +1,4 @@
-import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository";
+import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import type {User} from "../../domain/models/User.ts";
@@ -16,7 +16,7 @@ import type { GamesMutationRepositoryInterface } from "../../repository/mutation
  */
 export class EndTurnUseCase {
     private ctx: AppMutationCtx;
-    private readonly gamesQuery:  GameQueryRepositoryInterface;
+    private readonly gamesQuery:  GamesQueryRepositoryInterface;
     private readonly gamesMutation: GamesMutationRepositoryInterface
     private readonly endGameService: EndGameService;
 

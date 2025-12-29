@@ -2,14 +2,14 @@ import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middle
 import type {Player} from "../../models/Player.ts";
 import type { Tile } from "../../models/Tile.ts";
 import type { CellsQueryRepositoryInterface } from "../../../repository/query/cells.repository.ts";
-import type {GameQueryRepositoryInterface} from "../../../repository/query/games.repository.ts";
+import type {GamesQueryRepositoryInterface} from "../../../repository/query/games.repository.ts";
 import type {CellsMutationRepositoryInterface} from "../../../repository/mutations/cells.repository.ts";
 import type { TilesMutationRepositoryInterface } from "../../../repository/mutations/tiles.repository.ts";
 import type {Cell} from "../../models/Cell.ts";
 
 export class TileMoveService {
     private ctx: AppMutationCtx;
-    private gamesQuery: GameQueryRepositoryInterface;
+    private gamesQuery: GamesQueryRepositoryInterface;
     private cellsQuery: CellsQueryRepositoryInterface;
     private cellsMutation: CellsMutationRepositoryInterface
     private tilesMutation: TilesMutationRepositoryInterface;

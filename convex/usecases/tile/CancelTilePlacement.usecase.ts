@@ -1,4 +1,4 @@
-import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { GamesQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { MovesQueryRepositoryInterface } from "../../repository/query/moves.repository";
 import { type MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
@@ -17,7 +17,7 @@ import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.r
  */
 export class CancelTilePlacementUseCase {
   private readonly ctx: AppMutationCtx;
-  private readonly gamesQuery: GameQueryRepositoryInterface
+  private readonly gamesQuery: GamesQueryRepositoryInterface
   private readonly movesQuery: MovesQueryRepositoryInterface
   private readonly movesMutation: MovesMutationRepositoryInterface
   private readonly cellsQuery: CellsQueryRepositoryInterface

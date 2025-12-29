@@ -1,4 +1,4 @@
-import type {GameQueryRepositoryInterface} from "../../repository/query/games.repository";
+import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository";
 import type {MovesMutationRepositoryInterface} from "../../repository/mutations/moves.repository";
 import {Cell} from "../../domain/models/Cell.ts";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
@@ -16,7 +16,7 @@ import {CellValueComputationService} from "../../domain/services/Cell/CellValueC
  */
 export class PlaceTileUseCase {
     private readonly ctx: AppMutationCtx;
-    private readonly gamesQuery: GameQueryRepositoryInterface
+    private readonly gamesQuery: GamesQueryRepositoryInterface
     private readonly movesMutation: MovesMutationRepositoryInterface
     private readonly tileMoveService: TileMoveService
     private readonly scoreService: ScoreService

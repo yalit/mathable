@@ -7,7 +7,7 @@ import { EndTurnUseCase } from "../../usecases/play/EndTurn.usecase";
 import { ResetTurnUseCase } from "../../usecases/play/ResetTurn.usecase";
 import { v, type Infer } from "convex/values";
 import { APIReturn, APIError, APISuccess } from "../return.type";
-import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
+import type { GamesQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 
 // Extract return validator for resetTurn mutation
@@ -24,7 +24,7 @@ export const resetTurn = appMutation({
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: resetTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof resetTurnReturn>> => {
-        const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
+        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
         if (!game) return APIError("No Game found");
         if (!ctx.user) return APIError("User not authenticated");
@@ -54,7 +54,7 @@ export const endTurn = appMutation({
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: endTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof endTurnReturn>> => {
-        const gamesQuery: GameQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
+        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
         if (!game) return APIError("No Game found");
         if (!ctx.user) return APIError("User not authenticated");

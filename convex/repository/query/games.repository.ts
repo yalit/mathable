@@ -11,14 +11,14 @@ import type {Player} from "../../domain/models/Player.ts";
 import {gameFromDoc} from "../../domain/models/factory/game.factory.ts";
 import type {User} from "../../domain/models/User.ts";
 
-export interface GameQueryRepositoryInterface extends QueryRepositoryInterface<Game, "games"> {
+export interface GamesQueryRepositoryInterface extends QueryRepositoryInterface<Game, "games"> {
     findByToken: (token: string) => Promise<Game | null>;
     findNonFinishedGamesForSessionId: (sessionId: SessionId) => Promise<Game[]>;
     isGameWon: (game: Game, player: Player) => Promise<boolean>;
     isGameIdle: (game: Game) => Promise<boolean>;
 }
 
-export class GamesQueryRepository implements GameQueryRepositoryInterface {
+export class GamesQueryRepository implements GamesQueryRepositoryInterface {
     static instance: GamesQueryRepository;
     private db: GenericDatabaseReader<DataModel>;
 
@@ -26,7 +26,7 @@ export class GamesQueryRepository implements GameQueryRepositoryInterface {
         this.db = db;
     }
 
-    static create(db: GenericDatabaseReader<DataModel>): GameQueryRepositoryInterface {
+    static create(db: GenericDatabaseReader<DataModel>): GamesQueryRepositoryInterface {
         if (GamesQueryRepository.instance) {
             return GamesQueryRepository.instance;
         }

@@ -6,7 +6,7 @@ import {cellFromDoc} from "../../domain/models/factory/cell.factory.ts";
 import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.repository.ts";
 import type {Tile} from "../../domain/models/Tile.ts";
 import {type Game, Game as GameModel} from "../../domain/models/Game.ts";
-import type { GameQueryRepositoryInterface } from "./games.repository.ts";
+import type { GamesQueryRepositoryInterface } from "./games.repository.ts";
 
 export interface CellsQueryRepositoryInterface
     extends QueryRepositoryInterface<Cell, "cells"> {
@@ -37,9 +37,9 @@ export class CellsQueryRepository implements CellsQueryRepositoryInterface {
     static instance: CellsQueryRepository;
     private db: GenericDatabaseReader<DataModel>;
     private tilesQueryRepository: TilesQueryRepositoryInterface;
-    private gamesQueryRepository: GameQueryRepositoryInterface
+    private gamesQueryRepository: GamesQueryRepositoryInterface
 
-    constructor(db: GenericDatabaseReader<DataModel>, tiles: TilesQueryRepositoryInterface, games: GameQueryRepositoryInterface) {
+    constructor(db: GenericDatabaseReader<DataModel>, tiles: TilesQueryRepositoryInterface, games: GamesQueryRepositoryInterface) {
         this.db = db;
         this.tilesQueryRepository = tiles
         this.gamesQueryRepository = games
@@ -48,7 +48,7 @@ export class CellsQueryRepository implements CellsQueryRepositoryInterface {
     static create(
         db: GenericDatabaseReader<DataModel>,
         tileRepositoryInterface: TilesQueryRepositoryInterface,
-        gameQueryRepositoryInterface: GameQueryRepositoryInterface
+        gameQueryRepositoryInterface: GamesQueryRepositoryInterface
 
     ): CellsQueryRepositoryInterface {
         if (CellsQueryRepository.instance) {
