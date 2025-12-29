@@ -9,14 +9,10 @@ import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
 import {ScoreService} from "../../domain/services/Play/Score.service.ts";
 import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
 
-export interface PlaceTileResult {
-    success: boolean;
-    error?: string;
-}
-
 /**
  * PlaceTileUseCase
  * Orchestrates placing a tile from player's hand to a board cell
+ * Throws errors for validation failures
  */
 export class PlaceTileUseCase {
     private readonly ctx: AppMutationCtx;
@@ -40,68 +36,46 @@ export class PlaceTileUseCase {
         cell: Cell,
         player: Player,
         user: User
-    ): Promise<PlaceTileResult> {
-        // 3. Validate game context
+    ): Promise<void> {
+        // 1. Validate game context
         const game = await this.gamesQuery.find(tile.gameId);
         if (!game) {
-            return {
-                success: false,
-                error: "Game not found",
-            };
+            throw new Error("Game not found");
         }
 
-        // 4. Validate user authorization
+        // 2. Validate user authorization
         if (!player.isSameUser(user)) {
-            return {
-                success: false,
-                error: "You can only place your own tiles",
-            };
+            throw new Error("You can only place your own tiles");
         }
 
-        // 5. Validate it's player's turn
+        // 3. Validate it's player's turn
         if (!game.isPlayerTurn(player)) {
-            return {
-                success: false,
-                error: "It's not your turn",
-            };
+            throw new Error("It's not your turn");
         }
 
-        // 6. Validate tile is in player's hand (using domain logic)
+        // 4. Validate tile is in player's hand (using domain logic)
         if (!tile.isInHand() || !tile.belongsToPlayer(player)) {
-            return {
-                success: false,
-                error: "Tile must be in your hand",
-            };
+            throw new Error("Tile must be in your hand");
         }
 
-        // 7. Validate tile value is allowed on cell (using domain logic)
+        // 5. Validate tile value is allowed on cell (using domain logic)
         if (!cell.isValueAllowed(tile.value)) {
-            return {
-                success: false,
-                error: "This tile value is not allowed on this cell",
-            };
+            throw new Error("This tile value is not allowed on this cell");
         }
 
-        // 8. Validate cell is empty (using domain logic)
+        // 6. Validate cell is empty (using domain logic)
         if (cell.hasTile()) {
-            return {
-                success: false,
-                error: "Cell already has a tile",
-            };
+            throw new Error("Cell already has a tile");
         }
 
-        // 9. Move tile to cell (using internal mutation)
+        // 7. Move tile to cell (using internal mutation)
         await this.tileMoveService.moveToCell(tile, cell, player)
 
-        // 10. Calculate and record the move with score
+        // 8. Calculate and record the move with score
         const moveScore = this.scoreService.computeMoveScore(cell, tile)
         await this.movesMutation.newPlayerToCell(game, tile, player, cell, moveScore)
 
-        // 11. Recompute allowed values for affected cells
+        // 9. Recompute allowed values for affected cells
         await this.cellComputationService.computeAllowedValuesForUpdatedCell(cell)
-
-        return {
-            success: true,
-        };
     }
 }

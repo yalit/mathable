@@ -7,15 +7,10 @@ import type {Player} from "../../domain/models/Player.ts";
 import type {User} from "../../domain/models/User.ts";
 import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
 
-export interface PickTileResult {
-  success: boolean;
-  tileId?: Id<"tiles">;
-  error?: string;
-}
-
 /**
  * PickTileUseCase
  * Orchestrates picking a random tile from the bag and adding it to player's hand
+ * Throws errors for validation failures
  */
 export class PickTileUseCase {
   private readonly ctx: AppMutationCtx;
@@ -35,55 +30,40 @@ export class PickTileUseCase {
   async execute(
       player: Player,
       user: User
-  ): Promise<PickTileResult> {
-    // 2. Load game
+  ): Promise<{tileId: Id<"tiles">}> {
+    // 1. Load game
     const game = await this.gamesQuery.find(player.gameId);
     if (!game) {
-      return {
-        success: false,
-        error: "Game not found",
-      };
+      throw new Error("Game not found");
     }
 
-    // 3. Validate user authorization
+    // 2. Validate user authorization
     if (!player.isSameUser(user)) {
-      return {
-        success: false,
-        error: "You can only pick tiles for yourself",
-      };
+      throw new Error("You can only pick tiles for yourself");
     }
 
-    // 4. Validate it's player's turn
+    // 3. Validate it's player's turn
     if (!game.isPlayerTurn(player)) {
-      return {
-        success: false,
-        error: "It's not your turn",
-      };
+      throw new Error("It's not your turn");
     }
 
-    // 5. Get available tiles from bag
+    // 4. Get available tiles from bag
     const tilesInBag = await this.tilesQuery.findAllInBagByGame(game);
 
     if (tilesInBag.length === 0) {
-      return {
-        success: false,
-        error: "No tiles left in the bag",
-      };
+      throw new Error("No tiles left in the bag");
     }
 
-    // 6. Pick a random tile
+    // 5. Pick a random tile
     tilesInBag.sort(() => Math.random() - 0.5);
     const pickedTile = tilesInBag[0];
 
-    // 7. Move tile to player's hand
+    // 6. Move tile to player's hand
     await this.tileMoveService.moveToPlayer(pickedTile, player)
 
-    // 8. Record the move (BAG_TO_PLAYER is not cancellable due to randomness)
+    // 7. Record the move (BAG_TO_PLAYER is not cancellable due to randomness)
     await this.movesMutation.newPlayerToBag(game, pickedTile, player)
 
-    return {
-      success: true,
-      tileId: pickedTile.id,
-    };
+    return {tileId: pickedTile.id};
   }
 }

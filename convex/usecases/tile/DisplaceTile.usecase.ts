@@ -10,15 +10,11 @@ import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
 import {ScoreService} from "../../domain/services/Play/Score.service.ts";
 import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
 
-export interface DisplaceTileResult {
-    success: boolean;
-    error?: string;
-}
-
 /**
  * DisplaceTileUseCase
  * Orchestrates moving a tile from one cell to another cell
  * This is only allowed for tiles placed in the current turn (Last-Move-Only approach)
+ * Throws errors for validation failures
  */
 export class DisplaceTileUseCase {
     private readonly ctx: AppMutationCtx;
@@ -45,65 +41,44 @@ export class DisplaceTileUseCase {
         toCell: Cell,
         player: Player,
         user: User
-    ): Promise<DisplaceTileResult> {
-        // 3. Validate game context
+    ): Promise<void> {
+        // 1. Validate game context
         const game = await this.gamesQuery.find(tile.gameId);
         if (!game) {
-            return {
-                success: false,
-                error: "Game not found",
-            };
+            throw new Error("Game not found");
         }
 
-        // 4. Validate user authorization
+        // 2. Validate user authorization
         if (!player.isSameUser(user)) {
-            return {
-                success: false,
-                error: "You can only move tiles during your turn",
-            };
+            throw new Error("You can only move tiles during your turn");
         }
 
-        // 5. Validate it's player's turn
+        // 3. Validate it's player's turn
         if (!game.isPlayerTurn(player)) {
-            return {
-                success: false,
-                error: "It's not your turn",
-            };
+            throw new Error("It's not your turn");
         }
 
-        // 6. Validate tile is on the source cell (using domain logic)
+        // 4. Validate tile is on the source cell (using domain logic)
         if (!tile.isOnBoard() || tile.cellId !== fromCell.id) {
-            return {
-                success: false,
-                error: "Tile is not on the source cell",
-            };
+            throw new Error("Tile is not on the source cell");
         }
 
-        // 7. Validate source cell has the tile
+        // 5. Validate source cell has the tile
         if (fromCell.tileId !== tile.id) {
-            return {
-                success: false,
-                error: "Source cell does not contain this tile",
-            };
+            throw new Error("Source cell does not contain this tile");
         }
 
-        // 8. Validate destination cell is empty
+        // 6. Validate destination cell is empty
         if (toCell.hasTile()) {
-            return {
-                success: false,
-                error: "Destination cell already has a tile",
-            };
+            throw new Error("Destination cell already has a tile");
         }
 
-        // 9. Validate tile value is allowed on destination cell
+        // 7. Validate tile value is allowed on destination cell
         if (!toCell.isValueAllowed(tile.value)) {
-            return {
-                success: false,
-                error: "This tile value is not allowed on the destination cell",
-            };
+            throw new Error("This tile value is not allowed on the destination cell");
         }
 
-        // 10. Validate tile can be displaced (Last-Move-Only approach)
+        // 8. Validate tile can be displaced (Last-Move-Only approach)
         // The tile must have been placed in the current turn
         const movesForTurn = await this.movesQuery.findAllForCurrentTurn(game);
         const tileWasPlacedThisTurn = movesForTurn.some(move => {
@@ -111,21 +86,18 @@ export class DisplaceTileUseCase {
         });
 
         if (!tileWasPlacedThisTurn) {
-            return {
-                success: false,
-                error: "Can only displace tiles placed in the current turn",
-            };
+            throw new Error("Can only displace tiles placed in the current turn");
         }
 
-        // 11. Move tile from source to destination cell
+        // 9. Move tile from source to destination cell
         // The moveToCell internal mutation now handles removing from old cell
         // and adding to new cell automatically
         await this.tileMoveService.moveToCell(tile, toCell, player)
 
-        // 12. Calculate new score for the new position
+        // 10. Calculate new score for the new position
         const moveScore = this.moveScoreService.computeMoveScore(toCell, tile)
 
-        // 13. Update the move record (find and update the existing move)
+        // 11. Update the move record (find and update the existing move)
         const moveToUpdate = movesForTurn.find(move => {
             return move.tileId === tile.id && move.isPlayerToCell();
         });
@@ -138,12 +110,8 @@ export class DisplaceTileUseCase {
             await this.movesMutation.delete(moveToUpdate);
         }
 
-        // 14. Recompute allowed values for both affected cells
+        // 12. Recompute allowed values for both affected cells
         await this.cellComputationService.computeAllowedValuesForUpdatedCell(fromCell)
         await this.cellComputationService.computeAllowedValuesForUpdatedCell(toCell)
-
-        return {
-            success: true,
-        };
     }
 }
