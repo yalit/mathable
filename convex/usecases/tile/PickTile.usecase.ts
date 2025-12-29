@@ -1,13 +1,11 @@
-import { internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
 import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
-import type { PlayersQueryRepositoryInterface } from "../../repository/query/players.repository";
 import type { GameQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
-import { playerFromDoc } from "../../domain/models/factory/player.factory";
-import { createGameFromDoc } from "../../domain/models/factory/game.factory";
-import { createBagToPlayerMove } from "../../domain/models/factory/move.factory";
-import type {AppMutationCtx} from "@cvx/middleware/app.middleware.ts";
+import type {AppMutationCtx} from "../../middleware/app.middleware.ts";
+import type {Player} from "../../domain/models/Player.ts";
+import type {User} from "../../domain/models/User.ts";
+import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
 
 export interface PickTileResult {
   success: boolean;
@@ -20,63 +18,35 @@ export interface PickTileResult {
  * Orchestrates picking a random tile from the bag and adding it to player's hand
  */
 export class PickTileUseCase {
-  private ctx: AppMutationCtx;
+  private readonly ctx: AppMutationCtx;
+  private readonly tilesQuery: TilesQueryRepositoryInterface
+  private readonly gamesQuery: GameQueryRepositoryInterface
+  private readonly movesMutation: MovesMutationRepositoryInterface
+  private readonly tileMoveService: TileMoveService
 
   constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
-  }
-
-  private get tilesQuery(): TilesQueryRepositoryInterface {
-    return this.ctx.container.get("TilesQueryRepositoryInterface");
-  }
-
-  private get playersQuery(): PlayersQueryRepositoryInterface {
-    return this.ctx.container.get("PlayersQueryRepositoryInterface");
-  }
-
-  private get gamesQuery(): GameQueryRepositoryInterface {
-    return this.ctx.container.get("GameQueryRepositoryInterface");
-  }
-
-  private get movesMutation(): MovesMutationRepositoryInterface {
-    return this.ctx.container.get("MovesMutationRepositoryInterface");
+    this.tilesQuery = this.ctx.container.get("TilesQueryRepositoryInterface");
+    this.movesMutation = this.ctx.container.get("MovesMutationRepositoryInterface");
+    this.gamesQuery = this.ctx.container.get("GameQueryRepositoryInterface");
+    this.tileMoveService = new TileMoveService(this.ctx)
   }
 
   async execute(
-    playerId: Id<"players">,
-    userId: Id<"users">
+      player: Player,
+      user: User
   ): Promise<PickTileResult> {
-    // 1. Load player
-    const playerDoc = await this.playersQuery.find(playerId);
-    if (!playerDoc) {
-      return {
-        success: false,
-        error: "Player not found",
-      };
-    }
-
-    const player = playerFromDoc(playerDoc);
-
     // 2. Load game
-    const gameDoc = await this.gamesQuery.find(player.gameId);
-    if (!gameDoc) {
+    const game = await this.gamesQuery.find(player.gameId);
+    if (!game) {
       return {
         success: false,
         error: "Game not found",
       };
     }
 
-    const game = createGameFromDoc(gameDoc);
-
-    // 2b Ensure game is instanciated
-    if (!game.id) {
-      return {
-        success: false,
-        error: "Game is not instanciated",
-      }
-    }
     // 3. Validate user authorization
-    if (!player.isSameUser(userId)) {
+    if (!player.isSameUser(user)) {
       return {
         success: false,
         error: "You can only pick tiles for yourself",
@@ -92,9 +62,7 @@ export class PickTileUseCase {
     }
 
     // 5. Get available tiles from bag
-    const tilesInBag = await this.tilesQuery.findAllInBagByGame(
-      game.id
-    );
+    const tilesInBag = await this.tilesQuery.findAllInBagByGame(game);
 
     if (tilesInBag.length === 0) {
       return {
@@ -108,23 +76,14 @@ export class PickTileUseCase {
     const pickedTile = tilesInBag[0];
 
     // 7. Move tile to player's hand
-    await this.ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-      tileId: pickedTile._id as Id<"tiles">,
-      playerId,
-    });
+    await this.tileMoveService.moveToPlayer(pickedTile, player)
 
     // 8. Record the move (BAG_TO_PLAYER is not cancellable due to randomness)
-    const move = createBagToPlayerMove(
-      game.id,
-      game.currentTurn,
-      pickedTile._id as Id<"tiles">,
-      playerId
-    );
-    await this.movesMutation.save(move);
+    await this.movesMutation.newPlayerToBag(game, pickedTile, player)
 
     return {
       success: true,
-      tileId: pickedTile._id as Id<"tiles">,
+      tileId: pickedTile.id,
     };
   }
 }
