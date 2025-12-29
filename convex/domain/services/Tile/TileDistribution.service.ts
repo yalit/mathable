@@ -1,9 +1,9 @@
-import {internal} from "../../_generated/api";
-import type {MutationCtx} from "../../_generated/server";
-import {TilesQueryRepository} from "../../repository/query/tiles.repository";
-import type {Game} from "../models/Game.ts";
-import type {Player} from "../models/Player.ts";
-import type {Tile} from "../models/Tile.ts";
+import type {AppMutationCtx} from "../../../middleware/app.middleware.ts";
+import type { Game } from "../../models/Game.ts";
+import type {Player} from "../../models/Player.ts";
+import type {TilesQueryRepositoryInterface} from "../../../repository/query/tiles.repository.ts";
+import type {Tile} from "../../models/Tile.ts";
+import { TileMoveService } from "./TileMove.service.ts";
 
 /**
  * TileDistributionService
@@ -11,10 +11,14 @@ import type {Tile} from "../models/Tile.ts";
  */
 export class TileDistributionService {
     private readonly INITIAL_TILE_COUNT = 7;
-    private ctx: MutationCtx;
+    private ctx: AppMutationCtx;
 
-    constructor(ctx: MutationCtx) {
+    constructor(ctx: AppMutationCtx) {
         this.ctx = ctx;
+    }
+
+    tilesQuery(): TilesQueryRepositoryInterface {
+        return this.ctx.container.get("TileQueryRepositoryInterface")
     }
 
     /**
@@ -40,8 +44,7 @@ export class TileDistributionService {
         const playerId = player.id;
         if (!playerId) return
 
-        const availableTiles = await TilesQueryRepository.instance
-            .findAllInBagByGame(game);
+        const availableTiles = await this.tilesQuery().findAllInBagByGame(game);
 
         if (availableTiles.length === 0) {
             return; // No tiles left to deal
@@ -53,10 +56,8 @@ export class TileDistributionService {
             const tileId = tile.id;
             if (!tileId) continue;
 
-            await this.ctx.runMutation(internal.mutations.internal.tile.moveToPlayer, {
-                tileId,
-                playerId,
-            });
+            const tileMoveService = new TileMoveService(this.ctx);
+            await tileMoveService.moveToPlayer(tile, player)
         }
     }
 
@@ -64,7 +65,7 @@ export class TileDistributionService {
      * Refill a player's hand up to the initial tile count
      */
     async refillPlayerHand(game: Game, player: Player): Promise<void> {
-        const currentTiles = await TilesQueryRepository.instance.findByPlayer(player);
+        const currentTiles = await this.tilesQuery().findByPlayer(player);
         const needed = this.INITIAL_TILE_COUNT - currentTiles.length;
 
         if (needed > 0) {
