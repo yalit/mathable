@@ -1,4 +1,6 @@
 import type { Doc, Id } from "../../_generated/dataModel";
+import type {Player} from "./Player.ts";
+import type {Cell} from "./Cell.ts";
 
 export type TileLocation = "in_bag" | "in_hand" | "on_board";
 
@@ -7,7 +9,7 @@ export type TileLocation = "in_bag" | "in_hand" | "on_board";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Tile {
-  public readonly id: Id<"tiles"> | null;
+  private readonly _id: Id<"tiles">;
   public readonly gameId: Id<"games">;
   public readonly value: number;
   private _location: TileLocation;
@@ -15,19 +17,26 @@ export class Tile {
   private _cellId: Id<"cells"> | null;
 
   public constructor(
-    id: Id<"tiles"> | null,
+    id: Id<"tiles">,
     gameId: Id<"games">,
     value: number,
     location: TileLocation,
     playerId: Id<"players"> | null,
     cellId: Id<"cells"> | null
   ) {
-    this.id = id;
+    this._id = id;
     this.gameId = gameId;
     this.value = value;
     this._location = location;
     this._playerId = playerId;
     this._cellId = cellId;
+  }
+
+  /**
+   * Get the tile ID
+   */
+  get id(): Id<"tiles"> {
+    return this._id;
   }
 
   /**
@@ -55,10 +64,10 @@ export class Tile {
    * Validate that tile belongs to a specific player
    * @throws Error if tile doesn't belong to the player
    */
-  private validateBelongsToPlayer(playerId: Id<"players">): void {
-    if (this._playerId !== playerId) {
+  private validateBelongsToPlayer(player: Player): void {
+    if (this._playerId !== player.id) {
       throw new Error(
-        `Tile ${this.id} does not belong to player ${playerId}`
+        `Tile ${this.id} does not belong to player ${player.id}`
       );
     }
   }
@@ -89,19 +98,19 @@ export class Tile {
 
   /**
    * Move tile to a cell on the board
-   * @param cellId - The cell to place the tile on
-   * @param playerId - The player moving the tile (for validation)
+   * @param cell - The cell to place the tile on
+   * @param player - The player moving the tile (for validation)
    * @throws Error if tile doesn't belong to the player or is in invalid state
    *
    * Handles two scenarios:
    * 1. Placing from player's hand (tile location is "in_hand")
    * 2. Displacing from another cell (tile location is "on_board")
    */
-  moveToCell(cellId: Id<"cells">, playerId: Id<"players">): void {
+  moveToCell(cell: Cell, player: Player): void {
     // Validate based on current location
     if (this._location === "in_hand") {
       // Tile is being placed from player's hand - validate ownership
-      this.validateBelongsToPlayer(playerId);
+      this.validateBelongsToPlayer(player);
     } else if (this._location === "on_board") {
       // Tile is being displaced from another cell - no ownership validation needed
       // (displacement validation happens at use case level)
@@ -110,7 +119,7 @@ export class Tile {
     }
 
     this._location = "on_board";
-    this._cellId = cellId;
+    this._cellId = cell.id;
     this._playerId = null;
   }
 
@@ -157,8 +166,8 @@ export class Tile {
   /**
    * Check if tile belongs to a specific player
    */
-  belongsToPlayer(playerId: Id<"players">): boolean {
-    return this._playerId === playerId;
+  belongsToPlayer(player:Player): boolean {
+    return this._playerId === player.id;
   }
 
   // Getters

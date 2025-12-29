@@ -1,12 +1,13 @@
 import {Tile, type TileLocation} from "../Tile.ts";
 import type {Doc, Id} from "../../../_generated/dataModel";
+import type {Game} from "../Game.ts";
 
 export const createTile = (
-    gameId: Id<"games">,
+    game: Game,
     value: number,
     location: TileLocation = "in_bag",
 ): Tile => {
-    return new Tile(null, gameId, value, location, null, null)
+    return new Tile("" as Id<"tiles">, game.id, value, location, null, null)
 };
 
 /**

@@ -8,24 +8,31 @@ export type GameStatus = "waiting" | "ongoing" | "ended";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Game {
-    public readonly id: Id<"games"> | null;
+    private readonly _id: Id<"games">;
     public readonly token: string;
     private _status: GameStatus;
     private _currentTurn: number;
     private _winner?: Id<"players">;
 
     public constructor(
-        id: Id<"games"> | null,
+        id: Id<"games">,
         token: string,
         status: GameStatus,
         currentTurn: number,
         winner?: Id<"players">
     ) {
-        this.id = id;
+        this._id = id;
         this.token = token;
         this._status = status;
         this._currentTurn = currentTurn;
         this._winner = winner;
+    }
+
+    /**
+     * Get the game ID
+     */
+    get id(): Id<"games"> {
+        return this._id;
     }
 
     static gameSize = () : number => 14

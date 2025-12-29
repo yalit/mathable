@@ -8,11 +8,12 @@ import {
     ValueCell
 } from "../Cell.ts";
 import type {Doc, Id} from "../../../_generated/dataModel";
+import type {Game} from "../Game.ts";
 
-export const createEmptyCell = (gameId: Id<"games">, row: number, column: number): EmptyCell => {
+export const createEmptyCell = (game: Game, row: number, column: number): EmptyCell => {
     return new EmptyCell(
-        null,
-        gameId,
+        "" as Id<"cells">,
+        game.id,
         row,
         column,
         [],
@@ -21,14 +22,14 @@ export const createEmptyCell = (gameId: Id<"games">, row: number, column: number
 };
 
 export const createValueCell = (
-    gameId: Id<"games">,
+    game: Game,
     row: number,
     column: number,
     value: number,
 ): ValueCell => {
     return new ValueCell(
-        null,
-        gameId,
+        "" as Id<"cells">,
+        game.id,
         row,
         column,
         value,
@@ -37,14 +38,14 @@ export const createValueCell = (
 };
 
 export const createOperatorCell = (
-    gameId: Id<"games">,
+    game: Game,
     row: number,
     column: number,
     operator: CellOperator,
 ): OperatorCell => {
     return new OperatorCell(
-        null,
-        gameId,
+        "" as Id<"cells">,
+        game.id,
         row,
         column,
         operator,
@@ -54,14 +55,14 @@ export const createOperatorCell = (
 };
 
 export const createMultiplierCell = (
-    gameId: Id<"games">,
+    game: Game,
     row: number,
     column: number,
     multiplier: number,
 ): MultiplierCell => {
     return new MultiplierCell(
-        null,
-        gameId,
+        "" as Id<"cells">,
+        game.id,
         row,
         column,
         multiplier,

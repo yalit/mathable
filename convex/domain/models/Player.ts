@@ -1,12 +1,13 @@
 import type { Doc, Id } from "../../_generated/dataModel";
 import { Tile } from "./Tile";
+import type {User} from "./User.ts";
 
 /**
  * Player domain model with relationship support
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class Player {
-  public readonly id: Id<"players"> | null;
+  private readonly _id: Id<"players">;
   public readonly gameId: Id<"games">;
   public readonly userId: Id<"users">;
   public readonly name: string;
@@ -17,7 +18,7 @@ export class Player {
   private _order: number;
 
   public constructor(
-    id: Id<"players"> | null,
+    id: Id<"players">,
     gameId: Id<"games">,
     userId: Id<"users">,
     name: string,
@@ -27,7 +28,7 @@ export class Player {
     owner: boolean,
     order: number
   ) {
-    this.id = id;
+    this._id = id;
     this.gameId = gameId;
     this.userId = userId;
     this.name = name;
@@ -36,6 +37,13 @@ export class Player {
     this._score = score;
     this._owner = owner;
     this._order = order;
+  }
+
+  /**
+   * Get the player ID
+   */
+  get id(): Id<"players"> {
+    return this._id;
   }
 
   /**
@@ -184,8 +192,8 @@ export class Player {
   /**
    * Check if this player is the same user
    */
-  isSameUser(userId: Id<"users">): boolean {
-    return this.userId === userId;
+  isSameUser(user: User): boolean {
+    return this.userId === user.id;
   }
 
   /**

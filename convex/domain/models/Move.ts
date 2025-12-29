@@ -11,22 +11,29 @@ export type MoveType = "PLAYER_TO_CELL" | "CELL_TO_PLAYER" | "BAG_TO_PLAYER" | "
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export abstract class Move {
-  public readonly id: Id<"moves"> | null;
+  private readonly _id: Id<"moves">;
   public readonly gameId: Id<"games">;
   public abstract readonly type: MoveType;
   public readonly turn: number;
   public readonly tileId: Id<"tiles"> | null;
 
   protected constructor(
-    id: Id<"moves"> | null,
+    id: Id<"moves">,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles"> | null
   ) {
-    this.id = id;
+    this._id = id;
     this.gameId = gameId;
     this.turn = turn;
     this.tileId = tileId;
+  }
+
+  /**
+   * Get the move ID
+   */
+  get id(): Id<"moves"> {
+    return this._id;
   }
 
   /**
@@ -105,6 +112,13 @@ export abstract class Move {
     return this.tileId !== null;
   }
 
+  get score(): number {
+    if (this.isPlayerToCell() || this.isCellToPlayer()) {
+      return this.moveScore
+    }
+    return 0
+  }
+
   // ========================================
   // Type Guards
   // ========================================
@@ -152,7 +166,7 @@ export class PlayerToCellMove extends Move {
   public readonly moveScore: number;
 
   public constructor(
-    id: Id<"moves"> | null,
+    id: Id<"moves">,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
@@ -222,7 +236,7 @@ export class BagToPlayerMove extends Move {
   public readonly moveScore: number = 0; // No score for picking tiles
 
   public constructor(
-    id: Id<"moves"> | null,
+    id: Id<"moves">,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
@@ -282,7 +296,7 @@ export class CellToPlayerMove extends Move {
   public readonly moveScore: number;
 
   public constructor(
-    id: Id<"moves"> | null,
+    id: Id<"moves">,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,
@@ -352,7 +366,7 @@ export class PlayerToBagMove extends Move {
   public readonly moveScore: number = 0; // No score for returning tiles
 
   public constructor(
-    id: Id<"moves"> | null,
+    id: Id<"moves">,
     gameId: Id<"games">,
     turn: number,
     tileId: Id<"tiles">,

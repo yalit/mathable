@@ -1,42 +1,41 @@
-import type { Doc, Id } from "../../_generated/dataModel";
+import type { Id } from "../../_generated/dataModel";
 import type { SessionId } from "convex-helpers/server/sessions";
 import { Player } from "./Player";
+import type {DocData} from "../../repository/repositories.interface.ts";
 
 /**
  * User domain model with relationship support
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class User {
-  public readonly id: Id<"users"> | null;
+  private readonly _id: Id<"users">;
   public readonly sessionId: SessionId;
   private _name: string;
 
   public constructor(
-    id: Id<"users"> | null,
+    id: Id<"users">,
     sessionId: SessionId,
     name: string
   ) {
-    this.id = id;
+    this._id = id;
     this.sessionId = sessionId;
     this._name = name;
   }
 
   /**
-   * NOTE: To create a User from a database document, use the factory:
-   * import { userFromDoc } from "./factory/user.factory";
-   * const user = userFromDoc(doc);
-   *
-   * To create a new User instance, use:
-   * import { createUser } from "./factory/user.factory";
-   * const user = createUser(id, sessionId, name);
+   * Get the user ID
    */
+  get id(): Id<"users"> {
+    return this._id;
+  }
 
   /**
    * Convert domain model back to database format
    */
-  toDoc(): Partial<Doc<"users">> {
+  toDoc(): DocData<"users"> {
     return {
       name: this._name,
+      sessionId: this.sessionId,
     };
   }
 

@@ -1,5 +1,6 @@
-import type { Doc, Id } from "../../_generated/dataModel";
-import { Tile } from "./Tile";
+import type {Id} from "../../_generated/dataModel";
+import {Tile} from "./Tile";
+import type {DocData} from "../../repository/repositories.interface.ts";
 
 export type CellType = "empty" | "value" | "multiplier" | "operator";
 export type CellOperator = "+" | "-" | "*" | "/";
@@ -10,194 +11,211 @@ export type CellOperator = "+" | "-" | "*" | "/";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export abstract class Cell {
-  public readonly id: Id<"cells"> | null;
-  public readonly gameId: Id<"games">;
-  public readonly row: number;
-  public readonly column: number;
-  public abstract readonly type: CellType;
-  protected _allowedValues: number[];
-  protected _tileId: Id<"tiles"> | null;
+    private readonly _id: Id<"cells">;
+    public readonly gameId: Id<"games">;
+    public readonly row: number;
+    public readonly column: number;
+    public abstract readonly type: CellType;
+    protected _allowedValues: number[];
+    protected _tileId: Id<"tiles"> | null;
 
-  protected constructor(
-    id: Id<"cells"> | null,
-    gameId: Id<"games">,
-    row: number,
-    column: number,
-    allowedValues: number[],
-    tileId: Id<"tiles"> | null
-  ) {
-    this.id = id;
-    this.gameId = gameId;
-    this.row = row;
-    this.column = column;
-    this._allowedValues = allowedValues;
-    this._tileId = tileId;
-  }
-
-  /**
-   * Convert domain model back to database format
-   * Abstract method - each subclass provides its own implementation
-   */
-  abstract toDoc(): Partial<Doc<"cells">>;
-
-  /**
-   * NOTE: To create a Cell from a database document, use the factory:
-   * import { cellFromDoc } from "./factory/cell.factory";
-   * const cell = cellFromDoc(doc);
-   */
-
-  /**
-   * Get the numeric value of this cell
-   * Abstract method - each subclass implements based on its type
-   */
-  abstract getNumericValue(tile?: Tile): number | null;
-
-  // ========================================
-  // Relationship Validation Methods
-  // ========================================
-
-  // Note: Additional validation method (_validateBelongsToGame) can be added
-  // here when needed for cross-game cell operations
-
-  /**
-   * Validate that tile belongs to the same game as the cell
-   * @throws Error if tile doesn't belong to cell's game
-   */
-  private validateTileBelongsToGame(tile: Tile): void {
-    if (tile.gameId !== this.gameId) {
-      throw new Error(
-        `Tile ${tile.id} does not belong to game ${this.gameId}`
-      );
-    }
-  }
-
-  /**
-   * Validate that a tile is placed on this cell
-   * @throws Error if tile is not on this cell
-   */
-  protected validateTileIsOnCell(tile: Tile): void {
-    if (tile.cellId !== this.id) {
-      throw new Error(`Tile ${tile.id} is not on cell ${this.id}`);
-    }
-  }
-
-  // ========================================
-  // Business Logic Methods
-  // ========================================
-
-  /**
-   * Place a tile on this cell
-   * @param tile - The tile to place
-   * @throws Error if cell already has a tile or tile doesn't belong to game
-   */
-  placeTile(tile: Tile): void {
-    this.validateTileBelongsToGame(tile);
-
-    if (this._tileId !== null) {
-      throw new Error(`Cell ${this.id} already has a tile`);
+    protected constructor(
+        id: Id<"cells">,
+        gameId: Id<"games">,
+        row: number,
+        column: number,
+        allowedValues: number[],
+        tileId: Id<"tiles"> | null
+    ) {
+        this._id = id;
+        this.gameId = gameId;
+        this.row = row;
+        this.column = column;
+        this._allowedValues = allowedValues;
+        this._tileId = tileId;
     }
 
-    if (this.type !== "empty") {
-      throw new Error(
-        `Cannot place tile on ${this.type} cell at (${this.row}, ${this.column})`
-      );
+    /**
+     * Get the cell ID
+     */
+    get id(): Id<"cells"> {
+        return this._id;
     }
 
-    this._tileId = tile.id;
-  }
-
-  /**
-   * Remove tile from this cell
-   * @param tile - The tile to remove (for validation)
-   * @throws Error if no tile on cell or wrong tile
-   */
-  removeTile(tile: Tile): void {
-    this.validateTileBelongsToGame(tile);
-    this.validateTileIsOnCell(tile);
-
-    if (this._tileId === null) {
-      throw new Error(`Cell ${this.id} has no tile to remove`);
+    /**
+     * Convert domain model back to database format
+     * Abstract method - each subclass provides its own implementation
+     */
+    toDoc(): DocData<"cells"> {
+        return {
+            type: this.type,
+            row: this.row,
+            column: this.column,
+            gameId: this.gameId,
+            value: null,
+            multiplier: null,
+            operator: null,
+            allowedValues: this._allowedValues,
+            tileId: this._tileId,
+        };
     }
 
-    this._tileId = null;
-  }
+    /**
+     * Get the numeric value of this cell
+     * Abstract method - each subclass implements based on its type
+     */
+    abstract getNumericValue(tile?: Tile): number | null;
 
-  /**
-   * Check if a value is allowed on this cell
-   * @param value - The value to check
-   * @returns true if value is allowed
-   */
-  isValueAllowed(value: number): boolean {
-    return this._allowedValues.includes(value);
-  }
+    // ========================================
+    // Relationship Validation Methods
+    // ========================================
 
-  /**
-   * Set the allowed values for this cell
-   * @param allowedValues - Array of allowed values
-   */
-  setAllowedValues(allowedValues: number[]): void {
-    this._allowedValues = allowedValues;
-  }
+    // Note: Additional validation method (_validateBelongsToGame) can be added
+    // here when needed for cross-game cell operations
 
-  /**
-   * Set tile ID directly (for internal mutations)
-   * Use placeTile() and removeTile() for validated operations
-   * @param tileId - The tile ID to set (null to clear)
-   */
-  setTileId(tileId: Id<"tiles"> | null): void {
-    this._tileId = tileId;
-  }
+    /**
+     * Validate that tile belongs to the same game as the cell
+     * @throws Error if tile doesn't belong to cell's game
+     */
+    private validateTileBelongsToGame(tile: Tile): void {
+        if (tile.gameId !== this.gameId) {
+            throw new Error(
+                `Tile ${tile.id} does not belong to game ${this.gameId}`
+            );
+        }
+    }
 
-  /**
-   * Check if cell has a tile
-   */
-  hasTile(): boolean {
-    return this._tileId !== null;
-  }
+    /**
+     * Validate that a tile is placed on this cell
+     * @throws Error if tile is not on this cell
+     */
+    protected validateTileIsOnCell(tile: Tile): void {
+        if (tile.cellId !== this.id) {
+            throw new Error(`Tile ${tile.id} is not on cell ${this.id}`);
+        }
+    }
 
-  // ========================================
-  // Getters
-  // ========================================
+    // ========================================
+    // Business Logic Methods
+    // ========================================
 
-  get allowedValues(): readonly number[] {
-    return this._allowedValues;
-  }
+    /**
+     * Place a tile on this cell
+     * @param tile - The tile to place
+     * @throws Error if cell already has a tile or tile doesn't belong to game
+     */
+    placeTile(tile: Tile): void {
+        this.validateTileBelongsToGame(tile);
 
-  get tileId(): Id<"tiles"> | null {
-    return this._tileId;
-  }
+        if (this._tileId !== null) {
+            throw new Error(`Cell ${this.id} already has a tile`);
+        }
 
-  // ========================================
-  // Type Guards
-  // ========================================
+        if (this.type !== "empty") {
+            throw new Error(
+                `Cannot place tile on ${this.type} cell at (${this.row}, ${this.column})`
+            );
+        }
 
-  /**
-   * Check if cell is an EmptyCell
-   */
-  isEmptyCell(): this is EmptyCell {
-    return this.type === "empty";
-  }
+        this._tileId = tile.id;
+    }
 
-  /**
-   * Check if cell is a ValueCell
-   */
-  isValueCell(): this is ValueCell {
-    return this.type === "value";
-  }
+    /**
+     * Remove tile from this cell
+     * @param tile - The tile to remove (for validation)
+     * @throws Error if no tile on cell or wrong tile
+     */
+    removeTile(tile: Tile): void {
+        this.validateTileBelongsToGame(tile);
+        this.validateTileIsOnCell(tile);
 
-  /**
-   * Check if cell is a MultiplierCell
-   */
-  isMultiplierCell(): this is MultiplierCell {
-    return this.type === "multiplier";
-  }
+        if (this._tileId === null) {
+            throw new Error(`Cell ${this.id} has no tile to remove`);
+        }
 
-  /**
-   * Check if cell is an OperatorCell
-   */
-  isOperatorCell(): this is OperatorCell {
-    return this.type === "operator";
-  }
+        this._tileId = null;
+    }
+
+    /**
+     * Check if a value is allowed on this cell
+     * @param value - The value to check
+     * @returns true if value is allowed
+     */
+    isValueAllowed(value: number): boolean {
+        return this._allowedValues.includes(value);
+    }
+
+    /**
+     * Set the allowed values for this cell
+     * @param allowedValues - Array of allowed values
+     */
+    setAllowedValues(allowedValues: number[]): void {
+        this._allowedValues = allowedValues;
+    }
+
+    /**
+     * Set tile ID directly (for internal mutations)
+     * Use placeTile() and removeTile() for validated operations
+     * @param tileId - The tile ID to set (null to clear)
+     */
+    setTileId(tileId: Id<"tiles"> | null): void {
+        this._tileId = tileId;
+    }
+
+    /**
+     * Check if cell has a tile
+     */
+    hasTile(): boolean {
+        return this._tileId !== null;
+    }
+
+    hasValue(): boolean {
+        return (this.isValueCell() && this.value !== null) || (this._tileId !== null);
+    }
+
+    // ========================================
+    // Getters
+    // ========================================
+
+    get allowedValues(): readonly number[] {
+        return this._allowedValues;
+    }
+
+    get tileId(): Id<"tiles"> | null {
+        return this._tileId;
+    }
+
+    // ========================================
+    // Type Guards
+    // ========================================
+
+    /**
+     * Check if cell is an EmptyCell
+     */
+    isEmptyCell(): this is EmptyCell {
+        return this.type === "empty";
+    }
+
+    /**
+     * Check if cell is a ValueCell
+     */
+    isValueCell(): this is ValueCell {
+        return this.type === "value";
+    }
+
+    /**
+     * Check if cell is a MultiplierCell
+     */
+    isMultiplierCell(): this is MultiplierCell {
+        return this.type === "multiplier";
+    }
+
+    /**
+     * Check if cell is an OperatorCell
+     */
+    isOperatorCell(): this is OperatorCell {
+        return this.type === "operator";
+    }
 }
 
 // ========================================
@@ -208,210 +226,154 @@ export abstract class Cell {
  * EmptyCell - A cell that can hold a tile
  */
 export class EmptyCell extends Cell {
-  public readonly type: CellType = "empty";
+    public readonly type: CellType = "empty";
 
-  public constructor(
-    id: Id<"cells"> | null,
-    gameId: Id<"games">,
-    row: number,
-    column: number,
-    allowedValues: number[],
-    tileId: Id<"tiles"> | null
-  ) {
-    super(id, gameId, row, column, allowedValues, tileId);
-  }
-
-  toDoc(): Partial<Doc<"cells">> {
-    return {
-      type: this.type,
-      row: this.row,
-      column: this.column,
-      gameId: this.gameId,
-      value: null,
-      multiplier: null,
-      operator: null,
-      allowedValues: this._allowedValues,
-      tileId: this._tileId,
-    };
-  }
-
-  getNumericValue(tile?: Tile): number | null {
-    if (tile && this._tileId === tile.id) {
-      this.validateTileIsOnCell(tile);
-      return tile.value;
+    public constructor(
+        id: Id<"cells">,
+        gameId: Id<"games">,
+        row: number,
+        column: number,
+        allowedValues: number[],
+        tileId: Id<"tiles"> | null
+    ) {
+        super(id, gameId, row, column, allowedValues, tileId);
     }
-    return null;
-  }
+
+    getNumericValue(tile?: Tile): number | null {
+        if (tile && this._tileId === tile.id) {
+            this.validateTileIsOnCell(tile);
+            return tile.value;
+        }
+        return null;
+    }
 }
 
 /**
  * ValueCell - A cell with a fixed numeric value
  */
 export class ValueCell extends Cell {
-  public readonly type: CellType = "value";
-  public readonly value: number;
+    public readonly type: CellType = "value";
+    public readonly value: number;
 
-  public constructor(
-    id: Id<"cells"> | null,
-    gameId: Id<"games">,
-    row: number,
-    column: number,
-    value: number,
-    allowedValues: number[]
-  ) {
-    super(id, gameId, row, column, allowedValues, null); // Value cells never have tiles
-    this.value = value;
-  }
+    public constructor(
+        id: Id<"cells">,
+        gameId: Id<"games">,
+        row: number,
+        column: number,
+        value: number,
+        allowedValues: number[]
+    ) {
+        super(id, gameId, row, column, allowedValues, null); // Value cells never have tiles
+        this.value = value;
+    }
 
-  toDoc(): Partial<Doc<"cells">> {
-    return {
-      type: this.type,
-      row: this.row,
-      column: this.column,
-      gameId: this.gameId,
-      value: this.value,
-      multiplier: null,
-      operator: null,
-      allowedValues: this._allowedValues,
-      tileId: null,
-    };
-  }
+    getNumericValue(): number {
+        return this.value;
+    }
 
-  getNumericValue(): number {
-    return this.value;
-  }
-
-  /**
-   * Value cells cannot have tiles placed on them
-   * @throws Error always - value cells are fixed
-   */
-  placeTile(_tile: Tile): void {
-    throw new Error(
-      `Cannot place tile on value cell at (${this.row}, ${this.column})`
-    );
-  }
+    /**
+     * Value cells cannot have tiles placed on them
+     * @throws Error always - value cells are fixed
+     */
+    placeTile(_tile: Tile): void {
+        throw new Error(
+            `Cannot place tile on value cell at (${this.row}, ${this.column})`
+        );
+    }
 }
 
 /**
  * MultiplierCell - A cell that multiplies the score
  */
 export class MultiplierCell extends Cell {
-  public readonly type: CellType = "multiplier";
-  public readonly multiplier: number;
+    public readonly type: CellType = "multiplier";
+    public readonly multiplier: number;
 
-  public constructor(
-    id: Id<"cells"> | null,
-    gameId: Id<"games">,
-    row: number,
-    column: number,
-    multiplier: number,
-    allowedValues: number[],
-    tileId: Id<"tiles"> | null
-  ) {
-    super(id, gameId, row, column, allowedValues, tileId);
-    if (multiplier <= 0) {
-      throw new Error("Multiplier must be positive");
+    public constructor(
+        id: Id<"cells">,
+        gameId: Id<"games">,
+        row: number,
+        column: number,
+        multiplier: number,
+        allowedValues: number[],
+        tileId: Id<"tiles"> | null
+    ) {
+        super(id, gameId, row, column, allowedValues, tileId);
+        if (multiplier <= 0) {
+            throw new Error("Multiplier must be positive");
+        }
+        this.multiplier = multiplier;
     }
-    this.multiplier = multiplier;
-  }
 
-  toDoc(): Partial<Doc<"cells">> {
-    return {
-      type: this.type,
-      row: this.row,
-      column: this.column,
-      gameId: this.gameId,
-      value: null,
-      multiplier: this.multiplier,
-      operator: null,
-      allowedValues: this._allowedValues,
-      tileId: this._tileId,
-    };
-  }
-
-  getNumericValue(tile?: Tile): number | null {
-    if (tile && this._tileId === tile.id) {
-      this.validateTileIsOnCell(tile);
-      return tile.value;
+    getNumericValue(tile?: Tile): number | null {
+        if (tile && this._tileId === tile.id) {
+            this.validateTileIsOnCell(tile);
+            return tile.value;
+        }
+        return null;
     }
-    return null;
-  }
 
-  /**
-   * Get the score multiplier for this cell
-   */
-  getMultiplier(): number {
-    return this.multiplier;
-  }
+    /**
+     * Get the score multiplier for this cell
+     */
+    getMultiplier(): number {
+        return this.multiplier;
+    }
 }
 
 /**
  * OperatorCell - A cell with a mathematical operator
  */
 export class OperatorCell extends Cell {
-  public readonly type: CellType = "operator";
-  public readonly operator: CellOperator;
+    public readonly type: CellType = "operator";
+    public readonly operator: CellOperator;
 
-  public constructor(
-    id: Id<"cells"> | null,
-    gameId: Id<"games">,
-    row: number,
-    column: number,
-    operator: CellOperator,
-    allowedValues: number[],
-    tileId: Id<"tiles"> | null
-  ) {
-    super(id, gameId, row, column, allowedValues, tileId);
-    this.operator = operator;
-  }
-
-  toDoc(): Partial<Doc<"cells">> {
-    return {
-      type: this.type,
-      row: this.row,
-      column: this.column,
-      gameId: this.gameId,
-      value: null,
-      multiplier: null,
-      operator: this.operator,
-      allowedValues: this._allowedValues,
-      tileId: this._tileId,
-    };
-  }
-
-  getNumericValue(tile?: Tile): number | null {
-    if (tile && this._tileId === tile.id) {
-      this.validateTileIsOnCell(tile);
-      return tile.value;
+    public constructor(
+        id: Id<"cells">,
+        gameId: Id<"games">,
+        row: number,
+        column: number,
+        operator: CellOperator,
+        allowedValues: number[],
+        tileId: Id<"tiles"> | null
+    ) {
+        super(id, gameId, row, column, allowedValues, tileId);
+        this.operator = operator;
     }
-    return null;
-  }
 
-  /**
-   * Get the operator for this cell
-   */
-  getOperator(): CellOperator {
-    return this.operator;
-  }
-
-  /**
-   * Apply the operator to two operands
-   */
-  applyOperator(left: number, right: number): number {
-    switch (this.operator) {
-      case "+":
-        return left + right;
-      case "-":
-        return left - right;
-      case "*":
-        return left * right;
-      case "/":
-        if (right === 0) {
-          throw new Error("Division by zero");
+    getNumericValue(tile?: Tile): number | null {
+        if (tile && this._tileId === tile.id) {
+            this.validateTileIsOnCell(tile);
+            return tile.value;
         }
-        return left / right;
-      default:
-        throw new Error(`Unknown operator: ${this.operator}`);
+        return null;
     }
-  }
+
+    /**
+     * Get the operator for this cell
+     */
+    getOperator(): CellOperator {
+        return this.operator;
+    }
+
+    /**
+     * Apply the operator to two operands
+     */
+    applyOperator(left: number, right: number): number {
+        switch (this.operator) {
+            case "+":
+                return left + right;
+            case "-":
+                return left - right;
+            case "*":
+                return left * right;
+            case "/":
+                if (right === 0) {
+                    throw new Error("Division by zero");
+                }
+                return left / right;
+            default:
+                throw new Error(`Unknown operator: ${this.operator}`);
+        }
+    }
 }
