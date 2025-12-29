@@ -13,7 +13,7 @@ type Props = {
 export const PickATileModal = ({ closeModal }: Props) => {
   const player = usePlayer();
   const { t } = useTranslation();
-  const pickATile = useSessionMutation(api.mutations.public.tile.pick);
+  const pickATile = useSessionMutation(api.controllers.tile.mutations.pick);
   const handlePick = async () => {
     await pickATile({ playerId: player._id as Id<"players"> });
     closeModal();

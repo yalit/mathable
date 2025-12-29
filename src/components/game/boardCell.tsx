@@ -22,7 +22,7 @@ import { NumberIcon } from "@components/includes/icon";
 export function BoardCell({ cell }: { cell: Cell }) {
     const player = usePlayer();
     const playTileToCell = useSessionMutation(
-        api.mutations.public.tile.playToCell,
+        api.controllers.tile.mutations.playToCell,
     );
     const [displayPickModal, setDisplayPickModal] = useState<boolean>(false);
 
