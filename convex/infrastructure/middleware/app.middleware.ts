@@ -81,9 +81,6 @@ export const appQuery = <
                 return props.handler({...ctx, container}, ...args);
             }
 
-            // needs to add the sessionId and the User and sessionId
-            console.log(args)
-
             return props.handler({...ctx, container}, ...args);
         },
     });
@@ -135,9 +132,6 @@ export const appMutation = <
             if (props.security === "public" ||  props.security === "internal") {
                 return props.handler({...ctx, container}, ...args);
             }
-
-            // needs to add the sessionId and the User and sessionId
-            console.log(args)
 
             return props.handler({...ctx, container}, ...args);
         },

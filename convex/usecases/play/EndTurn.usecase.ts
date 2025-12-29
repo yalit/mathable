@@ -1,4 +1,3 @@
-import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import type {User} from "../../domain/models/User.ts";
@@ -15,14 +14,12 @@ import type { GamesMutationRepositoryInterface } from "../../repository/mutation
  * Throws errors for validation failures
  */
 export class EndTurnUseCase {
-    private ctx: AppMutationCtx;
-    private readonly gamesQuery:  GamesQueryRepositoryInterface;
+    private readonly ctx: AppMutationCtx;
     private readonly gamesMutation: GamesMutationRepositoryInterface
     private readonly endGameService: EndGameService;
 
     constructor(ctx: AppMutationCtx) {
         this.ctx = ctx;
-        this.gamesQuery = this.ctx.container.get("GameQueryRepositoryInterface")
         this.gamesMutation = this.ctx.container.get("GameMutationRepositoryInterface")
         this.endGameService = new EndGameService(this.ctx);
     }
@@ -38,13 +35,13 @@ export class EndTurnUseCase {
         }
 
         // 2. Check if game is won
-        if (await this.gamesQuery.isGameWon(game, currentPlayer)) {
+        if (await this.endGameService.isGameWon(game, currentPlayer)) {
             await this.endGameService.endGameWithWinner(game, currentPlayer)
             return {gameEnded: true};
         }
 
         // 3. Check if game is idle
-        if (await this.gamesQuery.isGameIdle(game)) {
+        if (await this.endGameService.isGameIdle(game)) {
             await this.endGameService.endGameAsIdle(game)
             return {gameEnded: true};
         }

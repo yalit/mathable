@@ -1,12 +1,12 @@
 import { useEffect, type PropsWithChildren } from "react";
 import { useActions } from "./hooks";
 import { useSessionId } from "convex-helpers/react/sessions";
-import { useConvexGame } from "@hooks/convex/useConvexGame";
-import { useConvexPlayer } from "@hooks/convex/useConvexPlayer";
+import {useParams} from "react-router-dom";
+import {useFetchCurrentGame} from "@hooks/convex/game/useFetchCurrentGame.tsx";
 
 export const GameProvider = ({ children }: PropsWithChildren) => {
-  const game = useConvexGame();
-  const player = useConvexPlayer();
+  const game = useFetchCurrentGame();
+  const { playerToken } = useParams();
   const [sessionId] = useSessionId();
 
   const actions = useActions();
@@ -17,15 +17,16 @@ export const GameProvider = ({ children }: PropsWithChildren) => {
     }
 
     actions.setGame(game);
-  }, [game]);
+  }, [actions, game]);
 
   useEffect(() => {
-    if (player === undefined || player === null) {
-      return;
-    }
+    if (!game || !playerToken) return
 
-    actions.setPlayer(player);
-  }, [player]);
+    const players = game.players.filter(p => p.token === playerToken)
+    if (players.length === 0) return
+
+    actions.setPlayer(players[0]);
+  }, [actions, game, playerToken]);
 
   useEffect(() => {
     if (sessionId === undefined || sessionId === null) {
@@ -33,7 +34,7 @@ export const GameProvider = ({ children }: PropsWithChildren) => {
     }
 
     actions.setSessionId(sessionId);
-  }, [sessionId]);
+  }, [actions, sessionId]);
 
   return <>{children}</>;
 };

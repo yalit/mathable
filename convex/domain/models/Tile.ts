@@ -12,9 +12,9 @@ export class Tile {
   private readonly _id: Id<"tiles">;
   public readonly gameId: Id<"games">;
   public readonly value: number;
+  public _playerId: Id<"players"> | null;
+  public _cellId: Id<"cells"> | null;
   private _location: TileLocation;
-  private _playerId: Id<"players"> | null;
-  private _cellId: Id<"cells"> | null;
 
   public constructor(
     id: Id<"tiles">,

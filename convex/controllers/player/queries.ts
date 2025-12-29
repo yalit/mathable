@@ -4,20 +4,12 @@ import type {Player} from "../../domain/models/Player.ts";
 import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
 import type {PlayersQueryRepositoryInterface} from "../../repository/query/players.repository.ts";
 
-export const get = appQuery({
-    visibility: "public", security: "public",
-    args: { playerToken: v.string() },
-    handler: async (ctx, args): Promise<Player | null> => {
-        const playersQuery = ctx.container.get("PlayersQueryRepositoryInterface");
-
-        return await playersQuery.findByToken(args.playerToken);
-    },
-});
-
 export const getForGame = appQuery({
     visibility: "public", security: "public",
-    args: {gameId: v.id("games")},
+    args: {gameId: v.union(v.id("games"), v.null())},
     handler: async (ctx, args): Promise<Player[]> => {
+        if (!args.gameId) return []
+
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface");
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface");
 

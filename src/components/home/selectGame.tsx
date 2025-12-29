@@ -1,19 +1,18 @@
 import type { Game } from "@context/model/game";
 import type { Player } from "@context/model/player";
-import { api } from "@cvx/_generated/api";
 import { useJoinGame } from "@hooks/useJoinGame";
-import { useSessionQuery } from "convex-helpers/react/sessions";
+import {useFetchOngoingGamesForSession} from "@hooks/convex/game/useFetchOngoingGamesForSession.tsx";
+import {useFetchSessionUser} from "@hooks/convex/user/useFetchSessionUser.tsx";
 
 export const SelectGame = () => {
-    const sessionGames = useSessionQuery(
-        api.queries.game.getNonFinishedForSession,
-    );
-    const sessionUser = useSessionQuery(api.queries.user.getForSession);
+    const sessionGames = useFetchOngoingGamesForSession()
+    const sessionUser = useFetchSessionUser()
     const { joinGame } = useJoinGame();
 
     const rejoinGame = (game: Game, player: Player) => {
         joinGame(game, player);
     };
+
     return (
         <>
             {(sessionGames && sessionGames.length > 0) && (
@@ -42,7 +41,7 @@ export const SelectGame = () => {
                                 </div>
                                 <div className="flex items-center gap-2 mt-5">
                                     {g.players.map((p: Player) => {
-                                        if (p.userId !== sessionUser?._id) {
+                                        if (p.userId !== sessionUser?.id) {
                                             return;
                                         }
                                         return (

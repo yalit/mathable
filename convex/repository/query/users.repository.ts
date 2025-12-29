@@ -51,6 +51,7 @@ export class UsersQueryRepository implements UsersQueryRepositoryInterface {
     if (!user) {
       return null;
     }
+
     return userFromDoc(user);
   }
 }

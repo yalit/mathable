@@ -6,8 +6,10 @@ import type {Tile} from "../../domain/models/Tile.ts";
 
 export const getForGame = appQuery({
     visibility: "public", security: "public",
-    args: {gameId: v.id("games")},
+    args: {gameId: v.union(v.id("games"), v.null())},
     handler: async (ctx, args): Promise<Tile[]> => {
+        if(!args.gameId) return []
+
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface");
         const tilesQuery: TilesQueryRepositoryInterface = ctx.container.get("TilesQueryRepositoryInterface");
 
