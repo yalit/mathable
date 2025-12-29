@@ -339,21 +339,43 @@ async execute(...): Promise<Player>
 Generic type for consistent API responses:
 
 ```typescript
-export const APIReturn = <T extends Validator<any, any, any>>(dataValidator: T) => {
-    return v.union(
-        v.object({
-            status: v.literal("success"),
-            data: dataValidator
-        }),
-        v.object({
-            status: v.literal("error"),
-            data: v.string()
-        })
-    );
+// Extracted validators for reusability
+const APIReturnError: Validator<any, any, any> = v.object({
+    status: v.literal("error"),
+    data: v.string()
+});
+
+const APIReturnSuccess = <T extends Validator<any, any, any>>(dataValidator: T) => {
+    return v.object({
+        status: v.literal("success"),
+        data: dataValidator
+    });
 };
+
+// Main APIReturn validator factory
+export const APIReturn = <T extends Validator<any, any, any>>(dataValidator: T) => {
+    return v.union(APIReturnError, APIReturnSuccess(dataValidator));
+};
+
+// Helper functions for consistent response creation
+export const APIError = (message: string): Infer<typeof APIReturnError> => {
+    return {
+        status: "error",
+        data: message
+    }
+}
+
+export const APISuccess = <T>(data: T) => {
+    return {
+        status: "success" as const,
+        data
+    }
+}
 ```
 
 ### Controller Implementation
+
+Controllers use `APISuccess` and `APIError` helpers for consistent responses:
 
 ```typescript
 // 1. Define return validator
@@ -374,29 +396,63 @@ export const create = appMutation({
             const useCase = new CreateGameUseCase(ctx);
             const data = await useCase.execute(args.playerName, args.sessionId);
 
-            // 4. Return success response
-            return {status: "success", data};
+            // 4. Return success response using helper
+            return APISuccess(data);
         } catch (e: any) {
-            // 5. Catch errors and convert to API format
-            return {status: "error", data: e.message};
+            // 5. Catch errors and convert to API format using helper
+            return APIError(e.message);
         }
     },
 });
 ```
 
+**Key Benefits of Helper Functions:**
+- ✅ **DRY principle** - No duplicate object creation code
+- ✅ **Type safety** - Helpers ensure correct response structure
+- ✅ **Consistency** - All controllers use the same pattern
+- ✅ **Maintainability** - Changes to response format in one place
+
 ### Return Value Examples
 
 ```typescript
-// Success with data
-APIReturn(v.object({gameToken: v.string(), playerToken: v.string()}))
+// Success with data - using helper
+const data = {gameToken: "abc", playerToken: "xyz"};
+return APISuccess(data);
 // → {status: "success", data: {gameToken: "abc", playerToken: "xyz"}}
 
-// Success with no data (void operation)
-APIReturn(v.null())
+// Success with no data (void operation) - using helper
+return APISuccess(null);
 // → {status: "success", data: null}
 
-// Error (always string message)
+// Error - using helper
+return APIError("Game has already started");
 // → {status: "error", data: "Game has already started"}
+```
+
+### Early Return Validation Examples
+
+Controllers should validate entities exist before calling use cases:
+
+```typescript
+handler: async (ctx, args): Promise<Infer<typeof returnValidator>> => {
+    // Fetch required entities
+    const game = await gamesQuery.find(args.gameId);
+    if (!game) return APIError("No Game found");
+
+    const player = await playersQuery.find(args.playerId);
+    if (!player) return APIError("Player not found");
+
+    if (!ctx.user) return APIError("User not authenticated");
+
+    // Now call use case with entities
+    try {
+        const useCase = new PlaceTileUseCase(ctx);
+        await useCase.execute(tile, cell, player, ctx.user);
+        return APISuccess(null);
+    } catch (e: any) {
+        return APIError(e.message);
+    }
+}
 ```
 
 ### Controller Responsibilities
@@ -404,15 +460,17 @@ APIReturn(v.null())
 Controllers are **thin adapters** that:
 1. ✅ Validate input arguments (Convex validators)
 2. ✅ Fetch required entities from repositories
-3. ✅ Call use case with domain entities
-4. ✅ Catch exceptions and convert to `{status, data}` format
-5. ✅ Return APIReturn-formatted responses
+3. ✅ Validate entities exist (return `APIError()` if not found)
+4. ✅ Call use case with domain entities
+5. ✅ Catch exceptions and convert using `APIError(e.message)`
+6. ✅ Return success using `APISuccess(data)`
 
 Controllers should **NOT**:
 - ❌ Contain business logic
 - ❌ Directly access the database
 - ❌ Throw errors to the client
 - ❌ Perform complex data transformations
+- ❌ Manually create `{status, data}` objects (use helpers instead)
 
 ---
 
@@ -592,25 +650,28 @@ convex/
 ### ✅ DO
 
 1. **Keep controllers thin** - just adapt use case results to API format
-2. **Use cases throw errors** - don't wrap in result objects
-3. **Return domain models from repositories** - not IDs or raw documents
-4. **Make domain model IDs truly readonly** - private field + public getter
-5. **Use factory methods for creation** - `repository.new()` pattern
-6. **Validate in domain models** - throw errors in business methods
-7. **Use meaningful error messages** - help debugging
-8. **Type everything** - leverage TypeScript fully
-9. **Use dependency injection** - access repositories via container
+2. **Use helper functions** - `APISuccess()` and `APIError()` in all controllers
+3. **Use cases throw errors** - don't wrap in result objects
+4. **Return domain models from repositories** - not IDs or raw documents
+5. **Make domain model IDs truly readonly** - private field + public getter
+6. **Use factory methods for creation** - `repository.new()` pattern
+7. **Validate in domain models** - throw errors in business methods
+8. **Validate entities in controllers** - return `APIError()` if not found
+9. **Use meaningful error messages** - help debugging
+10. **Type everything** - leverage TypeScript fully
+11. **Use dependency injection** - access repositories via container
 
 ### ❌ DON'T
 
 1. **Don't put business logic in controllers** - keep them thin
-2. **Don't return result objects from use cases** - throw errors instead
-3. **Don't make IDs nullable** - require at construction
-4. **Don't bypass repositories** - always use repository layer
-5. **Don't catch errors in use cases** - let them bubble to controllers
-6. **Don't use generic error messages** - be specific
-7. **Don't mix layers** - respect dependency direction
-8. **Don't use setters in domain models** - use domain methods
+2. **Don't manually create response objects** - use `APISuccess()`/`APIError()` helpers
+3. **Don't return result objects from use cases** - throw errors instead
+4. **Don't make IDs nullable** - require at construction
+5. **Don't bypass repositories** - always use repository layer
+6. **Don't catch errors in use cases** - let them bubble to controllers
+7. **Don't use generic error messages** - be specific
+8. **Don't mix layers** - respect dependency direction
+9. **Don't use setters in domain models** - use domain methods
 
 ---
 
@@ -650,20 +711,30 @@ async execute(...): Promise<void> // or specific return type
 
 ### 4. **Update Controllers**
 ```typescript
-// Old
+// Old - no error handling
 handler: async (ctx, args) => {
     return await useCase.execute(...);
 }
 
-// New
+// New - with helper functions
 handler: async (ctx, args): Promise<Infer<typeof returnValidator>> => {
+    // Validate entities exist
+    const entity = await repository.find(args.id);
+    if (!entity) return APIError("Entity not found");
+
     try {
         const data = await useCase.execute(...);
-        return {status: "success", data};
+        return APISuccess(data);
     } catch (e: any) {
-        return {status: "error", data: e.message};
+        return APIError(e.message);
     }
 }
+```
+
+### 5. **Import Helper Functions**
+```typescript
+// Add to controller imports
+import { APIReturn, APIError, APISuccess } from "../return.type";
 ```
 
 ---
