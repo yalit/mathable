@@ -9,18 +9,11 @@ import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.r
 import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";
 import type {MovesMutationRepositoryInterface} from "../../repository/mutations/moves.repository.ts";
 
-export interface ResetTurnResult {
-    success: boolean;
-    error?: string;
-    movesReset?: number;
-}
-
 /**
  * ResetTurnUseCase
  * Orchestrates resetting the current turn by undoing all moves
  * Stops if a BAG_TO_PLAYER move is encountered (random draws can't be undone)
- *
- * Uses dependency injection for all repository access via ServiceContainer
+ * Throws errors for validation failures
  */
 export class ResetTurnUseCase {
     private ctx: AppMutationCtx;
@@ -46,36 +39,27 @@ export class ResetTurnUseCase {
     async execute(
         game: Game,
         user: User
-    ): Promise<ResetTurnResult> {
+    ): Promise<{movesReset: number}> {
 
-        // 3. Load current player
+        // 1. Load current player
         const currentPlayer = await this.playersQuery.findCurrentPlayer(game);
         if (!currentPlayer) {
-            return {
-                success: false,
-                error: "No current player found",
-            };
+            throw new Error("No current player found");
         }
 
-        // 4. Validate user authorization
+        // 2. Validate user authorization
         if (!currentPlayer.isSameUser(user)) {
-            return {
-                success: false,
-                error: "Only the current player can reset their turn",
-            };
+            throw new Error("Only the current player can reset their turn");
         }
 
-        // 5. Get all moves for the current turn
+        // 3. Get all moves for the current turn
         const moves = await this.movesQuery.findAllForCurrentTurn(game);
 
         if (moves.length === 0) {
-            return {
-                success: true,
-                movesReset: 0,
-            };
+            return {movesReset: 0};
         }
 
-        // 6. Process moves in order and undo them
+        // 4. Process moves in order and undo them
         let canContinue = true;
         let movesReset = 0;
 
@@ -120,9 +104,6 @@ export class ResetTurnUseCase {
             await this.movesMutation.delete(move);
         }
 
-        return {
-            success: true,
-            movesReset,
-        };
+        return {movesReset};
     }
 }
