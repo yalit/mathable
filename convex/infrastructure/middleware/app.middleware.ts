@@ -12,6 +12,8 @@ import type {ServiceContainer} from "../config/ServiceContainer.ts";
 import {internalMutation, internalQuery, mutation, query} from "../../_generated/server";
 import type {User} from "../../domain/models/User.ts";
 import {createContainer} from "../ContainerFactory.ts";
+import type {UsersQueryRepositoryInterface} from "@cvx/repository/query/users.repository.ts";
+import type {UsersMutationRepositoryInterface} from "@cvx/repository/mutations/users.repository.ts";
 
 /*
 export const withSessionQuery = customQuery(withContainerQuery, {
@@ -32,12 +34,8 @@ export const SessionArgs = {sessionId: vSessionId}
 
 export interface AppQueryCtx extends GenericQueryCtx<DataModel> {
     container: ServiceContainer;
-    sessionId?: SessionId | null,
-    user?: User | null,
-}
-
-export interface AppMutationCtx extends GenericMutationCtx<DataModel> {
-    container: ServiceContainer;
+    sessionId: SessionId,
+    user: User,
 }
 
 export const appQuery = <
@@ -77,21 +75,26 @@ export const appQuery = <
         handler: async (ctx, ...args) => {
             const container = createContainer(ctx)
 
-            if (props.security === "public" || props.security === "internal") {
-                return props.handler({...ctx, container}, ...args);
+            console.log("Args:", args);
+            let user = null
+            //@ts-expect-error: sessionId is sometimes part of the args
+            if(args.sessionId) {
+                //@ts-expect-error: sessionId is sometimes part of the args
+                user = await getUser(container, args.sessionId as SessionId)
             }
-
-            return props.handler({...ctx, container}, ...args);
+            //@ts-expect-error: sessionId is sometimes part of the args
+            return props.handler({...ctx, container, user: user, sessionId: args.sessionId ?? null}, ...args);
         },
     });
 };
 
 export interface AppMutationCtx extends GenericMutationCtx<DataModel> {
     container: ServiceContainer;
-    sessionId?: SessionId,
-    user?: User,
+    sessionId: SessionId,
+    user: User,
 }
 
+//TODO : remove sessionId from args if exists!!!!
 export const appMutation = <
     Visibility extends FunctionVisibility,
     Security extends SecurityLevel,
@@ -129,12 +132,27 @@ export const appMutation = <
         handler: async (ctx, ...args) => {
             const container = createContainer(ctx)
 
-            if (props.security === "public" ||  props.security === "internal") {
-                return props.handler({...ctx, container}, ...args);
+            let user = null
+            //@ts-expect-error: sessionId is sometimes part of the args
+            if(args.sessionId) {
+                //@ts-expect-error: sessionId is sometimes part of the args
+                user = await getUser(container, args.sessionId as SessionId)
             }
-
-            return props.handler({...ctx, container}, ...args);
+            //@ts-expect-error: sessionId is sometimes part of the args
+            return props.handler({...ctx, container, user: user, sessionId: args.sessionId ?? null}, ...args);
         },
     });
 };
+
+const getUser = async (container: ServiceContainer, sessionId: SessionId): Promise<User> => {
+    const usersQuery: UsersQueryRepositoryInterface = container.get("UsersQueryRepositoryInterface")
+    let user = await usersQuery.findBySessionId(sessionId)
+
+    if (!user) {
+        const usersMutation: UsersMutationRepositoryInterface = container.get("UsersMutationRepositoryInterface")
+        user = await usersMutation.new({sessionId})
+    }
+
+    return user
+}
 

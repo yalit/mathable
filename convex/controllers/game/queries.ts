@@ -1,20 +1,54 @@
-import type { Game } from "../../domain/models/Game.ts";
+import type {Game} from "../../domain/models/Game.ts";
 import {appQuery, SessionArgs} from "../../infrastructure/middleware/app.middleware.ts";
 import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
 import {v} from "convex/values";
-import type {PlayersQueryRepositoryInterface} from "@cvx/repository/query/players.repository.ts";
-import type { Player } from "../../domain/models/Player.ts";
+import type {PlayersQueryRepositoryInterface} from "../../repository/query/players.repository.ts";
+import type {Player} from "../../domain/models/Player.ts";
+
+type OngoingGame = {
+    id: string;
+    status: string;
+    currentTurn: number;
+    players: Array<OngoingGamePlayer>;
+    token: string
+}
+
+type OngoingGamePlayer = {
+    token: string
+    userId: string
+    name: string;
+    score: number;
+}
 
 export const getNonFinishedForSession = appQuery({
     visibility: "public", security: "public",
     args: {...SessionArgs},
-    handler: async (ctx, _): Promise<Game[]> => {
+    handler: async (ctx, _): Promise<OngoingGame[]> => {
         if (!ctx.user) return []
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface")
         const sessionPlayers: Player[] = await playersQuery.findAllByUserId(ctx.user)
 
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface")
-        return await gamesQuery.findNonFinishedGamesForSessionId(sessionPlayers);
+        const nonFinishedGames: Game[] = await gamesQuery.findNonFinishedGamesForSessionId(sessionPlayers);
+
+        console.log("Non Finished Games", nonFinishedGames)
+        return Promise.all(
+            nonFinishedGames.map(async (g: Game): Promise<OngoingGame> => {
+                const players = await playersQuery.findByGame(g)
+                return {
+                    id: g.id,
+                    status: g.status,
+                    currentTurn: g.currentTurn,
+                    token: g.token,
+                    players: players.map((p: Player): OngoingGamePlayer => ({
+                        token: p.token,
+                        userId: p.userId,
+                        name: p.name,
+                        score: p.score
+                    }))
+                }
+            })
+        )
     }
 });
 

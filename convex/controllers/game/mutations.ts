@@ -2,7 +2,7 @@
  * Create a new game
  * Thin adapter that delegates to CreateGameUseCase
  */
-import { appMutation, SessionArgs } from "../../infrastructure/middleware/app.middleware";
+import {appMutation, SessionArgs} from "../../infrastructure/middleware/app.middleware";
 import {CreateGameUseCase} from "../../usecases/game/CreateGame.usecase.ts";
 import {v, type Infer} from "convex/values";
 import {APIReturn, APIError, APISuccess} from "../return.type.ts";
@@ -11,7 +11,7 @@ import {StartGameUseCase} from "../../usecases/game/StartGame.usecase.ts";
 import type {GamesQueryRepositoryInterface} from "../../repository/query/games.repository.ts";
 
 // Extract return validator for type inference
-const createGameReturn = APIReturn(v.object({
+export const createGameReturn = APIReturn(v.object({
     gameToken: v.string(),
     playerToken: v.string(),
 }));
@@ -22,12 +22,8 @@ export const create = appMutation({
     returns: createGameReturn,
     handler: async (ctx, args): Promise<Infer<typeof createGameReturn>> => {
         const useCase = new CreateGameUseCase(ctx);
-        try {
-            const data = await useCase.execute(args.playerName, args.sessionId);
-            return APISuccess(data);
-        } catch (e: any) {
-            return APIError(e.message);
-        }
+        const data = await useCase.execute(args.playerName, ctx.sessionId);
+        return APISuccess(data);
     },
 });
 

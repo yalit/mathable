@@ -11,6 +11,5 @@ export const userFromDoc = (doc: Doc<"users">): User => {
     return new User(
         doc._id,
         doc.sessionId,
-        doc.name
     );
 };

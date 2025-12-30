@@ -1,18 +1,21 @@
-import type { Game } from "@context/model/game";
-import type { Player } from "@context/model/player";
 import { useJoinGame } from "@hooks/useJoinGame";
-import {useFetchOngoingGamesForSession} from "@hooks/convex/game/useFetchOngoingGamesForSession.tsx";
+import {
+    type OngoingGame,
+    type OngoingGamePlayer,
+    useFetchOngoingGamesForSession
+} from "@hooks/convex/game/useFetchOngoingGamesForSession.tsx";
 import {useFetchSessionUser} from "@hooks/convex/user/useFetchSessionUser.tsx";
 
 export const SelectGame = () => {
-    const sessionGames = useFetchOngoingGamesForSession()
+    const sessionGames: OngoingGame[] = useFetchOngoingGamesForSession()
     const sessionUser = useFetchSessionUser()
     const { joinGame } = useJoinGame();
 
-    const rejoinGame = (game: Game, player: Player) => {
-        joinGame(game, player);
+    const rejoinGame = (game: OngoingGame, player: OngoingGamePlayer) => {
+        joinGame(game.token, player.token);
     };
 
+    console.log(sessionGames);
     return (
         <>
             {(sessionGames && sessionGames.length > 0) && (
@@ -23,7 +26,7 @@ export const SelectGame = () => {
                     <div className="flex flex-wrap justify-center items-center gap-3">
                         {sessionGames?.map((g) => (
                             <div
-                                key={g._id}
+                                key={g.id}
                                 className="overflow-hidden rounded border border-gray-100 w-[250px]"
                             >
                                 <div className="p-3 mb-3 font-semibold text-center bg-orange-50/50">
@@ -40,7 +43,7 @@ export const SelectGame = () => {
                                         .join(" / ")}
                                 </div>
                                 <div className="flex items-center gap-2 mt-5">
-                                    {g.players.map((p: Player) => {
+                                    {g.players.map((p: OngoingGamePlayer) => {
                                         if (p.userId !== sessionUser?.id) {
                                             return;
                                         }

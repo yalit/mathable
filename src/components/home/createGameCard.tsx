@@ -1,22 +1,22 @@
-import { api } from "@cvx/_generated/api";
-import { useSessionMutation } from "convex-helpers/react/sessions";
 import { useState, type FormEvent } from "react";
+import {useCreateGame} from "@hooks/convex/game/useCreateGame.tsx";
 
 export const CreateGameCard = () => {
   const [playerName, setPlayerName] = useState("");
-  const createGame = useSessionMutation(api.mutations.public.game.create);
+  const createGame = useCreateGame()
 
   const handleClickOnCreate = async (e: FormEvent) => {
     e.preventDefault();
 
+    console.log("clicking...")
     if (playerName === "") {
       return;
     }
 
-    const { gameToken, playerToken } = await createGame({
-      playerName,
-    });
-    if (gameToken && gameToken !== "" && playerToken && playerToken !== "") {
+    console.log("playerName", playerName);
+    const {status, data} = await createGame( playerName );
+    const {gameToken, playerToken} = data
+    if (status==="success" && gameToken && gameToken !== "" && playerToken && playerToken !== "") {
       document.location = `/game/${gameToken}/player/${playerToken}`;
     }
   };

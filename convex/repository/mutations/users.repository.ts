@@ -15,11 +15,9 @@ export class UsersMutationRepository implements UsersMutationRepositoryInterface
     }
 
     static create(writer: GenericDatabaseWriter<DataModel>): UsersMutationRepositoryInterface {
-        if (UsersMutationRepository.instance) {
-            return UsersMutationRepository.instance;
+        if (!UsersMutationRepository.instance) {
+            UsersMutationRepository.instance = new UsersMutationRepository(writer);
         }
-
-        UsersMutationRepository.instance = new UsersMutationRepository(writer);
         return UsersMutationRepository.instance;
     }
 

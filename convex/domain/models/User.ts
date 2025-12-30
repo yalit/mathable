@@ -10,16 +10,13 @@ import type {DocData} from "../../repository/repositories.interface.ts";
 export class User {
   private readonly _id: Id<"users">;
   public readonly sessionId: SessionId;
-  private _name: string;
 
   public constructor(
     id: Id<"users">,
     sessionId: SessionId,
-    name: string
   ) {
     this._id = id;
     this.sessionId = sessionId;
-    this._name = name;
   }
 
   /**
@@ -34,7 +31,6 @@ export class User {
    */
   toDoc(): DocData<"users"> {
     return {
-      name: this._name,
       sessionId: this.sessionId,
     };
   }
@@ -72,22 +68,6 @@ export class User {
   // ========================================
   // Business Logic Methods
   // ========================================
-
-  /**
-   * Change user's name
-   * @param newName - The new name for the user
-   */
-  changeName(newName: string): void {
-    if (!newName || newName.trim().length === 0) {
-      throw new Error("Name cannot be empty");
-    }
-
-    if (newName.length > 50) {
-      throw new Error("Name cannot exceed 50 characters");
-    }
-
-    this._name = newName.trim();
-  }
 
   /**
    * Check if this user owns a specific player
@@ -134,13 +114,5 @@ export class User {
   ): Player | undefined {
     this.validatePlayersBelongToUser(players);
     return players.find(p => p.gameId === gameId);
-  }
-
-  // ========================================
-  // Getters
-  // ========================================
-
-  get name(): string {
-    return this._name;
   }
 }

@@ -3,16 +3,15 @@ import type {GamesMutationRepositoryInterface} from "../../repository/mutations/
 import type {PlayersMutationRepositoryInterface} from "../../repository/mutations/players.repository";
 import type {CellsMutationRepositoryInterface} from "../../repository/mutations/cells.repository";
 import type {TilesMutationRepositoryInterface} from "../../repository/mutations/tiles.repository";
-import {getBoardCells, getInitialGameTiles} from "../../domain/models/factory/game.factory.ts";
-import type {Cell} from "../../domain/models/Cell.ts";
+import {getBoardCellsData, getInitialGameTiles} from "../../domain/models/factory/game.factory.ts";
 import {UUID} from "../../domain/models/factory/uuid.factory.ts";
-import {createTile} from "../../domain/models/factory/tile.factory.ts";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
 import type {UsersQueryRepositoryInterface} from "../../repository/query/users.repository.ts";
 import type {Player} from "../../domain/models/Player.ts";
 import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
 import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";
+import type {DocData} from "@cvx/repository/repositories.interface.ts";
 
 export interface CreateGameResult {
     gameToken: string;
@@ -101,7 +100,9 @@ export class CreateGameUseCase {
         sessionId: SessionId
     ): Promise<Player> {
         const user = await this.usersQuery.findBySessionId(sessionId)
-        if (!user) throw new Error("Invalid User");
+        if (!user) {
+            throw new Error("No user found");
+        }
 
         return this.playersMutation.newFromName(game, user, playerName)
     }
@@ -111,11 +112,11 @@ export class CreateGameUseCase {
      * Uses the factory to get the initial board structure
      */
     private async initializeBoard(game: Game): Promise<void> {
-        const boardCells = getBoardCells(game);
+        const boardCells = getBoardCellsData(game);
 
         await Promise.all(
-            boardCells.map((cell: Cell) => {
-                this.cellsMutation.new(cell.toDoc())
+            boardCells.map((cell: DocData<"cells">) => {
+                this.cellsMutation.new(cell)
             })
         );
     }
@@ -125,11 +126,10 @@ export class CreateGameUseCase {
      * Uses the factory to get the initial tile configuration
      */
     private async createInitialTiles(game: Game): Promise<void> {
-        const initialTiles = getInitialGameTiles(game);
+        const initialTiles: DocData<"tiles">[] = getInitialGameTiles(game);
 
-        for (const tileData of initialTiles) {
-            const tile = createTile(game, tileData.value, tileData.location);
-            await this.tilesMutation.save(tile);
+        for (const tile of initialTiles) {
+            await this.tilesMutation.new(tile);
         }
     }
 

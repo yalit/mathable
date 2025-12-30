@@ -20,10 +20,9 @@ export class PlayersMutationRepository implements PlayersMutationRepositoryInter
     }
 
     static create(db: GenericDatabaseWriter<DataModel>): PlayersMutationRepositoryInterface {
-        if (PlayersMutationRepository.instance) {
-            return PlayersMutationRepository.instance;
+        if (!PlayersMutationRepository.instance) {
+            PlayersMutationRepository.instance = new PlayersMutationRepository(db)
         }
-        PlayersMutationRepository.instance = new this(db);
         return PlayersMutationRepository.instance;
     }
 
@@ -45,6 +44,7 @@ export class PlayersMutationRepository implements PlayersMutationRepositoryInter
     }
 
     async new(data: DocData<"players">): Promise<Player> {
+        console.log()
         const id = await this.db.insert("players", data);
         return playerFromDoc({...data, _id: id, _creationTime: 0})
     }

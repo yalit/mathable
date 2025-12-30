@@ -23,10 +23,9 @@ export class PlayersQueryRepository implements PlayersQueryRepositoryInterface {
     }
 
     static create(db: GenericDatabaseReader<DataModel>): PlayersQueryRepositoryInterface {
-        if (PlayersQueryRepository.instance) {
-            return PlayersQueryRepository.instance;
+        if (!PlayersQueryRepository.instance) {
+            PlayersQueryRepository.instance = new PlayersQueryRepository(db)
         }
-        PlayersQueryRepository.instance = new this(db);
         return PlayersQueryRepository.instance;
     }
 

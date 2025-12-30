@@ -22,10 +22,9 @@ export class UsersQueryRepository implements UsersQueryRepositoryInterface {
   }
 
   static create(reader: GenericDatabaseReader<DataModel>): UsersQueryRepository {
-    if (UsersQueryRepository.instance) {
-      return UsersQueryRepository.instance;
+    if (!UsersQueryRepository.instance) {
+      UsersQueryRepository.instance = new UsersQueryRepository(reader);
     }
-    UsersQueryRepository.instance = new this(reader);
     return UsersQueryRepository.instance;
   }
 

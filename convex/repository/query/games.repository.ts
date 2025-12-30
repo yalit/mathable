@@ -19,10 +19,9 @@ export class GamesQueryRepository implements GamesQueryRepositoryInterface {
     }
 
     static create(db: GenericDatabaseReader<DataModel>): GamesQueryRepositoryInterface {
-        if (GamesQueryRepository.instance) {
-            return GamesQueryRepository.instance;
+        if (!GamesQueryRepository.instance) {
+            GamesQueryRepository.instance = new GamesQueryRepository(db)
         }
-        GamesQueryRepository.instance = new this(db);
         return GamesQueryRepository.instance;
     }
 

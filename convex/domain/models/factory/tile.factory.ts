@@ -1,13 +1,20 @@
 import {Tile, type TileLocation} from "../Tile.ts";
-import type {Doc, Id} from "../../../_generated/dataModel";
+import type {Doc} from "../../../_generated/dataModel";
 import type {Game} from "../Game.ts";
+import type {DocData} from "@cvx/repository/repositories.interface.ts";
 
-export const createTile = (
+export const createTileData = (
     game: Game,
     value: number,
     location: TileLocation = "in_bag",
-): Tile => {
-    return new Tile("" as Id<"tiles">, game.id, value, location, null, null)
+): DocData<"tiles"> => {
+    return {
+        gameId: game.id,
+        value,
+        location,
+        playerId: null,
+        cellId: null
+    }
 };
 
 /**

@@ -38,7 +38,7 @@ export const APIError = (message: string): Infer<typeof APIReturnError> => {
 
 export const APISuccess = <T>(data: T) => {
     return {
-        status: "success" as const,
+        status: "success",
         data
     }
 };

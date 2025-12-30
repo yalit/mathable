@@ -2,6 +2,7 @@ import { useEffect, type PropsWithChildren } from "react";
 import { useActions } from "./hooks";
 import { useSessionId } from "convex-helpers/react/sessions";
 import {useParams} from "react-router-dom";
+import type {Player} from "@context/model/player.ts";
 import {useFetchCurrentGame} from "@hooks/convex/game/useFetchCurrentGame.tsx";
 
 export const GameProvider = ({ children }: PropsWithChildren) => {
@@ -20,9 +21,10 @@ export const GameProvider = ({ children }: PropsWithChildren) => {
   }, [actions, game]);
 
   useEffect(() => {
-    if (!game || !playerToken) return
+    if (!game) return
+    if (!playerToken) return
 
-    const players = game.players.filter(p => p.token === playerToken)
+    const players = game.players.filter((p: Player) => p.token === playerToken)
     if (players.length === 0) return
 
     actions.setPlayer(players[0]);

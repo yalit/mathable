@@ -7,68 +7,79 @@ import {
     OperatorCell,
     ValueCell
 } from "../Cell.ts";
-import type {Doc, Id} from "../../../_generated/dataModel";
+import type {Doc} from "../../../_generated/dataModel";
 import type {Game} from "../Game.ts";
+import type {DocData} from "@cvx/repository/repositories.interface.ts";
 
-export const createEmptyCell = (game: Game, row: number, column: number): EmptyCell => {
-    return new EmptyCell(
-        "" as Id<"cells">,
-        game.id,
+export const createEmptyCellData = (game: Game, row: number, column: number): DocData<"cells"> => {
+    return {
+        gameId: game.id,
         row,
         column,
-        [],
-        null
-    )
+        allowedValues: [],
+        type: "empty",
+        value: null,
+        multiplier: null,
+        operator: null,
+        tileId: null
+    }
 };
 
-export const createValueCell = (
+export const createValueCellData = (
     game: Game,
     row: number,
     column: number,
     value: number,
-): ValueCell => {
-    return new ValueCell(
-        "" as Id<"cells">,
-        game.id,
+): DocData<"cells"> => {
+    return {
+        gameId: game.id,
         row,
         column,
+        allowedValues: [],
+        type: "empty",
         value,
-        []
-    )
+        multiplier: null,
+        operator: null,
+        tileId: null
+    }
 };
 
-export const createOperatorCell = (
+export const createOperatorCellData = (
     game: Game,
     row: number,
     column: number,
     operator: CellOperator,
-): OperatorCell => {
-    return new OperatorCell(
-        "" as Id<"cells">,
-        game.id,
+):  DocData<"cells"> => {
+    return {
+        gameId: game.id,
         row,
         column,
+        allowedValues: [],
+        type: "empty",
+        value: null,
+        multiplier: null,
         operator,
-        [],
-        null
-    )
+        tileId: null
+    }
 };
 
-export const createMultiplierCell = (
+export const createMultiplierCellData = (
     game: Game,
     row: number,
     column: number,
     multiplier: number,
-): MultiplierCell => {
-    return new MultiplierCell(
-        "" as Id<"cells">,
-        game.id,
+): DocData<"cells"> => {
+    return {
+        gameId: game.id,
         row,
         column,
+        allowedValues: [],
+        type: "empty",
+        value: null,
         multiplier,
-        [],
-        null,
-    )
+        operator: null,
+        tileId: null
+    }
 };
 
 /**

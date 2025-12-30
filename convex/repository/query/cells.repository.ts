@@ -35,9 +35,9 @@ export interface CellsQueryRepositoryInterface
 
 export class CellsQueryRepository implements CellsQueryRepositoryInterface {
     static instance: CellsQueryRepository;
-    private db: GenericDatabaseReader<DataModel>;
-    private tilesQueryRepository: TilesQueryRepositoryInterface;
-    private gamesQueryRepository: GamesQueryRepositoryInterface
+    private readonly db: GenericDatabaseReader<DataModel>;
+    private readonly tilesQueryRepository: TilesQueryRepositoryInterface;
+    private readonly gamesQueryRepository: GamesQueryRepositoryInterface
 
     constructor(db: GenericDatabaseReader<DataModel>, tiles: TilesQueryRepositoryInterface, games: GamesQueryRepositoryInterface) {
         this.db = db;

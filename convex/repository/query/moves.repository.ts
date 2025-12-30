@@ -19,10 +19,9 @@ export class MovesQueryRepository implements MovesQueryRepositoryInterface {
     }
 
     static create(db: GenericDatabaseReader<DataModel>): MovesQueryRepositoryInterface {
-        if (MovesQueryRepository.instance) {
-            return MovesQueryRepository.instance;
+        if (!MovesQueryRepository.instance) {
+            MovesQueryRepository.instance = new MovesQueryRepository(db)
         }
-        MovesQueryRepository.instance = new this(db);
         return MovesQueryRepository.instance;
     }
 

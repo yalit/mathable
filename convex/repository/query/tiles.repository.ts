@@ -21,10 +21,9 @@ export class TilesQueryRepository implements TilesQueryRepositoryInterface {
     }
 
     static create(db: GenericDatabaseReader<DataModel>): TilesQueryRepositoryInterface {
-        if (TilesQueryRepository.instance) {
-            return TilesQueryRepository.instance;
+        if (!TilesQueryRepository.instance) {
+            TilesQueryRepository.instance = new  TilesQueryRepository(db)
         }
-        TilesQueryRepository.instance = new this(db);
         return TilesQueryRepository.instance;
     }
 

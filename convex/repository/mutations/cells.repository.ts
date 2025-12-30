@@ -14,10 +14,11 @@ export class CellsMutationRepository
   static instance: CellsMutationRepository;
   private db: GenericDatabaseWriter<DataModel>;
 
-  static create(db: GenericDatabaseWriter<DataModel>): void {
+  static create(db: GenericDatabaseWriter<DataModel>): CellsMutationRepositoryInterface {
     if (!CellsMutationRepository.instance) {
       CellsMutationRepository.instance = new CellsMutationRepository(db);
     }
+    return CellsMutationRepository.instance
   }
 
   private constructor(db: GenericDatabaseWriter<DataModel>) {
