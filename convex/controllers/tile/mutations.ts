@@ -21,7 +21,6 @@ const playToCellReturn = APIReturn(v.null());
  * Thin adapter that delegates to PlaceTileUseCase
  */
 export const playToCell = appMutation({
-    visibility: "public", security: "secure",
     args: {
         tileId: v.id("tiles"),
         cellId: v.id("cells"),
@@ -65,7 +64,6 @@ const pickReturn = APIReturn(v.object({
  * Thin adapter that delegates to PickTileUseCase
  */
 export const pick = appMutation({
-    visibility: "public", security: "secure",
     args: {
         playerId: v.id("players"),
         ...SessionArgs,
@@ -97,7 +95,6 @@ const displaceReturn = APIReturn(v.null());
  * Thin adapter that delegates to DisplaceTileUseCase
  */
 export const displace = appMutation({
-    visibility: "public", security: "secure",
     args: {
         tileId: v.id("tiles"),
         fromCellId: v.id("cells"),
@@ -143,7 +140,6 @@ const cancelPlacementReturn = APIReturn(v.null());
  * Thin adapter that delegates to CancelTilePlacementUseCase
  */
 export const cancelPlacement = appMutation({
-    visibility: "public", security: "secure",
     args: {
         playerId: v.id("players"),
         ...SessionArgs,

@@ -1,22 +1,26 @@
 import { useState, type FormEvent } from "react";
-import {useCreateGame} from "@hooks/convex/game/useCreateGame.tsx";
+import { useCreateGame } from "@hooks/convex/game/useCreateGame.tsx";
 
 export const CreateGameCard = () => {
   const [playerName, setPlayerName] = useState("");
-  const createGame = useCreateGame()
+  const createGame = useCreateGame();
 
   const handleClickOnCreate = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log("clicking...")
     if (playerName === "") {
       return;
     }
 
-    console.log("playerName", playerName);
-    const {status, data} = await createGame( playerName );
-    const {gameToken, playerToken} = data
-    if (status==="success" && gameToken && gameToken !== "" && playerToken && playerToken !== "") {
+    const { status, data } = await createGame(playerName);
+    const { gameToken, playerToken } = data;
+    if (
+      status === "success" &&
+      gameToken &&
+      gameToken !== "" &&
+      playerToken &&
+      playerToken !== ""
+    ) {
       document.location = `/game/${gameToken}/player/${playerToken}`;
     }
   };

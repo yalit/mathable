@@ -4,11 +4,13 @@ import { useSessionId } from "convex-helpers/react/sessions";
 import {useParams} from "react-router-dom";
 import type {Player} from "@context/model/player.ts";
 import {useFetchCurrentGame} from "@hooks/convex/game/useFetchCurrentGame.tsx";
+import {useCheckUser} from "@hooks/convex/user/useCheckUser.ts";
 
 export const GameProvider = ({ children }: PropsWithChildren) => {
   const game = useFetchCurrentGame();
   const { playerToken } = useParams();
   const [sessionId] = useSessionId();
+  useCheckUser()
 
   const actions = useActions();
 

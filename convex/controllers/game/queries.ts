@@ -21,9 +21,8 @@ type OngoingGamePlayer = {
 }
 
 export const getNonFinishedForSession = appQuery({
-    visibility: "public", security: "public",
     args: {...SessionArgs},
-    handler: async (ctx, _): Promise<OngoingGame[]> => {
+    handler: async (ctx): Promise<OngoingGame[]> => {
         if (!ctx.user) return []
         const playersQuery: PlayersQueryRepositoryInterface = ctx.container.get("PlayersQueryRepositoryInterface")
         const sessionPlayers: Player[] = await playersQuery.findAllByUserId(ctx.user)
@@ -53,9 +52,9 @@ export const getNonFinishedForSession = appQuery({
 });
 
 export const get = appQuery({
-    visibility: "public", security: "secure",
     args: {gameToken: v.string()},
     handler: async (ctx, args): Promise<Game | null> => {
+        console.log(ctx)
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface")
         return await gamesQuery.findByToken(args.gameToken);
     }

@@ -1,158 +1,68 @@
-import {type SessionId, vSessionId} from "convex-helpers/server/sessions";
-import type {PropertyValidators, Validator} from "convex/values";
-import type {
-    ArgsArrayForOptionalValidator,
-    ArgsArrayToObject,
-    DefaultArgsForOptionalValidator, GenericMutationCtx,
-    GenericQueryCtx, RegisteredMutation, RegisteredQuery,
-    ReturnValueForOptionalValidator
-} from "convex/server";
 import type {DataModel} from "../../_generated/dataModel";
-import type {ServiceContainer} from "../config/ServiceContainer.ts";
-import {internalMutation, internalQuery, mutation, query} from "../../_generated/server";
-import type {User} from "../../domain/models/User.ts";
-import {createContainer} from "../ContainerFactory.ts";
-import type {UsersQueryRepositoryInterface} from "@cvx/repository/query/users.repository.ts";
-import type {UsersMutationRepositoryInterface} from "@cvx/repository/mutations/users.repository.ts";
+import { vSessionId, type SessionId, } from "convex-helpers/server/sessions";
+import type {GenericMutationCtx, GenericQueryCtx} from "convex/server";
+import type {ServiceContainer} from "../config/ServiceContainer";
+import type {User} from "../../domain/models/User";
+import type {UsersQueryRepositoryInterface} from "../../repository/query/users.repository";
+import type {UsersMutationRepositoryInterface} from "../../repository/mutations/users.repository";
+import {createContainer} from "../ContainerFactory";
+import {mutation, query} from "../../_generated/server";
+import { customMutation, customQuery, } from "convex-helpers/server/customFunctions";
+import {v} from "convex/values";
 
-/*
-export const withSessionQuery = customQuery(withContainerQuery, {
-    args: SessionIdArg,
-    input: async (ctx, {sessionId}) => {
-        const user = await UsersQueryRepository.instance.findBySessionId(sessionId);
-        return {ctx: {...ctx, user, sessionId}, args: {}};
+export const SessionArgs = {sessionId: vSessionId};
+
+type BaseCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>;
+type AppCtx = BaseCtx & {
+    container: ServiceContainer;
+    sessionId: SessionId;
+    user: User | null;
+};
+type SessionAppArgs = { sessionId?: string }
+
+export const appQuery = customQuery(query, {
+    args: {sessionId: v.optional(vSessionId)},
+    input: async (ctx, args) => {
+        const securityCtx = await getCtxWithContainerAndSecurity(ctx, args)
+        return {ctx: securityCtx, args};
     },
 });
-*/
 
-// from https://medium.com/@mutabazialleluia/after-struggling-for-hours-heres-how-i-finally-created-a-typed-secure-wrapper-for-convex-queries-78144d680047
-// Public or internal visibility for the query
-type FunctionVisibility = "public" | "internal";
-type SecurityLevel = "public" | "secure" | "internal"
-
-export const SessionArgs = {sessionId: vSessionId}
-
-export interface AppQueryCtx extends GenericQueryCtx<DataModel> {
-    container: ServiceContainer;
-    sessionId: SessionId,
-    user: User,
-}
-
-export const appQuery = <
-    Visibility extends FunctionVisibility,
-    Security extends SecurityLevel,
-    ArgsValidator extends PropertyValidators | Validator<any, "required", any> | void,
-    ReturnsValidator extends PropertyValidators | Validator<any, "required", any> | void,
-    ReturnValue extends ReturnValueForOptionalValidator<ReturnsValidator> = any,
-    ArgsArray extends ArgsArrayForOptionalValidator<ArgsValidator> = DefaultArgsForOptionalValidator<ArgsValidator>,
->(
-    props: {
-        visibility: Visibility;
-        security: Security,
-        args?: ArgsValidator;
-        returns?: ReturnsValidator;
-        handler: (
-            ctx: AppQueryCtx,
-            ...args: ArgsArray
-        ) => ReturnValue;
+export const appMutation = customMutation(mutation, {
+    args: {sessionId: v.optional(vSessionId)},
+    input: async (ctx, args) => {
+        const securityCtx = await getCtxWithContainerAndSecurity(ctx, args)
+        if (!securityCtx.user && args.sessionId) {
+            const usersMutation: UsersMutationRepositoryInterface = securityCtx.container.get(
+                "UsersMutationRepositoryInterface",
+            );
+            securityCtx.user = await usersMutation.new({sessionId: args.sessionId});
+        }
+        return {ctx: securityCtx, args};
     },
-) => {
-    // Dynamically choose query or internalQuery based on face
-    const fn = (props.visibility === "public"
-        ? query
-        : internalQuery) as any as (query: {
-        args?: ArgsValidator;
-        returns?: ReturnsValidator;
-        handler: (
-            ctx: GenericQueryCtx<DataModel>,
-            ...args: ArgsArray
-        ) => Promise<ReturnValue>;
-    }) => RegisteredQuery<Visibility, ArgsArrayToObject<ArgsArray>, ReturnValue>;
+});
 
-    return fn({
-        args: props.args,
-        returns: props.returns,
-        handler: async (ctx, ...args) => {
-            const container = createContainer(ctx)
+const getCtxWithContainerAndSecurity = async (
+    ctx: BaseCtx,
+    args: SessionAppArgs,
+): Promise<AppCtx> => {
+    const container = createContainer(ctx);
 
-            console.log("Args:", args);
-            let user = null
-            //@ts-expect-error: sessionId is sometimes part of the args
-            if(args.sessionId) {
-                //@ts-expect-error: sessionId is sometimes part of the args
-                user = await getUser(container, args.sessionId as SessionId)
-            }
-            //@ts-expect-error: sessionId is sometimes part of the args
-            return props.handler({...ctx, container, user: user, sessionId: args.sessionId ?? null}, ...args);
-        },
-    });
-};
-
-export interface AppMutationCtx extends GenericMutationCtx<DataModel> {
-    container: ServiceContainer;
-    sessionId: SessionId,
-    user: User,
-}
-
-//TODO : remove sessionId from args if exists!!!!
-export const appMutation = <
-    Visibility extends FunctionVisibility,
-    Security extends SecurityLevel,
-    ArgsValidator extends PropertyValidators | Validator<any, "required", any> | void,
-    ReturnsValidator extends PropertyValidators | Validator<any, "required", any> | void,
-    ReturnValue extends ReturnValueForOptionalValidator<ReturnsValidator> = any,
-    ArgsArray extends ArgsArrayForOptionalValidator<ArgsValidator> = DefaultArgsForOptionalValidator<ArgsValidator>,
->(
-    props: {
-        visibility: Visibility;
-        security: Security,
-        args?: ArgsValidator;
-        returns?: ReturnsValidator;
-        handler: (
-            ctx: AppMutationCtx,
-            ...args: ArgsArray
-        ) => ReturnValue;
-    },
-) => {
-    // Dynamically choose query or internalQuery based on face
-    const fn = (props.visibility === "public"
-        ? mutation
-        : internalMutation) as any as (mutation: {
-        args?: ArgsValidator;
-        returns?: ReturnsValidator;
-        handler: (
-            ctx: GenericMutationCtx<DataModel>,
-            ...args: ArgsArray
-        ) => Promise<ReturnValue>;
-    }) => RegisteredMutation<Visibility, ArgsArrayToObject<ArgsArray>, ReturnValue>;
-
-    return fn({
-        args: props.args,
-        returns: props.returns,
-        handler: async (ctx, ...args) => {
-            const container = createContainer(ctx)
-
-            let user = null
-            //@ts-expect-error: sessionId is sometimes part of the args
-            if(args.sessionId) {
-                //@ts-expect-error: sessionId is sometimes part of the args
-                user = await getUser(container, args.sessionId as SessionId)
-            }
-            //@ts-expect-error: sessionId is sometimes part of the args
-            return props.handler({...ctx, container, user: user, sessionId: args.sessionId ?? null}, ...args);
-        },
-    });
-};
-
-const getUser = async (container: ServiceContainer, sessionId: SessionId): Promise<User> => {
-    const usersQuery: UsersQueryRepositoryInterface = container.get("UsersQueryRepositoryInterface")
-    let user = await usersQuery.findBySessionId(sessionId)
-
-    if (!user) {
-        const usersMutation: UsersMutationRepositoryInterface = container.get("UsersMutationRepositoryInterface")
-        user = await usersMutation.new({sessionId})
+    const {sessionId} = args;
+    let user = null;
+    if (sessionId) {
+        user = await getUser(container, sessionId as SessionId)
     }
 
-    return user
-}
+    return { ...ctx, container, user, sessionId: (sessionId as SessionId) ?? "" };
+};
 
+const getUser = async (
+    container: ServiceContainer,
+    sessionId: SessionId,
+): Promise<User | null> => {
+    const usersQuery: UsersQueryRepositoryInterface = container.get(
+        "UsersQueryRepositoryInterface",
+    );
+    return await usersQuery.findBySessionId(sessionId);
+};

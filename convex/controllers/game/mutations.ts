@@ -17,7 +17,6 @@ export const createGameReturn = APIReturn(v.object({
 }));
 
 export const create = appMutation({
-    visibility: "public", security: "public",
     args: {playerName: v.string(), ...SessionArgs},
     returns: createGameReturn,
     handler: async (ctx, args): Promise<Infer<typeof createGameReturn>> => {
@@ -37,7 +36,6 @@ const joinGameReturn = APIReturn(v.object({
  * Thin adapter that delegates to JoinGameUseCase
  */
 export const join = appMutation({
-    visibility: "public", security: "public",
     args: {
         ...SessionArgs,
         gameId: v.id("games"),
@@ -69,7 +67,6 @@ const startGameReturn = APIReturn(v.null());
  * Thin adapter that delegates to StartGameUseCase
  */
 export const start = appMutation({
-    visibility: "public", security: "secure",
     args: {...SessionArgs, gameId: v.id("games")},
     returns: startGameReturn,
     handler: async (ctx, args): Promise<Infer<typeof startGameReturn>> => {

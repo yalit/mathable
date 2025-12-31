@@ -5,7 +5,6 @@ import type {GamesQueryRepositoryInterface} from "../../repository/query/games.r
 import type {PlayersQueryRepositoryInterface} from "../../repository/query/players.repository.ts";
 
 export const getForGame = appQuery({
-    visibility: "public", security: "public",
     args: {gameId: v.union(v.id("games"), v.null())},
     handler: async (ctx, args): Promise<Player[]> => {
         if (!args.gameId) return []

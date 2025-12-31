@@ -20,7 +20,6 @@ const resetTurnReturn = APIReturn(v.object({
  * Thin adapter that delegates to ResetTurnUseCase
  */
 export const resetTurn = appMutation({
-    visibility: "public", security: "secure",
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: resetTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof resetTurnReturn>> => {
@@ -50,7 +49,6 @@ const endTurnReturn = APIReturn(v.object({
  * Thin adapter that delegates to EndTurnUseCase
  */
 export const endTurn = appMutation({
-    visibility: "public", security: "secure",
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: endTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof endTurnReturn>> => {

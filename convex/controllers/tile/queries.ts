@@ -5,7 +5,6 @@ import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.r
 import type {Tile} from "../../domain/models/Tile.ts";
 
 export const getForGame = appQuery({
-    visibility: "public", security: "public",
     args: {gameId: v.union(v.id("games"), v.null())},
     handler: async (ctx, args): Promise<Tile[]> => {
         if(!args.gameId) return []

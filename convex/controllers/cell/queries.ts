@@ -5,7 +5,6 @@ import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.r
 import type {Cell} from "../../domain/models/Cell.ts";
 
 export const getForGame = appQuery({
-    visibility: "public", security: "public",
     args: {gameId: v.union(v.id("games"), v.null())},
     handler: async (ctx, args): Promise<Cell[]> => {
         if (!args.gameId) return []
