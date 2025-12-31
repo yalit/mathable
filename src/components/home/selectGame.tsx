@@ -4,11 +4,9 @@ import {
     type OngoingGamePlayer,
     useFetchOngoingGamesForSession
 } from "@hooks/convex/game/useFetchOngoingGamesForSession.tsx";
-import {useFetchSessionUser} from "@hooks/convex/user/useFetchSessionUser.tsx";
 
 export const SelectGame = () => {
     const sessionGames: OngoingGame[] = useFetchOngoingGamesForSession()
-    const sessionUser = useFetchSessionUser()
     const { joinGame } = useJoinGame();
 
     const rejoinGame = (game: OngoingGame, player: OngoingGamePlayer) => {
@@ -44,9 +42,6 @@ export const SelectGame = () => {
                                 </div>
                                 <div className="flex items-center gap-2 mt-5">
                                     {g.players.map((p: OngoingGamePlayer) => {
-                                        if (p.userId !== sessionUser?.id) {
-                                            return;
-                                        }
                                         return (
                                             <button
                                                 className="bg-sky-50/50 py-2 px-4 cursor-pointer"

@@ -8,22 +8,15 @@ import type {DocData} from "../../repository/repositories.interface.ts";
  * Uses Lean Domain Model pattern: relationships passed as parameters with validation
  */
 export class User {
-  private readonly _id: Id<"users">;
+  public readonly id: Id<"users">;
   public readonly sessionId: SessionId;
 
   public constructor(
     id: Id<"users">,
     sessionId: SessionId,
   ) {
-    this._id = id;
+    this.id = id;
     this.sessionId = sessionId;
-  }
-
-  /**
-   * Get the user ID
-   */
-  get id(): Id<"users"> {
-    return this._id;
   }
 
   /**

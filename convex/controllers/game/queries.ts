@@ -30,7 +30,6 @@ export const getNonFinishedForSession = appQuery({
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface")
         const nonFinishedGames: Game[] = await gamesQuery.findNonFinishedGamesForSessionId(sessionPlayers);
 
-        console.log("Non Finished Games", nonFinishedGames)
         return Promise.all(
             nonFinishedGames.map(async (g: Game): Promise<OngoingGame> => {
                 const players = await playersQuery.findByGame(g)
@@ -54,7 +53,6 @@ export const getNonFinishedForSession = appQuery({
 export const get = appQuery({
     args: {gameToken: v.string()},
     handler: async (ctx, args): Promise<Game | null> => {
-        console.log(ctx)
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface")
         return await gamesQuery.findByToken(args.gameToken);
     }

@@ -16,7 +16,6 @@ import type * as controllers_player_queries from "../controllers/player/queries.
 import type * as controllers_tile_mutations from "../controllers/tile/mutations.js";
 import type * as controllers_tile_queries from "../controllers/tile/queries.js";
 import type * as controllers_user_mutations from "../controllers/user/mutations.js";
-import type * as controllers_user_queries from "../controllers/user/queries.js";
 import type * as domain_models_Cell from "../domain/models/Cell.js";
 import type * as domain_models_Game from "../domain/models/Game.js";
 import type * as domain_models_Move from "../domain/models/Move.js";
@@ -44,7 +43,6 @@ declare const fullApi: ApiFromModules<{
   "controllers/tile/mutations": typeof controllers_tile_mutations;
   "controllers/tile/queries": typeof controllers_tile_queries;
   "controllers/user/mutations": typeof controllers_user_mutations;
-  "controllers/user/queries": typeof controllers_user_queries;
   "domain/models/Cell": typeof domain_models_Cell;
   "domain/models/Game": typeof domain_models_Game;
   "domain/models/Move": typeof domain_models_Move;
