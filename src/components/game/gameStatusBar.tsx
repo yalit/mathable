@@ -2,16 +2,13 @@ import type { Player } from "@context/model/player";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
 import { classnames } from "@libraries/helpers/dom";
-import {
-  useSessionMutation,
-  useSessionQuery,
-} from "convex-helpers/react/sessions";
+import { useSessionMutation } from "convex-helpers/react/sessions";
 import { useCallback, useMemo, useState } from "react";
 import type { Game } from "@context/model/game";
 import { useGame, usePlayer } from "@context/hooks";
 import type { Tile } from "@context/model/tile";
-import type { Modal } from "@components/includes/modal";
 import { Rules } from "@components/global/rules";
+import { useCurrentTurnScore } from "@hooks/convex/play/useCurrentTurnScore";
 
 export function GameStatusBar() {
   const game = useGame();
@@ -34,7 +31,9 @@ const MainTitle = ({ player }: StatusBarPartProps) => (
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
-  const resetTurn = useSessionMutation(api.controllers.play.mutations.resetTurn);
+  const resetTurn = useSessionMutation(
+    api.controllers.play.mutations.resetTurn,
+  );
   const endTurn = useSessionMutation(api.controllers.play.mutations.endTurn);
   const [showRules, setShowRules] = useState<boolean>(false);
 
@@ -87,10 +86,7 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
 };
 
 const GameInformation = ({ game, player }: StatusBarPartProps) => {
-  const turnScore = useSessionQuery(api.queries.play.getCurrentTurnScore, {
-    gameId: (game?._id as Id<"games">) ?? ("" as Id<"games">),
-  });
-
+  const turnScore = useCurrentTurnScore(game);
   const score = useCallback(
     (p: Player) => {
       if (!p.current || turnScore === undefined) {
