@@ -216,6 +216,25 @@ export abstract class Cell {
     isOperatorCell(): this is OperatorCell {
         return this.type === "operator";
     }
+
+    // ========================================
+    // Serialization
+    // ========================================
+
+    /**
+     * Convert to plain object for Convex serialization
+     */
+    toJSON() {
+        return {
+            id: this._id,
+            gameId: this.gameId,
+            row: this.row,
+            column: this.column,
+            type: this.type,
+            allowedValues: this._allowedValues,
+            tileId: this._tileId,
+        };
+    }
 }
 
 // ========================================
@@ -245,6 +264,15 @@ export class EmptyCell extends Cell {
             return tile.value;
         }
         return null;
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            value: null,
+            multiplier: null,
+            operator: null,
+        };
     }
 }
 
@@ -279,6 +307,15 @@ export class ValueCell extends Cell {
         throw new Error(
             `Cannot place tile on value cell at (${this.row}, ${this.column})`
         );
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            value: this.value,
+            multiplier: null,
+            operator: null,
+        };
     }
 }
 
@@ -318,6 +355,15 @@ export class MultiplierCell extends Cell {
      */
     getMultiplier(): number {
         return this.multiplier;
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            value: null,
+            multiplier: this.multiplier,
+            operator: null,
+        };
     }
 }
 
@@ -375,5 +421,14 @@ export class OperatorCell extends Cell {
             default:
                 throw new Error(`Unknown operator: ${this.operator}`);
         }
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            value: null,
+            multiplier: null,
+            operator: this.operator,
+        };
     }
 }

@@ -182,4 +182,22 @@ export class Tile {
   get cellId(): Id<"cells"> | null {
     return this._cellId;
   }
+
+  // ========================================
+  // Serialization
+  // ========================================
+
+  /**
+   * Convert to plain object for Convex serialization
+   */
+  toJSON() {
+    return {
+      id: this._id,
+      gameId: this.gameId,
+      value: this.value,
+      location: this._location,
+      playerId: this._playerId,
+      cellId: this._cellId,
+    };
+  }
 }

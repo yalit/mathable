@@ -229,4 +229,25 @@ export class Player {
   get order(): number {
     return this._order;
   }
+
+  // ========================================
+  // Serialization
+  // ========================================
+
+  /**
+   * Convert to plain object for Convex serialization
+   */
+  toJSON() {
+    return {
+      id: this._id,
+      gameId: this.gameId,
+      userId: this.userId,
+      name: this.name,
+      token: this.token,
+      current: this._current,
+      score: this._score,
+      owner: this._owner,
+      order: this._order,
+    };
+  }
 }

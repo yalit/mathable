@@ -150,6 +150,23 @@ export abstract class Move {
   isPlayerToBag(): this is PlayerToBagMove {
     return this.type === "PLAYER_TO_BAG";
   }
+
+  // ========================================
+  // Serialization
+  // ========================================
+
+  /**
+   * Convert to plain object for Convex serialization
+   */
+  toJSON() {
+    return {
+      id: this._id,
+      gameId: this.gameId,
+      type: this.type,
+      turn: this.turn,
+      tileId: this.tileId,
+    };
+  }
 }
 
 // ========================================
@@ -225,6 +242,15 @@ export class PlayerToCellMove extends Move {
       );
     }
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      playerId: this.playerId,
+      cellId: this.cellId,
+      moveScore: this.moveScore,
+    };
+  }
 }
 
 /**
@@ -283,6 +309,15 @@ export class BagToPlayerMove extends Move {
         `Move ${this.id} references tile ${this.tileId} but received ${tile.id}`
       );
     }
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      playerId: this.playerId,
+      cellId: null,
+      moveScore: this.moveScore,
+    };
   }
 }
 
@@ -355,6 +390,15 @@ export class CellToPlayerMove extends Move {
       );
     }
   }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      playerId: this.playerId,
+      cellId: this.cellId,
+      moveScore: this.moveScore,
+    };
+  }
 }
 
 /**
@@ -413,5 +457,14 @@ export class PlayerToBagMove extends Move {
         `Move ${this.id} references tile ${this.tileId} but received ${tile.id}`
       );
     }
+  }
+
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      playerId: this.playerId,
+      cellId: null,
+      moveScore: this.moveScore,
+    };
   }
 }

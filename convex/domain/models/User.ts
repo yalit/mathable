@@ -108,4 +108,18 @@ export class User {
     this.validatePlayersBelongToUser(players);
     return players.find(p => p.gameId === gameId);
   }
+
+  // ========================================
+  // Serialization
+  // ========================================
+
+  /**
+   * Convert to plain object for Convex serialization
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      sessionId: this.sessionId,
+    };
+  }
 }

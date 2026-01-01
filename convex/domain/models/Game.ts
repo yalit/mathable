@@ -253,4 +253,21 @@ export class Game {
     get winner(): Id<"players"> | undefined {
         return this._winner;
     }
+
+    // ========================================
+    // Serialization
+    // ========================================
+
+    /**
+     * Convert to plain object for Convex serialization
+     */
+    toJSON() {
+        return {
+            id: this._id,
+            token: this.token,
+            status: this._status,
+            currentTurn: this._currentTurn,
+            winner: this._winner,
+        };
+    }
 }
