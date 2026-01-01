@@ -52,8 +52,9 @@ export const getNonFinishedForSession = appQuery({
 
 export const get = appQuery({
     args: {gameToken: v.string()},
-    handler: async (ctx, args): Promise<Game | null> => {
+    handler: async (ctx, args) => {
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface")
-        return await gamesQuery.findByToken(args.gameToken);
+        const game = await gamesQuery.findByToken(args.gameToken);
+        return game ? game.toJSON() : null;
     }
 });

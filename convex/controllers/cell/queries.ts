@@ -6,7 +6,7 @@ import type {Cell} from "../../domain/models/Cell.ts";
 
 export const getForGame = appQuery({
     args: {gameId: v.union(v.id("games"), v.null())},
-    handler: async (ctx, args): Promise<Cell[]> => {
+    handler: async (ctx, args) => {
         if (!args.gameId) return []
 
         const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface");
@@ -15,6 +15,7 @@ export const getForGame = appQuery({
         const game = await gamesQuery.find(args.gameId)
         if (!game) return []
 
-        return await cellsQuery.findAllForGame(game);
+        const cells = await cellsQuery.findAllForGame(game);
+        return cells.map(c => c.toJSON());
     },
 });
