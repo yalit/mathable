@@ -4,13 +4,11 @@ import type { Game } from "./model/game";
 import type { Player } from "./model/player";
 
 export const useGameLoaded = (): boolean => {
-  return gameContext((state) => state.game._id !== "");
+  return gameContext((state) => state.game.id !== "");
 };
 
 export const useLoaded = (): boolean => {
-  return gameContext(
-    (state) => state.game._id !== "" && state.player._id !== "",
-  );
+  return gameContext((state) => state.game.id !== "" && state.player.id !== "");
 };
 
 export const useGame = (): Game => {

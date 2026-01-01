@@ -8,7 +8,7 @@ const cellOperatorSchema = z.enum(["+", "-", "*", "/"]);
 export type CellOperator = z.infer<typeof cellOperatorSchema>;
 
 const baseCellSchema = z.object({
-  _id: z.string(),
+  id: z.string(),
   row: z.number(),
   column: z.number(),
   allowedValues: z.array(z.number()),
