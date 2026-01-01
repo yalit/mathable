@@ -12,6 +12,7 @@ import type * as controllers_cell_queries from "../controllers/cell/queries.js";
 import type * as controllers_game_mutations from "../controllers/game/mutations.js";
 import type * as controllers_game_queries from "../controllers/game/queries.js";
 import type * as controllers_play_mutations from "../controllers/play/mutations.js";
+import type * as controllers_play_queries from "../controllers/play/queries.js";
 import type * as controllers_player_queries from "../controllers/player/queries.js";
 import type * as controllers_tile_mutations from "../controllers/tile/mutations.js";
 import type * as controllers_tile_queries from "../controllers/tile/queries.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "controllers/game/mutations": typeof controllers_game_mutations;
   "controllers/game/queries": typeof controllers_game_queries;
   "controllers/play/mutations": typeof controllers_play_mutations;
+  "controllers/play/queries": typeof controllers_play_queries;
   "controllers/player/queries": typeof controllers_player_queries;
   "controllers/tile/mutations": typeof controllers_tile_mutations;
   "controllers/tile/queries": typeof controllers_tile_queries;

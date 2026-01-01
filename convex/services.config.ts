@@ -15,7 +15,8 @@ import { TilesMutationRepository } from "./repository/mutations/tiles.repository
 import { MovesMutationRepository } from "./repository/mutations/moves.repository";
 import { CellsMutationRepository } from "./repository/mutations/cells.repository";
 import { UsersMutationRepository } from "./repository/mutations/users.repository";
-import {DB_ARGUMENT} from "./infrastructure/config/ServiceContainer.ts";
+import { DB_ARGUMENT } from "./infrastructure/config/ServiceContainer.ts";
+import { ScoreService } from "./domain/services/Play/Score.service.ts";
 
 /**
  * Production service configuration
@@ -32,56 +33,68 @@ import {DB_ARGUMENT} from "./infrastructure/config/ServiceContainer.ts";
  */
 export const servicesConfig: ServicesConfig = {
   query: {
-    "PlayersQueryRepositoryInterface": {
+    PlayersQueryRepositoryInterface: {
       class: PlayersQueryRepository,
       arguments: [DB_ARGUMENT],
     },
-    "GamesQueryRepositoryInterface": {
+    GamesQueryRepositoryInterface: {
       class: GamesQueryRepository,
       arguments: [DB_ARGUMENT],
     },
-    "TilesQueryRepositoryInterface": {
+    TilesQueryRepositoryInterface: {
       class: TilesQueryRepository,
       arguments: [DB_ARGUMENT],
     },
-    "MovesQueryRepositoryInterface": {
+    MovesQueryRepositoryInterface: {
       class: MovesQueryRepository,
       arguments: [DB_ARGUMENT],
     },
-    "CellsQueryRepositoryInterface": {
+    CellsQueryRepositoryInterface: {
       class: CellsQueryRepository,
-      arguments: [DB_ARGUMENT, "TilesQueryRepositoryInterface", "GamesQueryRepositoryInterface"],
+      arguments: [
+        DB_ARGUMENT,
+        "TilesQueryRepositoryInterface",
+        "GamesQueryRepositoryInterface",
+      ],
     },
-    "UsersQueryRepositoryInterface": {
+    UsersQueryRepositoryInterface: {
       class: UsersQueryRepository,
       arguments: [DB_ARGUMENT],
     },
   },
 
   mutation: {
-    "PlayersMutationRepositoryInterface": {
+    PlayersMutationRepositoryInterface: {
       class: PlayersMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    "GamesMutationRepositoryInterface": {
+    GamesMutationRepositoryInterface: {
       class: GamesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    "TilesMutationRepositoryInterface": {
+    TilesMutationRepositoryInterface: {
       class: TilesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    "MovesMutationRepositoryInterface": {
+    MovesMutationRepositoryInterface: {
       class: MovesMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    "CellsMutationRepositoryInterface": {
+    CellsMutationRepositoryInterface: {
       class: CellsMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    "UsersMutationRepositoryInterface": {
+    UsersMutationRepositoryInterface: {
       class: UsersMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
-      arguments: [DB_ARGUMENT]
+      arguments: [DB_ARGUMENT],
+    },
+    ScoreServiceInterface: {
+      class: ScoreService.create,
+      arguments: [
+        "MovesQueryRepositoryInterface",
+        "TilesQueryRepositoryInterface",
+        "PlayersMutationRepositoryInterface",
+      ],
     },
   },
 };
