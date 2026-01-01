@@ -13,17 +13,21 @@ import {v} from "convex/values";
 export const SessionArgs = {sessionId: vSessionId};
 
 type BaseCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>;
-type AppCtx = BaseCtx & {
+type AppSecurityCtx = {
     container: ServiceContainer;
     sessionId: SessionId;
     user: User | null;
-};
+}
+type AppCtx<C extends BaseCtx> = C & AppSecurityCtx
+export type AppQueryCtx = AppCtx<GenericQueryCtx<DataModel>>;
+export type AppMutationCtx = AppCtx<GenericMutationCtx<DataModel>>;
+
 type SessionAppArgs = { sessionId?: string }
 
 export const appQuery = customQuery(query, {
     args: {sessionId: v.optional(vSessionId)},
     input: async (ctx, args) => {
-        const securityCtx = await getCtxWithContainerAndSecurity(ctx, args)
+        const securityCtx = await getCtxWithContainerAndSecurity<GenericQueryCtx<DataModel>>(ctx, args)
         return {ctx: securityCtx, args};
     },
 });
@@ -31,7 +35,7 @@ export const appQuery = customQuery(query, {
 export const appMutation = customMutation(mutation, {
     args: {sessionId: v.optional(vSessionId)},
     input: async (ctx, args) => {
-        const securityCtx = await getCtxWithContainerAndSecurity(ctx, args)
+        const securityCtx = await getCtxWithContainerAndSecurity<GenericMutationCtx<DataModel>>(ctx, args)
         if (!securityCtx.user && args.sessionId) {
             const usersMutation: UsersMutationRepositoryInterface = securityCtx.container.get(
                 "UsersMutationRepositoryInterface",
@@ -42,10 +46,10 @@ export const appMutation = customMutation(mutation, {
     },
 });
 
-const getCtxWithContainerAndSecurity = async (
-    ctx: BaseCtx,
+const getCtxWithContainerAndSecurity = async <C extends BaseCtx>(
+    ctx: C,
     args: SessionAppArgs,
-): Promise<AppCtx> => {
+): Promise<AppCtx<C>> => {
     const container = createContainer(ctx);
 
     const {sessionId} = args;
