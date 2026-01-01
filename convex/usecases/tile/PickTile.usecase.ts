@@ -5,7 +5,7 @@ import type { MovesMutationRepositoryInterface } from "../../repository/mutation
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Player} from "../../domain/models/Player.ts";
 import type {User} from "../../domain/models/User.ts";
-import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
+import type {TileMoveServiceInterface} from "../../domain/services/Tile/TileMove.service.ts";
 
 /**
  * PickTileUseCase
@@ -17,14 +17,14 @@ export class PickTileUseCase {
   private readonly tilesQuery: TilesQueryRepositoryInterface
   private readonly gamesQuery: GamesQueryRepositoryInterface
   private readonly movesMutation: MovesMutationRepositoryInterface
-  private readonly tileMoveService: TileMoveService
+  private readonly tileMoveService: TileMoveServiceInterface
 
   constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
     this.tilesQuery = this.ctx.container.get("TilesQueryRepositoryInterface");
     this.movesMutation = this.ctx.container.get("MovesMutationRepositoryInterface");
-    this.gamesQuery = this.ctx.container.get("GameQueryRepositoryInterface");
-    this.tileMoveService = new TileMoveService(this.ctx)
+    this.gamesQuery = this.ctx.container.get("GamesQueryRepositoryInterface");
+    this.tileMoveService = this.ctx.container.get("TileMoveServiceInterface");
   }
 
   async execute(

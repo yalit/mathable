@@ -4,8 +4,8 @@ import { type MovesMutationRepositoryInterface } from "../../repository/mutation
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Player} from "../../domain/models/Player.ts";
 import type {User} from "../../domain/models/User.ts";
-import {TileMoveService} from "../../domain/services/Tile/TileMove.service.ts";
-import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
+import type {TileMoveServiceInterface} from "../../domain/services/Tile/TileMove.service.ts";
+import type {CellValueComputationServiceInterface} from "../../domain/services/Cell/CellValueComputation.service.ts";
 import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";
 import type {TilesQueryRepositoryInterface} from "../../repository/query/tiles.repository.ts";
 
@@ -22,18 +22,20 @@ export class CancelTilePlacementUseCase {
   private readonly movesMutation: MovesMutationRepositoryInterface
   private readonly cellsQuery: CellsQueryRepositoryInterface
   private readonly tilesQuery: TilesQueryRepositoryInterface
-  private readonly tileMoveService: TileMoveService
-  private readonly cellComputationService: CellValueComputationService
+  private readonly tileMoveService: TileMoveServiceInterface
+  private readonly cellComputationService: CellValueComputationServiceInterface
 
   constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
-    this.gamesQuery = this.ctx.container.get("GameQueryRepositoryInterface");
+    this.gamesQuery = this.ctx.container.get("GamesQueryRepositoryInterface");
     this.movesQuery = this.ctx.container.get("MovesQueryRepositoryInterface");
     this.movesMutation = this.ctx.container.get("MovesMutationRepositoryInterface");
-    this.cellsQuery = this.ctx.container.get("CellQueryRepositoryInterface");
-    this.tilesQuery = this.ctx.container.get("TileQueryRepositoryInterface");
-    this.tileMoveService = new TileMoveService(this.ctx)
-    this.cellComputationService = new CellValueComputationService(this.ctx)
+    this.cellsQuery = this.ctx.container.get("CellsQueryRepositoryInterface");
+    this.tilesQuery = this.ctx.container.get("TilesQueryRepositoryInterface");
+    this.tileMoveService = this.ctx.container.get("TileMoveServiceInterface");
+    this.cellComputationService = this.ctx.container.get(
+      "CellValueComputationServiceInterface",
+    );
   }
 
   async execute(

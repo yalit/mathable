@@ -266,6 +266,15 @@ export class EmptyCell extends Cell {
         return null;
     }
 
+    toDoc(): DocData<"cells"> {
+        return {
+            ...super.toDoc(),
+            value: null,
+            multiplier: null,
+            operator: null,
+        };
+    }
+
     toJSON() {
         return {
             ...super.toJSON(),
@@ -307,6 +316,15 @@ export class ValueCell extends Cell {
         throw new Error(
             `Cannot place tile on value cell at (${this.row}, ${this.column})`
         );
+    }
+
+    toDoc(): DocData<"cells"> {
+        return {
+            ...super.toDoc(),
+            value: this.value,
+            multiplier: null,
+            operator: null,
+        };
     }
 
     toJSON() {
@@ -355,6 +373,15 @@ export class MultiplierCell extends Cell {
      */
     getMultiplier(): number {
         return this.multiplier;
+    }
+
+    toDoc(): DocData<"cells"> {
+        return {
+            ...super.toDoc(),
+            value: null,
+            multiplier: this.multiplier,
+            operator: null,
+        };
     }
 
     toJSON() {
@@ -421,6 +448,15 @@ export class OperatorCell extends Cell {
             default:
                 throw new Error(`Unknown operator: ${this.operator}`);
         }
+    }
+
+    toDoc(): DocData<"cells"> {
+        return {
+            ...super.toDoc(),
+            value: null,
+            multiplier: null,
+            operator: this.operator,
+        };
     }
 
     toJSON() {

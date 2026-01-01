@@ -1,17 +1,35 @@
-import type { AppMutationCtx } from "../../../infrastructure/middleware/app.middleware";
 import type { PlayersQueryRepositoryInterface } from "../../../repository/query/players.repository";
 import type {PlayersMutationRepositoryInterface} from "../../../repository/mutations/players.repository.ts";
 import type {Game} from "../../models/Game.ts";
 
-export class PlayTurnService {
-    private readonly ctx: AppMutationCtx
-    private readonly playerQuery: PlayersQueryRepositoryInterface
-    private readonly playerMutation:  PlayersMutationRepositoryInterface
+export interface PlayTurnServiceInterface {
+    switchToNextPlayer: (game: Game) => Promise<void>;
+}
 
-    constructor(ctx: AppMutationCtx) {
-        this.ctx = ctx;
-        this.playerQuery = this.ctx.container.get("PlayersQueryRepositoryInterface")
-        this.playerMutation = this.ctx.container.get("PlayerMutationRepositoryInterface")
+export class PlayTurnService implements PlayTurnServiceInterface {
+    private static instance: PlayTurnServiceInterface;
+    private readonly playerQuery: PlayersQueryRepositoryInterface;
+    private readonly playerMutation: PlayersMutationRepositoryInterface;
+
+    constructor(
+        playerQuery: PlayersQueryRepositoryInterface,
+        playerMutation: PlayersMutationRepositoryInterface
+    ) {
+        this.playerQuery = playerQuery;
+        this.playerMutation = playerMutation;
+    }
+
+    static create(
+        playerQuery: PlayersQueryRepositoryInterface,
+        playerMutation: PlayersMutationRepositoryInterface
+    ): PlayTurnServiceInterface {
+        if (!PlayTurnService.instance) {
+            PlayTurnService.instance = new PlayTurnService(
+                playerQuery,
+                playerMutation
+            );
+        }
+        return PlayTurnService.instance;
     }
 
     async switchToNextPlayer(game: Game): Promise<void> {

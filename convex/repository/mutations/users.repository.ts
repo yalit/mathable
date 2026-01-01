@@ -32,8 +32,7 @@ export class UsersMutationRepository implements UsersMutationRepositoryInterface
 
     async save(user: User): Promise<User> {
         const docData = {
-            sessionId: user.sessionId,
-            name: user.name
+            sessionId: user.sessionId
         };
 
         // Update existing user - patch all fields

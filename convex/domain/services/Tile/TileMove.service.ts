@@ -1,4 +1,3 @@
-import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middleware.ts";
 import type {Player} from "../../models/Player.ts";
 import type { Tile } from "../../models/Tile.ts";
 import type { CellsQueryRepositoryInterface } from "../../../repository/query/cells.repository.ts";
@@ -7,19 +6,46 @@ import type {CellsMutationRepositoryInterface} from "../../../repository/mutatio
 import type { TilesMutationRepositoryInterface } from "../../../repository/mutations/tiles.repository.ts";
 import type {Cell} from "../../models/Cell.ts";
 
-export class TileMoveService {
-    private ctx: AppMutationCtx;
-    private gamesQuery: GamesQueryRepositoryInterface;
-    private cellsQuery: CellsQueryRepositoryInterface;
-    private cellsMutation: CellsMutationRepositoryInterface
-    private tilesMutation: TilesMutationRepositoryInterface;
+export interface TileMoveServiceInterface {
+    moveToPlayer: (tile: Tile, player: Player) => Promise<void>;
+    moveToCell: (tile: Tile, newCell: Cell, player: Player) => Promise<void>;
+    moveToBag: (tile: Tile) => Promise<void>;
+}
 
-    constructor(ctx: AppMutationCtx) {
-        this.ctx = ctx;
-        this.cellsQuery = this.ctx.container.get("CellsQueryRepositoryInterface");
-        this.cellsMutation = this.ctx.container.get("CellsMutationRepositoryInterface");
-        this.tilesMutation = this.ctx.container.get("TilesMutationRepositoryInterface");
-        this.gamesQuery = this.ctx.container.get("GameQueryRepositoryInterface");
+export class TileMoveService implements TileMoveServiceInterface {
+    private static instance: TileMoveServiceInterface;
+    private readonly gamesQuery: GamesQueryRepositoryInterface;
+    private readonly cellsQuery: CellsQueryRepositoryInterface;
+    private readonly cellsMutation: CellsMutationRepositoryInterface;
+    private readonly tilesMutation: TilesMutationRepositoryInterface;
+
+    constructor(
+        gamesQuery: GamesQueryRepositoryInterface,
+        cellsQuery: CellsQueryRepositoryInterface,
+        cellsMutation: CellsMutationRepositoryInterface,
+        tilesMutation: TilesMutationRepositoryInterface
+    ) {
+        this.gamesQuery = gamesQuery;
+        this.cellsQuery = cellsQuery;
+        this.cellsMutation = cellsMutation;
+        this.tilesMutation = tilesMutation;
+    }
+
+    static create(
+        gamesQuery: GamesQueryRepositoryInterface,
+        cellsQuery: CellsQueryRepositoryInterface,
+        cellsMutation: CellsMutationRepositoryInterface,
+        tilesMutation: TilesMutationRepositoryInterface
+    ): TileMoveServiceInterface {
+        if (!TileMoveService.instance) {
+            TileMoveService.instance = new TileMoveService(
+                gamesQuery,
+                cellsQuery,
+                cellsMutation,
+                tilesMutation
+            );
+        }
+        return TileMoveService.instance;
     }
 
     async moveToPlayer(tile: Tile, player: Player): Promise<void> {

@@ -1,24 +1,44 @@
-import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middleware.ts";
 import type { Game } from "../../models/Game.ts";
 import type {Player} from "../../models/Player.ts";
 import type {TilesQueryRepositoryInterface} from "../../../repository/query/tiles.repository.ts";
 import type {Tile} from "../../models/Tile.ts";
-import { TileMoveService } from "./TileMove.service.ts";
+import type { TileMoveServiceInterface } from "./TileMove.service.ts";
+
+export interface TileDistributionServiceInterface {
+    distributeInitialTiles: (game: Game, players: Player[]) => Promise<void>;
+    dealTilesToPlayer: (game: Game, player: Player, count?: number) => Promise<void>;
+    refillPlayerHand: (game: Game, player: Player) => Promise<void>;
+}
 
 /**
  * TileDistributionService
  * Domain service responsible for tile distribution logic
  */
-export class TileDistributionService {
+export class TileDistributionService implements TileDistributionServiceInterface {
+    private static instance: TileDistributionServiceInterface;
     private readonly INITIAL_TILE_COUNT = 7;
-    private ctx: AppMutationCtx;
+    private readonly tilesQuery: TilesQueryRepositoryInterface;
+    private readonly tileMoveService: TileMoveServiceInterface;
 
-    constructor(ctx: AppMutationCtx) {
-        this.ctx = ctx;
+    constructor(
+        tilesQuery: TilesQueryRepositoryInterface,
+        tileMoveService: TileMoveServiceInterface
+    ) {
+        this.tilesQuery = tilesQuery;
+        this.tileMoveService = tileMoveService;
     }
 
-    tilesQuery(): TilesQueryRepositoryInterface {
-        return this.ctx.container.get("TileQueryRepositoryInterface")
+    static create(
+        tilesQuery: TilesQueryRepositoryInterface,
+        tileMoveService: TileMoveServiceInterface
+    ): TileDistributionServiceInterface {
+        if (!TileDistributionService.instance) {
+            TileDistributionService.instance = new TileDistributionService(
+                tilesQuery,
+                tileMoveService
+            );
+        }
+        return TileDistributionService.instance;
     }
 
     /**
@@ -44,7 +64,7 @@ export class TileDistributionService {
         const playerId = player.id;
         if (!playerId) return
 
-        const availableTiles = await this.tilesQuery().findAllInBagByGame(game);
+        const availableTiles = await this.tilesQuery.findAllInBagByGame(game);
 
         if (availableTiles.length === 0) {
             return; // No tiles left to deal
@@ -56,8 +76,7 @@ export class TileDistributionService {
             const tileId = tile.id;
             if (!tileId) continue;
 
-            const tileMoveService = new TileMoveService(this.ctx);
-            await tileMoveService.moveToPlayer(tile, player)
+            await this.tileMoveService.moveToPlayer(tile, player)
         }
     }
 
@@ -65,7 +84,7 @@ export class TileDistributionService {
      * Refill a player's hand up to the initial tile count
      */
     async refillPlayerHand(game: Game, player: Player): Promise<void> {
-        const currentTiles = await this.tilesQuery().findByPlayer(player);
+        const currentTiles = await this.tilesQuery.findByPlayer(player);
         const needed = this.INITIAL_TILE_COUNT - currentTiles.length;
 
         if (needed > 0) {

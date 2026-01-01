@@ -9,9 +9,9 @@ import type {AppMutationCtx} from "../../infrastructure/middleware/app.middlewar
 import type {Game} from "../../domain/models/Game.ts";
 import type {UsersQueryRepositoryInterface} from "../../repository/query/users.repository.ts";
 import type {Player} from "../../domain/models/Player.ts";
-import {CellValueComputationService} from "../../domain/services/Cell/CellValueComputation.service.ts";
+import type {CellValueComputationServiceInterface} from "../../domain/services/Cell/CellValueComputation.service.ts";
 import type {CellsQueryRepositoryInterface} from "../../repository/query/cells.repository.ts";
-import type {DocData} from "@cvx/repository/repositories.interface.ts";
+import type{DocData} from "@cvx/repository/repositories.interface.ts";
 
 export interface CreateGameResult {
     gameToken: string;
@@ -137,7 +137,8 @@ export class CreateGameUseCase {
      * Compute allowed values for all cells on the board
      */
     private async computeAllowedValues(game: Game): Promise<void> {
-        const cellComputationValueService = new CellValueComputationService(this.ctx)
+        const cellComputationValueService: CellValueComputationServiceInterface =
+            this.ctx.container.get("CellValueComputationServiceInterface");
         const cells = await this.cellsQuery.findAllForGame(game)
 
         for (const cell of cells) {

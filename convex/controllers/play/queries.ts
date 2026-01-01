@@ -6,7 +6,9 @@ import { v } from "convex/values";
 export const getCurrentTurnScore = appQuery({
   args: { gameId: v.id("games") },
   handler: async (ctx, args): Promise<number> => {
-    const scoreService: ScoreService = ctx.container.get("ScoreService");
+    const scoreService: ScoreService = ctx.container.get(
+      "ScoreServiceInterface",
+    );
     const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get(
       "GamesQueryRepositoryInterface",
     );
@@ -20,4 +22,3 @@ export const getCurrentTurnScore = appQuery({
     return await scoreService.getCurrentTurnScore(game);
   },
 });
-

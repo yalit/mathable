@@ -17,6 +17,12 @@ import { CellsMutationRepository } from "./repository/mutations/cells.repository
 import { UsersMutationRepository } from "./repository/mutations/users.repository";
 import { DB_ARGUMENT } from "./infrastructure/config/ServiceContainer.ts";
 import { ScoreService } from "./domain/services/Play/Score.service.ts";
+import { PlayerScoreService } from "./domain/services/Player/PlayerScore.service.ts";
+import { TileMoveService } from "./domain/services/Tile/TileMove.service.ts";
+import { TileDistributionService } from "./domain/services/Tile/TileDistribution.service.ts";
+import { CellValueComputationService } from "./domain/services/Cell/CellValueComputation.service.ts";
+import { PlayTurnService } from "./domain/services/Play/Turn.service.ts";
+import { EndGameService } from "./domain/services/Game/EndGame.service.ts";
 
 /**
  * Production service configuration
@@ -61,6 +67,10 @@ export const servicesConfig: ServicesConfig = {
       class: UsersQueryRepository,
       arguments: [DB_ARGUMENT],
     },
+    ScoreServiceInterface: {
+      class: ScoreService.create,
+      arguments: ["MovesQueryRepositoryInterface"],
+    },
   },
 
   mutation: {
@@ -88,12 +98,47 @@ export const servicesConfig: ServicesConfig = {
       class: UsersMutationRepository.create, // Type assertion needed for GenericDatabaseWriter
       arguments: [DB_ARGUMENT],
     },
-    ScoreServiceInterface: {
-      class: ScoreService.create,
+    PlayerScoreInterface: {
+      class: PlayerScoreService.create,
       arguments: [
-        "MovesQueryRepositoryInterface",
         "TilesQueryRepositoryInterface",
         "PlayersMutationRepositoryInterface",
+      ],
+    },
+    TileMoveServiceInterface: {
+      class: TileMoveService.create,
+      arguments: [
+        "GamesQueryRepositoryInterface",
+        "CellsQueryRepositoryInterface",
+        "CellsMutationRepositoryInterface",
+        "TilesMutationRepositoryInterface",
+      ],
+    },
+    TileDistributionServiceInterface: {
+      class: TileDistributionService.create,
+      arguments: ["TilesQueryRepositoryInterface", "TileMoveServiceInterface"],
+    },
+    CellValueComputationServiceInterface: {
+      class: CellValueComputationService.create,
+      arguments: [
+        "CellsQueryRepositoryInterface",
+        "CellsMutationRepositoryInterface",
+      ],
+    },
+    PlayTurnServiceInterface: {
+      class: PlayTurnService.create,
+      arguments: [
+        "PlayersQueryRepositoryInterface",
+        "PlayersMutationRepositoryInterface",
+      ],
+    },
+    EndGameServiceInterface: {
+      class: EndGameService.create,
+      arguments: [
+        "GamesMutationRepositoryInterface",
+        "TilesQueryRepositoryInterface",
+        "PlayersQueryRepositoryInterface",
+        "MovesQueryRepositoryInterface",
       ],
     },
   },

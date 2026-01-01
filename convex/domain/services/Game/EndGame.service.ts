@@ -1,26 +1,51 @@
-import type {AppMutationCtx} from "../../../infrastructure/middleware/app.middleware.ts";
 import type {Player} from "../../models/Player.ts";
 import type {Game} from "../../models/Game.ts";
 import type {GamesMutationRepositoryInterface} from "../../../repository/mutations/games.repository.ts";
 import type {TilesQueryRepositoryInterface} from "../../../repository/query/tiles.repository.ts";
-import {
-    type PlayersQueryRepositoryInterface
-} from "../../../repository/query/players.repository.ts";
+import type {PlayersQueryRepositoryInterface} from "../../../repository/query/players.repository.ts";
 import type {MovesQueryRepositoryInterface} from "../../../repository/query/moves.repository.ts";
 
-export class EndGameService {
-    private readonly ctx: AppMutationCtx
-    private readonly gamesMutation: GamesMutationRepositoryInterface
-    private readonly tilesQuery: TilesQueryRepositoryInterface
-    private readonly playersQuery: PlayersQueryRepositoryInterface
-    private readonly movesQuery: MovesQueryRepositoryInterface
+export interface EndGameServiceInterface {
+    isGameWon: (game: Game, player: Player) => Promise<boolean>;
+    isGameIdle: (game: Game) => Promise<boolean>;
+    endGameWithWinner: (game: Game, player: Player) => Promise<void>;
+    endGameAsIdle: (game: Game) => Promise<void>;
+}
 
-    constructor(ctx: AppMutationCtx) {
-        this.ctx = ctx;
-        this.gamesMutation = this.ctx.container.get("GameMutationRepositoryInterface");
-        this.tilesQuery = this.ctx.container.get("TilesQueryRepositoryInterface");
-        this.playersQuery = this.ctx.container.get("PlayersQueryRepositoryInterface");
-        this.movesQuery = this.ctx.container.get("MovesQueryRepositoryInterface");
+export class EndGameService implements EndGameServiceInterface {
+    private static instance: EndGameServiceInterface;
+    private readonly gamesMutation: GamesMutationRepositoryInterface;
+    private readonly tilesQuery: TilesQueryRepositoryInterface;
+    private readonly playersQuery: PlayersQueryRepositoryInterface;
+    private readonly movesQuery: MovesQueryRepositoryInterface;
+
+    constructor(
+        gamesMutation: GamesMutationRepositoryInterface,
+        tilesQuery: TilesQueryRepositoryInterface,
+        playersQuery: PlayersQueryRepositoryInterface,
+        movesQuery: MovesQueryRepositoryInterface
+    ) {
+        this.gamesMutation = gamesMutation;
+        this.tilesQuery = tilesQuery;
+        this.playersQuery = playersQuery;
+        this.movesQuery = movesQuery;
+    }
+
+    static create(
+        gamesMutation: GamesMutationRepositoryInterface,
+        tilesQuery: TilesQueryRepositoryInterface,
+        playersQuery: PlayersQueryRepositoryInterface,
+        movesQuery: MovesQueryRepositoryInterface
+    ): EndGameServiceInterface {
+        if (!EndGameService.instance) {
+            EndGameService.instance = new EndGameService(
+                gamesMutation,
+                tilesQuery,
+                playersQuery,
+                movesQuery
+            );
+        }
+        return EndGameService.instance;
     }
 
     async isGameWon(game: Game, player: Player): Promise<boolean> {

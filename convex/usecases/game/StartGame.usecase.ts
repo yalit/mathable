@@ -4,7 +4,7 @@ import type {PlayersMutationRepositoryInterface} from "../../repository/mutation
 import type {User} from "../../domain/models/User.ts";
 import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
 import type {Game} from "../../domain/models/Game.ts";
-import { TileDistributionService } from "../../domain/services/Tile/TileDistribution.service.ts";
+import type { TileDistributionServiceInterface } from "../../domain/services/Tile/TileDistribution.service.ts";
 
 /**
  * StartGameUseCase
@@ -69,7 +69,8 @@ export class StartGameUseCase {
         }
 
         // 10. Distribute initial tiles to all players
-        const tileDistributionService = new TileDistributionService(this.ctx);
+        const tileDistributionService: TileDistributionServiceInterface =
+            this.ctx.container.get("TileDistributionServiceInterface");
         await tileDistributionService.distributeInitialTiles(game, players);
     }
 }
