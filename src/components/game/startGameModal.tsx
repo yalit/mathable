@@ -11,13 +11,13 @@ export const StartGameModal = () => {
   const { t } = useTranslation();
   const game = useGame();
   const player = usePlayer();
-  const startGame = useSessionMutation(api.mutations.public.game.start);
+  const startGame = useSessionMutation(api.controllers.game.mutations.start);
 
   const canStart = useMemo(() => game.players.length >= 2, [game.players]);
 
   const handleStartGame = () => {
     if (game.players.length >= 2) {
-      startGame({ gameId: game._id as Id<"games"> });
+      startGame({ gameId: game.id as Id<"games"> });
     }
   };
 
@@ -42,7 +42,7 @@ export const StartGameModal = () => {
             <div className="flex items-center gap-2 mt-2">
               {game.players.map((p) => (
                 <div
-                  key={p._id}
+                  key={p.id}
                   className="border border-gray-300 shadow-xs p-2 rounded text-sm"
                 >
                   {p.name}

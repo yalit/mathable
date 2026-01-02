@@ -16,7 +16,7 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
       .split("")
       .map((x) => +x);
     return split.map((n, idx) => (
-      <NumberIcon key={tile._id + "_" + idx} icon={n} className="tile" />
+      <NumberIcon key={tile.id + "_" + idx} icon={n} className="tile" />
     ));
   }, [tile]);
 

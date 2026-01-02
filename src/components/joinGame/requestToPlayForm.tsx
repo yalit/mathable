@@ -1,27 +1,25 @@
-import { useGame, useSessionId } from "@context/hooks";
+import { useGame } from "@context/hooks";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
 import { useMemo, useState, type FormEvent } from "react";
-import {useSessionMutation} from "convex-helpers/react/sessions";
+import { useSessionMutation } from "convex-helpers/react/sessions";
 
 export const RequestToPlayForm = () => {
   const game = useGame();
-  const sessionId = useSessionId();
   const [playerName, setPlayerName] = useState<string>("");
-  const joinGame = useSessionMutation(api.mutations.public.game.join);
+  const joinGame = useSessionMutation(api.controllers.game.mutations.join);
   const requestToPlay = async (e: FormEvent) => {
     e.preventDefault();
     const result = await joinGame({
-      gameId: game._id as Id<"games">,
+      gameId: game.id as Id<"games">,
       playerName,
-      sessionId,
     });
 
     if (!result.success) {
       return;
     }
 
-    if (result.token !== "") {
+    if (result.data.playerToken !== "") {
       document.location = `/game/${game.token}/player/${result.token}`;
     }
   };

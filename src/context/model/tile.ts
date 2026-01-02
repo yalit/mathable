@@ -7,5 +7,8 @@ export const tileSchema = z.object({
   id: z.string(),
   value: z.number(),
   location: tileLocationSchema,
+  playerId: z
+    .string("If not null, tile playerId should be a string")
+    .nullable(),
 });
 export type Tile = z.infer<typeof tileSchema>;
