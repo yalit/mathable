@@ -4,6 +4,7 @@ import type { Id } from "../../../_generated/dataModel";
 import schema from "../../../schema";
 import { modules } from "../../../test.setup";
 import { convexTest, type TestConvex } from "convex-test";
+import type { SessionId } from "convex-helpers/server/sessions";
 
 describe("CreateGameUseCase", () => {
   let t: TestConvex<typeof schema>;
@@ -14,7 +15,7 @@ describe("CreateGameUseCase", () => {
 
   test("should create a new game with owner player", async () => {
     // Arrange: Create a user session
-    const sessionId = "test-session-123" as any;
+    const sessionId = "test-session-123" as SessionId;
     const playerName = "Test Player";
 
     // Act: Create a game
@@ -96,8 +97,8 @@ describe("CreateGameUseCase", () => {
 
   test("should create multiple games independently", async () => {
     // Arrange: Create two users
-    const sessionId1 = "session-1" as any;
-    const sessionId2 = "session-2" as any;
+    const sessionId1 = "session-1" as SessionId;
+    const sessionId2 = "session-2" as SessionId;
 
     await t.run(async (ctx) => {
       await ctx.db.insert("users", { sessionId: sessionId1 });
@@ -158,7 +159,7 @@ describe("CreateGameUseCase", () => {
 
   test("should assign correct cell types (empty, value, multiplier, operator)", async () => {
     // Arrange: Create a user
-    const sessionId = "test-session" as any;
+    const sessionId = "test-session" as SessionId;
     await t.run(async (ctx) => {
       await ctx.db.insert("users", { sessionId });
     });

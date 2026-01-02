@@ -4,6 +4,7 @@ import type { Id } from "../../../_generated/dataModel";
 import schema from "../../../schema";
 import { modules } from "../../../test.setup";
 import { convexTest, type TestConvex } from "convex-test";
+import type { SessionId } from "convex-helpers/server/sessions";
 
 describe("JoinGameUseCase", () => {
   let t: TestConvex<typeof schema>;
@@ -14,8 +15,8 @@ describe("JoinGameUseCase", () => {
 
   test("should allow a player to join a waiting game", async () => {
     // Arrange: Create a game first
-    const ownerSessionId = "owner-session" as any;
-    const joinerSessionId = "joiner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
+    const joinerSessionId = "joiner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -83,7 +84,7 @@ describe("JoinGameUseCase", () => {
 
   test("should allow up to 4 players to join a game", async () => {
     // Arrange: Create a game
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -106,19 +107,19 @@ describe("JoinGameUseCase", () => {
     const player2 = await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     const player3 = await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 3",
-      sessionId: "session-3" as any,
+      sessionId: "session-3" as SessionId,
     });
 
     const player4 = await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 4",
-      sessionId: "session-4" as any,
+      sessionId: "session-4" as SessionId,
     });
 
     // Assert: All joins should succeed
@@ -139,7 +140,7 @@ describe("JoinGameUseCase", () => {
 
   test("should fail when trying to join a full game", async () => {
     // Arrange: Create a game with 4 players
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -162,26 +163,26 @@ describe("JoinGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 3",
-      sessionId: "session-3" as any,
+      sessionId: "session-3" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 4",
-      sessionId: "session-4" as any,
+      sessionId: "session-4" as SessionId,
     });
 
     // Act: Try to add a 5th player
     const result = await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 5",
-      sessionId: "session-5" as any,
+      sessionId: "session-5" as SessionId,
     });
 
     // Assert: Should fail
@@ -193,7 +194,7 @@ describe("JoinGameUseCase", () => {
 
   test("should fail when trying to join a game that has started", async () => {
     // Arrange: Create a game and start it
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -216,7 +217,7 @@ describe("JoinGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     // Start the game
@@ -229,7 +230,7 @@ describe("JoinGameUseCase", () => {
     const result = await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Late Player",
-      sessionId: "late-session" as any,
+      sessionId: "late-session" as SessionId,
     });
 
     // Assert: Should fail
@@ -239,7 +240,7 @@ describe("JoinGameUseCase", () => {
 
   test("should assign correct player order when joining", async () => {
     // Arrange: Create a game
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -262,19 +263,19 @@ describe("JoinGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 3",
-      sessionId: "session-3" as any,
+      sessionId: "session-3" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 4",
-      sessionId: "session-4" as any,
+      sessionId: "session-4" as SessionId,
     });
 
     // Assert: Verify player orders

@@ -71,7 +71,6 @@ export function useFetchFromBackendGameActions(): ReturnGameFunctions {
         return cellSchema.parse({ ...convexCell, tile: cellTile });
       });
     };
-    console.log("GAME players", convexPlayers, convexTiles);
 
     return gameSchema.parse({
       ...convexGame,

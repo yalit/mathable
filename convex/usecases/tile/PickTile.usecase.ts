@@ -2,10 +2,10 @@ import type { Id } from "../../_generated/dataModel";
 import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
 import type { GamesQueryRepositoryInterface } from "../../repository/query/games.repository";
 import type { MovesMutationRepositoryInterface } from "../../repository/mutations/moves.repository";
-import type {AppMutationCtx} from "../../infrastructure/middleware/app.middleware.ts";
-import type {Player} from "../../domain/models/Player.ts";
-import type {User} from "../../domain/models/User.ts";
-import type {TileMoveServiceInterface} from "../../domain/services/Tile/TileMove.service.ts";
+import type { AppMutationCtx } from "../../infrastructure/middleware/app.middleware.ts";
+import type { Player } from "../../domain/models/Player.ts";
+import type { User } from "../../domain/models/User.ts";
+import type { TileMoveServiceInterface } from "../../domain/services/Tile/TileMove.service.ts";
 
 /**
  * PickTileUseCase
@@ -14,23 +14,22 @@ import type {TileMoveServiceInterface} from "../../domain/services/Tile/TileMove
  */
 export class PickTileUseCase {
   private readonly ctx: AppMutationCtx;
-  private readonly tilesQuery: TilesQueryRepositoryInterface
-  private readonly gamesQuery: GamesQueryRepositoryInterface
-  private readonly movesMutation: MovesMutationRepositoryInterface
-  private readonly tileMoveService: TileMoveServiceInterface
+  private readonly tilesQuery: TilesQueryRepositoryInterface;
+  private readonly gamesQuery: GamesQueryRepositoryInterface;
+  private readonly movesMutation: MovesMutationRepositoryInterface;
+  private readonly tileMoveService: TileMoveServiceInterface;
 
   constructor(ctx: AppMutationCtx) {
     this.ctx = ctx;
     this.tilesQuery = this.ctx.container.get("TilesQueryRepositoryInterface");
-    this.movesMutation = this.ctx.container.get("MovesMutationRepositoryInterface");
+    this.movesMutation = this.ctx.container.get(
+      "MovesMutationRepositoryInterface",
+    );
     this.gamesQuery = this.ctx.container.get("GamesQueryRepositoryInterface");
     this.tileMoveService = this.ctx.container.get("TileMoveServiceInterface");
   }
 
-  async execute(
-      player: Player,
-      user: User
-  ): Promise<{tileId: Id<"tiles">}> {
+  async execute(player: Player, user: User): Promise<{ tileId: Id<"tiles"> }> {
     // 1. Load game
     const game = await this.gamesQuery.find(player.gameId);
     if (!game) {
@@ -59,11 +58,11 @@ export class PickTileUseCase {
     const pickedTile = tilesInBag[0];
 
     // 6. Move tile to player's hand
-    await this.tileMoveService.moveToPlayer(pickedTile, player)
+    await this.tileMoveService.moveToPlayer(pickedTile, player);
 
     // 7. Record the move (BAG_TO_PLAYER is not cancellable due to randomness)
-    await this.movesMutation.newPlayerToBag(game, pickedTile, player)
+    await this.movesMutation.newBagToPlayer(game, pickedTile, player);
 
-    return {tileId: pickedTile.id};
+    return { tileId: pickedTile.id };
   }
 }

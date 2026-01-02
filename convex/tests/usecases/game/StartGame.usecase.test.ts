@@ -1,9 +1,9 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { api } from "../../../_generated/api";
-import type { Id } from "../../../_generated/dataModel";
 import schema from "../../../schema";
 import { modules } from "../../../test.setup";
 import { convexTest, type TestConvex } from "convex-test";
+import type { SessionId } from "convex-helpers/server/sessions";
 
 describe("StartGameUseCase", () => {
   let t: TestConvex<typeof schema>;
@@ -14,8 +14,8 @@ describe("StartGameUseCase", () => {
 
   test("should start a game with 2 players", async () => {
     // Arrange: Create a game with 2 players
-    const ownerSessionId = "owner-session" as any;
-    const player2SessionId = "player2-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
+    const player2SessionId = "player2-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -102,7 +102,7 @@ describe("StartGameUseCase", () => {
 
   test("should start a game with 4 players", async () => {
     // Arrange: Create a game with 4 players
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -125,19 +125,19 @@ describe("StartGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 3",
-      sessionId: "session-3" as any,
+      sessionId: "session-3" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 4",
-      sessionId: "session-4" as any,
+      sessionId: "session-4" as SessionId,
     });
 
     // Act: Start the game
@@ -173,7 +173,7 @@ describe("StartGameUseCase", () => {
 
   test("should fail when trying to start with only 1 player", async () => {
     // Arrange: Create a game with only the owner
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -214,8 +214,8 @@ describe("StartGameUseCase", () => {
 
   test("should fail when non-owner tries to start the game", async () => {
     // Arrange: Create a game with 2 players
-    const ownerSessionId = "owner-session" as any;
-    const player2SessionId = "player2-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
+    const player2SessionId = "player2-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -263,7 +263,7 @@ describe("StartGameUseCase", () => {
 
   test("should fail when trying to start an already started game", async () => {
     // Arrange: Create and start a game
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -286,7 +286,7 @@ describe("StartGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "player2-session" as any,
+      sessionId: "player2-session" as SessionId,
     });
 
     // Start the game
@@ -313,7 +313,7 @@ describe("StartGameUseCase", () => {
 
   test("should correctly set first player as current and assign orders", async () => {
     // Arrange: Create a game with 3 players
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -336,13 +336,13 @@ describe("StartGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 3",
-      sessionId: "session-3" as any,
+      sessionId: "session-3" as SessionId,
     });
 
     // Act: Start the game
@@ -377,7 +377,7 @@ describe("StartGameUseCase", () => {
 
   test("should decrease tile count in bag after distributing to players", async () => {
     // Arrange: Create a game with 2 players
-    const ownerSessionId = "owner-session" as any;
+    const ownerSessionId = "owner-session" as SessionId;
 
     const createResult = await t.mutation(
       api.controllers.game.mutations.create,
@@ -400,7 +400,7 @@ describe("StartGameUseCase", () => {
     await t.mutation(api.controllers.game.mutations.join, {
       gameId: game!._id,
       playerName: "Player 2",
-      sessionId: "session-2" as any,
+      sessionId: "session-2" as SessionId,
     });
 
     // Count tiles in bag before starting
