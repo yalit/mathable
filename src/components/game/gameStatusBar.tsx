@@ -38,11 +38,11 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
   const [showRules, setShowRules] = useState<boolean>(false);
 
   const handleResetTurn = () => {
-    resetTurn({ gameId: game._id as Id<"games"> });
+    resetTurn({ gameId: game.id as Id<"games"> });
   };
 
   const handleEndTurn = () => {
-    endTurn({ gameId: game._id as Id<"games"> });
+    endTurn({ gameId: game.id as Id<"games"> });
   };
 
   const remainingTiles = useMemo(
@@ -107,8 +107,8 @@ const GameInformation = ({ game, player }: StatusBarPartProps) => {
     <div className="flex justify-end items-center gap-4">
       {game.players.map((p: Player) => (
         <div
-          key={p._id}
-          className={classnames("", player._id === p._id && "font-semibold")}
+          key={p.id}
+          className={classnames("", player.id === p.id && "font-semibold")}
         >
           {p.name} - {score(p)}{" "}
         </div>

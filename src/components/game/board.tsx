@@ -9,7 +9,7 @@ export function Board() {
       <div className="board">
         <div className="board__plate bg-sky-800">
           {game.cells.map((cell: Cell) => (
-            <BoardCell key={cell._id} cell={cell} />
+            <BoardCell key={cell.id} cell={cell} />
           ))}
         </div>
       </div>
