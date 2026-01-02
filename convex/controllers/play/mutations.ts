@@ -23,7 +23,7 @@ export const resetTurn = appMutation({
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: resetTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof resetTurnReturn>> => {
-        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
+        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
         if (!game) return APIError("No Game found");
         if (!ctx.user) return APIError("User not authenticated");
@@ -52,7 +52,7 @@ export const endTurn = appMutation({
     args: { gameId: v.id("games"), ...SessionArgs },
     returns: endTurnReturn,
     handler: async (ctx, args): Promise<Infer<typeof endTurnReturn>> => {
-        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GameQueryRepositoryInterface");
+        const gamesQuery: GamesQueryRepositoryInterface = ctx.container.get("GamesQueryRepositoryInterface");
         const game = await gamesQuery.find(args.gameId);
         if (!game) return APIError("No Game found");
         if (!ctx.user) return APIError("User not authenticated");

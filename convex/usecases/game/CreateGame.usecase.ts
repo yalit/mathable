@@ -107,7 +107,7 @@ export class CreateGameUseCase {
       throw new Error("No user found");
     }
 
-    return this.playersMutation.newFromName(game, user, playerName);
+    return this.playersMutation.newFromName(game, user, playerName, true);
   }
 
   /**

@@ -12,7 +12,7 @@ import type { User } from "../../domain/models/User.ts";
 
 export interface PlayersMutationRepositoryInterface
   extends MutationRepositoryInterface<Player, "players"> {
-  newFromName(game: Game, user: User, name: string): Promise<Player>;
+  newFromName(game: Game, user: User, name: string, owner?: boolean): Promise<Player>;
 }
 
 export class PlayersMutationRepository
@@ -38,16 +38,24 @@ export class PlayersMutationRepository
     return this.db.delete(player.id);
   }
 
-  async newFromName(game: Game, user: User, name: string): Promise<Player> {
+  async newFromName(game: Game, user: User, name: string, owner: boolean = false): Promise<Player> {
+    // Determine player order based on existing players
+    const existingPlayers = await this.db
+      .query("players")
+      .withIndex("by_game", (q) => q.eq("gameId", game.id))
+      .collect();
+
+    const order = existingPlayers.length;
+
     return this.new({
       gameId: game.id,
       userId: user.id,
-      owner: true,
+      owner: owner,
       name: name,
       token: UUID(),
       current: false,
       score: 0,
-      order: 0,
+      order: order,
     });
   }
 
