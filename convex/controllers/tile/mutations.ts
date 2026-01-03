@@ -8,8 +8,6 @@ import {
 } from "../../infrastructure/middleware/app.middleware";
 import { PlaceTileUseCase } from "../../usecases/tile/PlaceTile.usecase";
 import { PickTileUseCase } from "../../usecases/tile/PickTile.usecase";
-import { DisplaceTileUseCase } from "../../usecases/tile/DisplaceTile.usecase";
-import { CancelTilePlacementUseCase } from "../../usecases/tile/CancelTilePlacement.usecase";
 import { v, type Infer } from "convex/values";
 import { APIReturn, APIError, APISuccess } from "../return.type";
 import type { TilesQueryRepositoryInterface } from "../../repository/query/tiles.repository";
@@ -56,9 +54,10 @@ export const playToCell = appMutation({
       const useCase = new PlaceTileUseCase(ctx);
       await useCase.execute(tile, cell, player, ctx.user);
 
-      return APISuccess(null);
-    } catch (e: any) {
-      return APIError(e.message);
+      return new Promise((r) => r(APISuccess(null)));
+    } catch (e: unknown) {
+      const typedError = e as Error;
+      return new Promise((r) => r(APIError(typedError.message)));
     }
   },
 });
@@ -94,8 +93,9 @@ export const pick = appMutation({
       const data = await useCase.execute(player, ctx.user);
 
       return APISuccess(data);
-    } catch (e: any) {
-      return APIError(e.message);
+    } catch (e: unknown) {
+      const typedError = e as Error;
+      return APIError(typedError.message);
     }
   },
 });

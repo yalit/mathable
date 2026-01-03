@@ -3,8 +3,8 @@ import { api } from "../../_generated/api";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
 import { convexTest, type TestConvex } from "convex-test";
-import { GameTestHelper } from "../usecases/GameTest.helper";
 import type { SessionId } from "convex-helpers/server/sessions";
+import { GameTestHelper } from "../GameTest.helper";
 
 /**
  * Tests for CellValueComputationService
@@ -61,38 +61,56 @@ describe("CellValueComputationService", () => {
       // because there are no two adjacent value cells to compute from
       expect(plusOperatorCell?.allowedValues.length).toBe(0);
 
-      //TODO : find the cells around the square and check the values
       const expectedValues = [
         [
           [5, 6],
           [2, 3, 4],
         ],
-        [[5, 7], []],
         [
-          [5, 6],
+          [5, 7],
+          [2, 6, 8],
+        ],
+        [
+          [6, 8],
+          [1, 2, 3],
+        ],
+        [
+          [7, 8],
+          [1, 7, 12],
+        ],
+        [
+          [8, 6],
           [2, 3, 4],
         ],
         [
-          [5, 6],
-          [2, 3, 4],
+          [8, 7],
+          [2, 6, 8],
         ],
         [
-          [5, 6],
-          [2, 3, 4],
+          [6, 5],
+          [1, 2, 3],
         ],
         [
-          [5, 6],
-          [2, 3, 4],
-        ],
-        [
-          [5, 6],
-          [2, 3, 4],
-        ],
-        [
-          [5, 6],
-          [2, 3, 4],
+          [7, 5],
+          [1, 7, 12],
         ],
       ];
+
+      for (const [c, values] of expectedValues) {
+        const cell = await t.run(async (ctx) => {
+          return await ctx.db
+            .query("cells")
+            .withIndex("by_game_row_column", (q) => q.eq("gameId", game._id))
+            .filter((q) =>
+              q.and(q.eq(q.field("column"), c[1]), q.eq(q.field("row"), c[0])),
+            )
+            .unique();
+        });
+        expect(cell?.allowedValues.length).toBe(values.length);
+        values.forEach((v) => {
+          expect(cell?.allowedValues).toContain(v);
+        });
+      }
     });
 
     test("should update allowed values after placing a tile", async () => {
@@ -278,41 +296,54 @@ describe("CellValueComputationService", () => {
       // Arrange: Create a game
       const { game } = await gameHelper.createGame({
         playerNames: ["Player 1", "Player 2"],
-        playerTileValues: [[4], [2]],
+        playerTileValues: [
+          [7, 1, 8],
+          [7, 1, 8],
+        ], // same tiles as it's random who is the current first player
       });
 
       const { player, user } = await gameHelper.getCurrentPlayer(game._id);
 
-      const cells = await t.run(async (ctx) => {
-        return await ctx.db
-          .query("cells")
-          .withIndex("by_game_row_column", (q) => q.eq("gameId", game._id))
-          .collect();
+      const placements: {
+        place: { row: number; column: number };
+        value: number;
+      }[] = [
+        { place: { row: 7, column: 5 }, value: 7 },
+        { place: { row: 6, column: 5 }, value: 1 },
+        { place: { row: 5, column: 5 }, value: 8 },
+      ];
+      const expectedValues = [7, 8, 9]; // expected values at row=4, column 5
+
+      // Do all the placements
+      for (const { place, value } of placements) {
+        const cell = await gameHelper.findCell(
+          game._id,
+          place.row,
+          place.column,
+        );
+        const tiles = await gameHelper.getPlayerTiles(player._id);
+        const tile = tiles.filter((t) => t.value === value)[0];
+
+        const result = await t.mutation(
+          api.controllers.tile.mutations.playToCell,
+          {
+            tileId: tile._id,
+            cellId: cell!._id,
+            playerId: player._id,
+            sessionId: user.sessionId as SessionId,
+          },
+        );
+
+        expect(result.status).toBe("success");
+      }
+
+      const resultCell = await gameHelper.findCell(game._id, 4, 5);
+      expect(resultCell).toBeDefined();
+
+      expect(resultCell.allowedValues.length).toBe(expectedValues.length);
+      expectedValues.forEach((v) => {
+        expect(resultCell.allowedValues).toContain(v);
       });
-
-      // Find an empty cell (not operator) that's near the central values
-      // Cell at (5,7) should be empty and near (6,7)=2
-      const emptyCell = cells.find((c) => c.row === 5 && c.column === 7);
-      expect(emptyCell).toBeDefined();
-      expect(emptyCell?.type).toBe("empty");
-
-      // Get tile with value 4
-      const playerTiles = await gameHelper.getPlayerTiles(player._id);
-      const tile4 = playerTiles.find((t) => t.value === 4);
-      expect(tile4).toBeDefined();
-
-      // Act: Place tile 4 at (5,7)
-      const result = await t.mutation(
-        api.controllers.tile.mutations.playToCell,
-        {
-          tileId: tile4!._id,
-          cellId: emptyCell!._id,
-          playerId: player._id,
-          sessionId: user.sessionId as SessionId,
-        },
-      );
-
-      expect(result.status).toBe("success");
 
       // Assert: Check nearby empty cells (not operators) for allowed values
       // The cell at (4,7) is a + operator

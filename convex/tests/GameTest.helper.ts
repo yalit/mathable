@@ -1,7 +1,7 @@
 import type { Doc, Id } from "@cvx/_generated/dataModel";
 import type schema from "@cvx/schema";
 import type { TestConvex } from "convex-test";
-import { api } from "../../_generated/api";
+import { api } from "../_generated/api";
 import type { SessionId } from "convex-helpers/server/sessions";
 
 type CreateGameInput = {
@@ -37,6 +37,11 @@ export interface GameTestHelperInterface {
   getCurrentPlayer(gameId: Id<"games">): Promise<CurrentPlayerResult>;
   getPlayerTiles(playerId: Id<"players">): Promise<Doc<"tiles">[]>;
   findValidTileCellPair(gameId: Id<"games">): Promise<ValidTileCellPairResult>;
+  findCell(
+    gameId: Id<"games">,
+    row: number,
+    column: number,
+  ): Promise<Doc<"cells">>;
   getEmptyCellAt(
     gameId: Id<"games">,
     row: number,
@@ -290,6 +295,29 @@ export class GameTestHelper implements GameTestHelperInterface {
         .withIndex("by_player", (q) => q.eq("playerId", playerId))
         .collect();
     });
+  }
+
+  async findCell(
+    gameId: Id<"games">,
+    row: number,
+    column: number,
+  ): Promise<Doc<"cells">> {
+    const cell = await this.t.run(async (ctx) => {
+      return await ctx.db
+        .query("cells")
+        .withIndex("by_game_row_column", (q) => q.eq("gameId", gameId))
+        .filter((q) =>
+          q.and(q.eq(q.field("row"), row), q.eq(q.field("column"), column)),
+        )
+        .unique();
+    });
+
+    if (!cell)
+      throw new Error(
+        `No cell for this game ${gameId} at row ${row} and column ${column}`,
+      );
+
+    return cell;
   }
 
   /**

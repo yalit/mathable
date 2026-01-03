@@ -4,8 +4,8 @@ import type { Id } from "../../../_generated/dataModel";
 import schema from "../../../schema";
 import { modules } from "../../../test.setup";
 import { convexTest, type TestConvex } from "convex-test";
-import { GameTestHelper } from "../GameTest.helper";
 import type { SessionId } from "convex-helpers/server/sessions";
+import { GameTestHelper } from "@cvx/tests/GameTest.helper";
 
 describe("ResetTurnUseCase", () => {
   let t: TestConvex<typeof schema>;
