@@ -16,155 +16,156 @@ describe("EndTurnUseCase", () => {
     gameHelper = new GameTestHelper(t);
   });
 
-  test("should end turn and switch to next player", async () => {
-    // Arrange: Create and start a game
-    const { game, players } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2"],
-    });
-
-    // Get current player before ending turn
-    const currentPlayerBefore = players.find((p) => p.current);
-    expect(currentPlayerBefore).toBeDefined();
-
-    const { user } = await gameHelper.getCurrentPlayer(game._id);
-
-    // Act: End turn as the current player
-    const endTurnResult = await t.mutation(
-      api.controllers.play.mutations.endTurn,
-      {
-        gameId: game._id,
-        sessionId: user.sessionId as SessionId,
-      },
-    );
-
-    // Assert: Turn ended successfully
-    expect(endTurnResult).toMatchObject({
-      status: "success",
-      data: {
-        gameEnded: false,
-      },
-    });
-
-    // Verify next player is now current
-    const { player: currentPlayerAfter } = await gameHelper.getCurrentPlayer(
-      game._id,
-    );
-    expect(currentPlayerAfter).toBeDefined();
-    expect(currentPlayerAfter._id).not.toBe(currentPlayerBefore!._id);
-
-    // Verify turn counter incremented
-    const updatedGame = await t.run(async (ctx) => {
-      return await ctx.db.get(game._id);
-    });
-
-    expect(updatedGame?.currentTurn).toBeGreaterThan(1);
-  });
-
-  test("should refill player hand to 7 tiles after ending turn", async () => {
-    // Arrange: Create and start a game
-    const { game } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2"],
-    });
-
-    const { player, user } = await gameHelper.getCurrentPlayer(game._id);
-
-    // Count tiles before
-    const tilesBefore = await gameHelper.getPlayerTiles(player._id);
-
-    // Act: End turn
-    await t.mutation(api.controllers.play.mutations.endTurn, {
-      gameId: game._id,
-      sessionId: user.sessionId as SessionId,
-    });
-
-    // Assert: Player still has 7 tiles (refilled)
-    const tilesAfter = await gameHelper.getPlayerTiles(player._id);
-
-    expect(tilesAfter.length).toBe(7);
-    expect(tilesBefore.length).toBe(7);
-  });
-
-  test("should fail when non-current player tries to end turn", async () => {
-    // Arrange: Create and start a game
-    const { game, players, users } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2"],
-    });
-
-    // Get non-current player
-    const nonCurrentPlayer = players.find((p) => !p.current)!;
-    const nonCurrentPlayerIndex = players.indexOf(nonCurrentPlayer);
-    const user = users[nonCurrentPlayerIndex];
-
-    // Act: Try to end turn as non-current player
-    const result = await t.mutation(api.controllers.play.mutations.endTurn, {
-      gameId: game._id,
-      sessionId: user.sessionId as SessionId,
-    });
-
-    // Assert: Should fail
-    expect(result).toMatchObject({
-      status: "error",
-      data: expect.stringContaining("current player"),
-    });
-  });
-
-  test("should cycle through all players in correct order", async () => {
-    // Arrange: Create a game with 3 players
-    const { game } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2", "Player 3"],
-    });
-
-    // Track player turn order
-    const turnOrder: Id<"players">[] = [];
-
-    // Act: End turn 3 times to cycle through all players
-    for (let i = 0; i < 3; i++) {
-      const { player, user } = await gameHelper.getCurrentPlayer(game._id);
-      turnOrder.push(player._id);
-
-      await t.mutation(api.controllers.play.mutations.endTurn, {
-        gameId: game._id,
-        sessionId: user.sessionId as SessionId,
+  describe("Generic End turn action", () => {
+    test("should end turn and switch to next player", async () => {
+      // Arrange: Create and start a game
+      const { game, players } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
       });
-    }
 
-    // Assert: All players had a turn and no duplicates
-    expect(turnOrder.length).toBe(3);
-    expect(new Set(turnOrder).size).toBe(3);
+      // Get current player before ending turn
+      const currentPlayerBefore = players.find((p) => p.current);
+      expect(currentPlayerBefore).toBeDefined();
 
-    // After 3 turns, we should be back to the first player
-    const { player: currentPlayer } = await gameHelper.getCurrentPlayer(
-      game._id,
-    );
-    expect(currentPlayer._id).toBe(turnOrder[0]);
-  });
-
-  test("should increment turn counter each time", async () => {
-    // Arrange: Create and start a game
-    const { game } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2"],
-    });
-
-    const initialTurn = game.currentTurn;
-
-    // Act: End turn multiple times
-    for (let i = 0; i < 3; i++) {
       const { user } = await gameHelper.getCurrentPlayer(game._id);
 
+      // Act: End turn as the current player
+      const endTurnResult = await t.mutation(
+        api.controllers.play.mutations.endTurn,
+        {
+          gameId: game._id,
+          sessionId: user.sessionId as SessionId,
+        },
+      );
+
+      // Assert: Turn ended successfully
+      expect(endTurnResult).toMatchObject({
+        status: "success",
+        data: {
+          gameEnded: false,
+        },
+      });
+
+      // Verify next player is now current
+      const { player: currentPlayerAfter } = await gameHelper.getCurrentPlayer(
+        game._id,
+      );
+      expect(currentPlayerAfter).toBeDefined();
+      expect(currentPlayerAfter._id).not.toBe(currentPlayerBefore!._id);
+
+      // Verify turn counter incremented
+      const updatedGame = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+
+      expect(updatedGame?.currentTurn).toBeGreaterThan(1);
+    });
+
+    test("should refill player hand to 7 tiles after ending turn", async () => {
+      // Arrange: Create and start a game
+      const { game } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
+      });
+
+      const { player, user } = await gameHelper.getCurrentPlayer(game._id);
+
+      // Count tiles before
+      const tilesBefore = await gameHelper.getPlayerTiles(player._id);
+
+      // Act: End turn
       await t.mutation(api.controllers.play.mutations.endTurn, {
         gameId: game._id,
         sessionId: user.sessionId as SessionId,
       });
-    }
 
-    // Assert: Turn counter incremented by 3
-    const gameAfter = await t.run(async (ctx) => {
-      return await ctx.db.get(game._id);
+      // Assert: Player still has 7 tiles (refilled)
+      const tilesAfter = await gameHelper.getPlayerTiles(player._id);
+
+      expect(tilesAfter.length).toBe(7);
+      expect(tilesBefore.length).toBe(7);
     });
 
-    expect(gameAfter!.currentTurn).toBe(initialTurn + 3);
-  });
+    test("should fail when non-current player tries to end turn", async () => {
+      // Arrange: Create and start a game
+      const { game, players, users } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
+      });
 
+      // Get non-current player
+      const nonCurrentPlayer = players.find((p) => !p.current)!;
+      const nonCurrentPlayerIndex = players.indexOf(nonCurrentPlayer);
+      const user = users[nonCurrentPlayerIndex];
+
+      // Act: Try to end turn as non-current player
+      const result = await t.mutation(api.controllers.play.mutations.endTurn, {
+        gameId: game._id,
+        sessionId: user.sessionId as SessionId,
+      });
+
+      // Assert: Should fail
+      expect(result).toMatchObject({
+        status: "error",
+        data: expect.stringContaining("current player"),
+      });
+    });
+
+    test("should cycle through all players in correct order", async () => {
+      // Arrange: Create a game with 3 players
+      const { game } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2", "Player 3"],
+      });
+
+      // Track player turn order
+      const turnOrder: Id<"players">[] = [];
+
+      // Act: End turn 3 times to cycle through all players
+      for (let i = 0; i < 3; i++) {
+        const { player, user } = await gameHelper.getCurrentPlayer(game._id);
+        turnOrder.push(player._id);
+
+        await t.mutation(api.controllers.play.mutations.endTurn, {
+          gameId: game._id,
+          sessionId: user.sessionId as SessionId,
+        });
+      }
+
+      // Assert: All players had a turn and no duplicates
+      expect(turnOrder.length).toBe(3);
+      expect(new Set(turnOrder).size).toBe(3);
+
+      // After 3 turns, we should be back to the first player
+      const { player: currentPlayer } = await gameHelper.getCurrentPlayer(
+        game._id,
+      );
+      expect(currentPlayer._id).toBe(turnOrder[0]);
+    });
+
+    test("should increment turn counter each time", async () => {
+      // Arrange: Create and start a game
+      const { game } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
+      });
+
+      const initialTurn = game.currentTurn;
+
+      // Act: End turn multiple times
+      for (let i = 0; i < 3; i++) {
+        const { user } = await gameHelper.getCurrentPlayer(game._id);
+
+        await t.mutation(api.controllers.play.mutations.endTurn, {
+          gameId: game._id,
+          sessionId: user.sessionId as SessionId,
+        });
+      }
+
+      // Assert: Turn counter incremented by 3
+      const gameAfter = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+
+      expect(gameAfter!.currentTurn).toBe(initialTurn + 3);
+    });
+  });
   describe("Idle game detection (Phase 1)", () => {
     test("should not detect idle if PLAYER_TO_CELL move exists within 2 rounds", async () => {
       // Arrange: Create game with 2 players
@@ -413,48 +414,199 @@ describe("EndTurnUseCase", () => {
     });
   });
 
-  test("should handle tile bag running empty", async () => {
-    // Arrange: Create and start a game
-    const { game } = await gameHelper.createGame({
-      playerNames: ["Player 1", "Player 2"],
-    });
+  describe("Regular win (Phase 2)", () => {
+    test("should end game when player empties hand with empty bag", async () => {
+      // Arrange: Create game with specific tiles
+      const { game, players } = await gameHelper.createGame({
+        playerNames: ["Winner", "Loser"],
+        playerTileValues: [
+          [1, 2, 3, 4, 5, 6, 7], // Winner starts with 7 tiles
+          [1, 2, 3, 4, 5, 6, 7], // Loser has tiles
+        ],
+      });
 
-    // Remove all tiles from bag except a few
-    await t.run(async (ctx) => {
-      const tiles = await ctx.db
-        .query("tiles")
-        .withIndex("by_game_location", (q) =>
-          q.eq("gameId", game._id).eq("location", "in_bag"),
-        )
-        .collect();
+      // Set initial scores
+      await t.run(async (ctx) => {
+        await ctx.db.patch(players[0]._id, { score: 50 });
+        await ctx.db.patch(players[1]._id, { score: 30 });
+      });
 
-      // Delete all but 3 tiles from bag
-      for (let i = 3; i < tiles.length; i++) {
-        await ctx.db.delete(tiles[i]._id);
+      // Remove all tiles from winner except 1
+      const winnerTiles = await gameHelper.getPlayerTiles(players[0]._id);
+      for (let i = 1; i < winnerTiles.length; i++) {
+        await t.run(async (ctx) => {
+          await ctx.db.delete(winnerTiles[i]._id);
+        });
       }
+
+      // Empty the bag
+      await gameHelper.emptyTileBag(game._id);
+
+      // Place the last tile (winner is current player initially)
+      const { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
+      const { user: winnerUser } = await gameHelper.getCurrentPlayer(game._id);
+
+      await t.mutation(api.controllers.tile.mutations.playToCell, {
+        tileId: tile._id,
+        cellId: cell._id,
+        playerId: players[0]._id,
+        sessionId: winnerUser.sessionId as SessionId,
+      });
+
+      // Act: End turn - should trigger win
+      const result = await t.mutation(api.controllers.play.mutations.endTurn, {
+        gameId: game._id,
+        sessionId: winnerUser.sessionId as SessionId,
+      });
+
+      // Assert: Game ended
+      expect(result.status).toBe("success");
+      expect(result.data?.gameEnded).toBe(true);
+
+      const updatedGame = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+
+      expect(updatedGame?.status).toBe("ended");
+      expect(updatedGame?.winner).toBe(players[0]._id);
     });
 
-    const { user } = await gameHelper.getCurrentPlayer(game._id);
+    test("should apply final scoring on regular win", async () => {
+      // Arrange: Similar setup to first win test, but check scores
+      const { game, players } = await gameHelper.createGame({
+        playerNames: ["Winner", "Loser"],
+        playerTileValues: [
+          [1, 2, 3, 4, 5, 6, 7], // Winner starts with 7 tiles
+          [1, 2, 3, 4, 5, 6, 7], // Loser has 7 tiles (value = 28)
+        ],
+      });
 
-    // Act: End turn (should try to refill but won't have enough tiles)
-    const result = await t.mutation(api.controllers.play.mutations.endTurn, {
-      gameId: game._id,
-      sessionId: user.sessionId as SessionId,
+      // Record initial scores
+      const initialScores = await t.run(async (ctx) => {
+        const p0 = await ctx.db.get(players[0]._id);
+        const p1 = await ctx.db.get(players[1]._id);
+        return [p0!.score, p1!.score];
+      });
+
+      // Remove all winner's tiles except 1
+      const winnerTiles = await gameHelper.getPlayerTiles(players[0]._id);
+      for (let i = 1; i < winnerTiles.length; i++) {
+        await t.run(async (ctx) => {
+          await ctx.db.delete(winnerTiles[i]._id);
+        });
+      }
+
+      // Empty the bag
+      await gameHelper.emptyTileBag(game._id);
+
+      // Place the last tile
+      const { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
+      const { user: winnerUser } = await gameHelper.getCurrentPlayer(game._id);
+
+      await t.mutation(api.controllers.tile.mutations.playToCell, {
+        tileId: tile._id,
+        cellId: cell._id,
+        playerId: players[0]._id,
+        sessionId: winnerUser.sessionId as SessionId,
+      });
+
+      // Act: End turn - should trigger win and final scoring
+      const result = await t.mutation(api.controllers.play.mutations.endTurn, {
+        gameId: game._id,
+        sessionId: winnerUser.sessionId as SessionId,
+      });
+
+      // Assert: Game ended with final scoring
+      expect(result.status).toBe("success");
+      expect(result.data?.gameEnded).toBe(true);
+
+      const updatedGame = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+      expect(updatedGame?.status).toBe("ended");
+
+      // Get final scores
+      const finalScores = await t.run(async (ctx) => {
+        const p0 = await ctx.db.get(players[0]._id);
+        const p1 = await ctx.db.get(players[1]._id);
+        return [p0!.score, p1!.score];
+      });
+
+      // Determine winner/loser (winner is whoever won the game)
+      const winnerIdx = updatedGame!.winner === players[0]._id ? 0 : 1;
+      const loserIdx = 1 - winnerIdx;
+
+      // Winner should have gained points (opponent's tile values)
+      expect(finalScores[winnerIdx]).toBeGreaterThan(initialScores[winnerIdx]);
+
+      // Loser should have lost points (28 points for 7 tiles)
+      expect(finalScores[loserIdx]).toBe(initialScores[loserIdx] - 28);
     });
 
-    // Assert: Turn ended successfully even with empty bag
-    expect(result.status).toBe("success");
+    test("should not end game if bag has tiles even if hand empty", async () => {
+      // Arrange: Create game with empty hand but tiles in bag
+      const { game, players } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
+        playerTileValues: [
+          [1], // Player 1 has 1 tile
+          [1, 2, 3, 4, 5, 6, 7],
+        ],
+      });
 
-    // Verify bag is now empty or nearly empty
-    const tilesInBag = await t.run(async (ctx) => {
-      return await ctx.db
-        .query("tiles")
-        .withIndex("by_game_location", (q) =>
-          q.eq("gameId", game._id).eq("location", "in_bag"),
-        )
-        .collect();
+      // Place the tile
+      const { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
+      const { user } = await gameHelper.getCurrentPlayer(game._id);
+
+      await t.mutation(api.controllers.tile.mutations.playToCell, {
+        tileId: tile._id,
+        cellId: cell._id,
+        playerId: players[0]._id,
+        sessionId: user.sessionId as SessionId,
+      });
+
+      // Act: End turn - should NOT end game (bag still has tiles)
+      const result = await t.mutation(api.controllers.play.mutations.endTurn, {
+        gameId: game._id,
+        sessionId: user.sessionId as SessionId,
+      });
+
+      // Assert: Game continues
+      expect(result.status).toBe("success");
+      expect(result.data?.gameEnded).toBe(false);
+
+      const updatedGame = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+
+      expect(updatedGame?.status).toBe("ongoing");
     });
 
-    expect(tilesInBag.length).toBeLessThan(7);
+    test("should not end game if player has tiles even if bag empty", async () => {
+      // Arrange: Create game with tiles in hand but empty bag
+      const { game } = await gameHelper.createGame({
+        playerNames: ["Player 1", "Player 2"],
+      });
+
+      // Empty the bag
+      await gameHelper.emptyTileBag(game._id);
+
+      const { user } = await gameHelper.getCurrentPlayer(game._id);
+
+      // Act: End turn - should NOT end game (player still has tiles)
+      const result = await t.mutation(api.controllers.play.mutations.endTurn, {
+        gameId: game._id,
+        sessionId: user.sessionId as SessionId,
+      });
+
+      // Assert: Game continues
+      expect(result.status).toBe("success");
+      expect(result.data?.gameEnded).toBe(false);
+
+      const updatedGame = await t.run(async (ctx) => {
+        return await ctx.db.get(game._id);
+      });
+
+      expect(updatedGame?.status).toBe("ongoing");
+    });
   });
 });
