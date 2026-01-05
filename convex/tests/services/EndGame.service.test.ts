@@ -271,7 +271,7 @@ describe("EndGameService", () => {
 
     test("should return true when last move is older than 2 rounds for 2 players", async () => {
       // Arrange: Create game with 2 players, each with the same tiles
-      const { game, users } = await gameHelper.createGame({
+      const { game } = await gameHelper.createGame({
         playerNames: ["Player 1", "Player 2"],
         playerTileValues: [
           [1, 2, 3, 4, 5, 6, 7],
@@ -357,13 +357,13 @@ describe("EndGameService", () => {
       expect(result.status).toBe("success");
       expect(result.data?.gameEnded).toBe(true);
 
-      // Verify game ended as idle (no winner set currently - Phase 1 will add winner determination)
+      // Verify game ended as idle with highest scorer as winner
       const updatedGame = await t.run(async (ctx) => {
         return await ctx.db.get(game._id);
       });
 
       expect(updatedGame?.status).toBe("ended");
-      expect(updatedGame?.winner).toBeUndefined();
+      expect(updatedGame?.winner).toBeDefined(); // Phase 1: Winner is now determined
     });
 
     test("should return true when last move is older than 2 rounds for 3 players", async () => {
@@ -430,13 +430,13 @@ describe("EndGameService", () => {
       expect(result.status).toBe("success");
       expect(result.data?.gameEnded).toBe(true);
 
-      // Verify game ended as idle
+      // Verify game ended as idle with highest scorer as winner
       const updatedGame = await t.run(async (ctx) => {
         return await ctx.db.get(game._id);
       });
 
       expect(updatedGame?.status).toBe("ended");
-      expect(updatedGame?.winner).toBeUndefined();
+      expect(updatedGame?.winner).toBeDefined(); // Phase 1: Winner is now determined
     });
 
     test("should return true when last move is older than 2 rounds for 4 players", async () => {
@@ -504,13 +504,13 @@ describe("EndGameService", () => {
       expect(result.status).toBe("success");
       expect(result.data?.gameEnded).toBe(true);
 
-      // Verify game ended as idle
+      // Verify game ended as idle with highest scorer as winner
       const updatedGame = await t.run(async (ctx) => {
         return await ctx.db.get(game._id);
       });
 
       expect(updatedGame?.status).toBe("ended");
-      expect(updatedGame?.winner).toBeUndefined();
+      expect(updatedGame?.winner).toBeDefined(); // Phase 1: Winner is now determined
     });
   });
 
@@ -684,7 +684,7 @@ describe("EndGameService", () => {
       expect(updatedGame?.status).toBe("ended");
     });
 
-    test("should not set a winner", async () => {
+    test("should set a winner based on highest score", async () => {
       // Arrange: Create game and set up idle condition
       const { game, players } = await gameHelper.createGame({
         playerNames: ["Player 1", "Player 2"],
@@ -730,12 +730,12 @@ describe("EndGameService", () => {
         sessionId: user.sessionId as SessionId,
       });
 
-      // Assert: Winner should not be set
+      // Assert: Winner should be set (Phase 1: highest scorer wins idle games)
       const updatedGame = await t.run(async (ctx) => {
         return await ctx.db.get(game._id);
       });
 
-      expect(updatedGame?.winner).toBeUndefined();
+      expect(updatedGame?.winner).toBeDefined();
     });
 
     test("should save game to database", async () => {
