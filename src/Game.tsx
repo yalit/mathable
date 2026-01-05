@@ -5,6 +5,7 @@ import { GameStatusBar } from "@components/game/gameStatusBar";
 import { PlayerPlayArea } from "@components/game/playerPlayArea";
 import { useGame, useLoaded } from "@context/hooks";
 import { StartGameModal } from "@components/game/startGameModal";
+import { EndGameModal } from "@components/game/endGameModal";
 
 export default function Game() {
   const isLoaded = useLoaded();
@@ -18,6 +19,7 @@ export default function Game() {
           <Board />
           <PlayerPlayArea />
           {game.status === "waiting" && <StartGameModal />}
+          {game.status === "ended" && <EndGameModal />}
         </DndProvider>
       ) : (
         <div>Loading...</div>

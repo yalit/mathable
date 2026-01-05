@@ -16,6 +16,7 @@ export const gameSchema = z.object({
   cells: z.array(cellSchema),
   currentTurn: z.number(),
   tiles: z.array(tileSchema),
+  winner: z.string().optional(),
 });
 
 export type Game = z.infer<typeof gameSchema>;
