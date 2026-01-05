@@ -4,6 +4,7 @@ import type { GamesMutationRepositoryInterface } from "../../../repository/mutat
 import type { TilesQueryRepositoryInterface } from "../../../repository/query/tiles.repository.ts";
 import type { PlayersQueryRepositoryInterface } from "../../../repository/query/players.repository.ts";
 import type { MovesQueryRepositoryInterface } from "../../../repository/query/moves.repository.ts";
+import type { FinalScoreServiceInterface } from "./FinalScore.service.ts";
 
 export interface EndGameServiceInterface {
   isGameWon: (game: Game, player: Player) => Promise<boolean>;
@@ -18,17 +19,20 @@ export class EndGameService implements EndGameServiceInterface {
   private readonly tilesQuery: TilesQueryRepositoryInterface;
   private readonly playersQuery: PlayersQueryRepositoryInterface;
   private readonly movesQuery: MovesQueryRepositoryInterface;
+  private readonly finalScoreService: FinalScoreServiceInterface;
 
   constructor(
     gamesMutation: GamesMutationRepositoryInterface,
     tilesQuery: TilesQueryRepositoryInterface,
     playersQuery: PlayersQueryRepositoryInterface,
     movesQuery: MovesQueryRepositoryInterface,
+    finalScoreService: FinalScoreServiceInterface,
   ) {
     this.gamesMutation = gamesMutation;
     this.tilesQuery = tilesQuery;
     this.playersQuery = playersQuery;
     this.movesQuery = movesQuery;
+    this.finalScoreService = finalScoreService;
   }
 
   static create(
@@ -36,6 +40,7 @@ export class EndGameService implements EndGameServiceInterface {
     tilesQuery: TilesQueryRepositoryInterface,
     playersQuery: PlayersQueryRepositoryInterface,
     movesQuery: MovesQueryRepositoryInterface,
+    finalScoreService: FinalScoreServiceInterface,
   ): EndGameServiceInterface {
     if (!EndGameService.instance) {
       EndGameService.instance = new EndGameService(
@@ -43,6 +48,7 @@ export class EndGameService implements EndGameServiceInterface {
         tilesQuery,
         playersQuery,
         movesQuery,
+        finalScoreService,
       );
     }
     return EndGameService.instance;
@@ -81,7 +87,15 @@ export class EndGameService implements EndGameServiceInterface {
     return lastPlayerToCellMove.turn < game.currentTurn - idleThreshold;
   }
 
+  /**
+   * End the game with a winner (regular win).
+   * Applies final scoring: winner gets opponent tile values, opponents lose their tile values.
+   */
   async endGameWithWinner(game: Game, player: Player): Promise<void> {
+    // Apply final score calculations
+    await this.finalScoreService.calculateAndApplyFinalScores(game, player);
+
+    // End the game with the winner
     game.endWithWinner(player.id);
     await this.gamesMutation.save(game);
   }

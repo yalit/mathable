@@ -227,8 +227,9 @@ describe("EndTurnUseCase", () => {
       });
 
       // Round 1: Player 1 plays and scores points
-      let { player, user } = await gameHelper.getCurrentPlayer(game._id);
-      let { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
+      const { player } = await gameHelper.getCurrentPlayer(game._id);
+      let { user } = await gameHelper.getCurrentPlayer(game._id);
+      const { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
 
       await t.mutation(api.controllers.tile.mutations.playToCell, {
         tileId: tile._id,
@@ -290,7 +291,7 @@ describe("EndTurnUseCase", () => {
 
     test("should handle tie in idle scenario - first by order wins", async () => {
       // Arrange: Create game where both players have same score (0)
-      const { game, players } = await gameHelper.createGame({
+      const { game } = await gameHelper.createGame({
         playerNames: ["Player 1", "Player 2"],
       });
 
@@ -349,8 +350,9 @@ describe("EndTurnUseCase", () => {
       });
 
       // Player 1 scores some points
-      let { player, user } = await gameHelper.getCurrentPlayer(game._id);
-      let { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
+      const { player } = await gameHelper.getCurrentPlayer(game._id);
+      let { user } = await gameHelper.getCurrentPlayer(game._id);
+      const { tile, cell } = await gameHelper.findValidTileCellPair(game._id);
 
       await t.mutation(api.controllers.tile.mutations.playToCell, {
         tileId: tile._id,

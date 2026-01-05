@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../../_generated/dataModel";
 import { Tile } from "./Tile";
-import type {User} from "./User.ts";
+import type { User } from "./User.ts";
 
 /**
  * Player domain model with relationship support
@@ -26,7 +26,7 @@ export class Player {
     current: boolean,
     score: number,
     owner: boolean,
-    order: number
+    order: number,
   ) {
     this._id = id;
     this.gameId = gameId;
@@ -79,9 +79,7 @@ export class Player {
   private validateTilesBelongToPlayer(tiles: Tile[]): void {
     for (const tile of tiles) {
       if (tile.playerId !== this.id) {
-        throw new Error(
-          `Tile ${tile.id} does not belong to player ${this.id}`
-        );
+        throw new Error(`Tile ${tile.id} does not belong to player ${this.id}`);
       }
     }
   }
@@ -94,7 +92,7 @@ export class Player {
     for (const tile of tiles) {
       if (tile.gameId !== this.gameId) {
         throw new Error(
-          `Tile ${tile.id} does not belong to game ${this.gameId}`
+          `Tile ${tile.id} does not belong to game ${this.gameId}`,
         );
       }
     }
@@ -138,6 +136,19 @@ export class Player {
   }
 
   /**
+   * Subtract points from player's score
+   * Note: Score can go negative
+   * @param points - Points to subtract (must be non-negative)
+   * @throws Error if points is negative
+   */
+  subtractScore(points: number): void {
+    if (points < 0) {
+      throw new Error("Cannot subtract negative points");
+    }
+    this._score -= points;
+  }
+
+  /**
    * Check if player has won (no tiles remaining in hand)
    * @param playerTiles - The tiles in player's hand
    * @returns true if player has no tiles
@@ -147,7 +158,7 @@ export class Player {
     this.validateTilesBelongToGame(playerTiles);
 
     // Only count tiles that are in the player's hand
-    const tilesInHand = playerTiles.filter(t => t.isInHand());
+    const tilesInHand = playerTiles.filter((t) => t.isInHand());
     return tilesInHand.length === 0;
   }
 
@@ -161,7 +172,7 @@ export class Player {
     this.validateTilesBelongToGame(playerTiles);
 
     return playerTiles
-      .filter(t => t.isInHand())
+      .filter((t) => t.isInHand())
       .reduce((sum, tile) => sum + tile.value, 0);
   }
 

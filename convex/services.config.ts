@@ -23,6 +23,7 @@ import { TileDistributionService } from "./domain/services/Tile/TileDistribution
 import { CellValueComputationService } from "./domain/services/Cell/CellValueComputation.service.ts";
 import { PlayTurnService } from "./domain/services/Play/Turn.service.ts";
 import { EndGameService } from "./domain/services/Game/EndGame.service.ts";
+import { FinalScoreService } from "./domain/services/Game/FinalScore.service.ts";
 
 /**
  * Production service configuration
@@ -132,6 +133,14 @@ export const servicesConfig: ServicesConfig = {
         "PlayersMutationRepositoryInterface",
       ],
     },
+    FinalScoreServiceInterface: {
+      class: FinalScoreService.create,
+      arguments: [
+        "PlayersQueryRepositoryInterface",
+        "PlayersMutationRepositoryInterface",
+        "TilesQueryRepositoryInterface",
+      ],
+    },
     EndGameServiceInterface: {
       class: EndGameService.create,
       arguments: [
@@ -139,6 +148,7 @@ export const servicesConfig: ServicesConfig = {
         "TilesQueryRepositoryInterface",
         "PlayersQueryRepositoryInterface",
         "MovesQueryRepositoryInterface",
+        "FinalScoreServiceInterface",
       ],
     },
   },
