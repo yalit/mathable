@@ -1,7 +1,6 @@
 import type { Player } from "@context/model/player";
 import { classnames } from "@libraries/helpers/dom";
-import { useCallback, useState } from "react";
-import type { Game } from "@context/model/game";
+import { useCallback } from "react";
 import { useGame, usePlayer } from "@context/hooks";
 import { useCurrentTurnScore } from "@hooks/convex/play/useCurrentTurnScore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -37,22 +36,22 @@ export function PlayersPanel({ isCollapsed, onToggle }: PlayersPanelProps) {
   );
 
   return (
-    <div className="relative flex">
-      {/* Collapse/Expand Button */}
+    <div className="relative h-full w-full">
+      {/* Collapse/Expand Button - Always visible */}
       <button
         onClick={onToggle}
-        className="absolute left-0 top-4 -translate-x-full bg-white border-2 border-r-0 border-gray-200 rounded-l-lg px-2 py-3 hover:bg-gray-50 transition-colors z-10"
+        className="absolute -left-10 top-4 bg-sky-600 hover:bg-sky-700 text-white rounded-l-lg px-3 py-4 shadow-md transition-colors z-50"
         title={isCollapsed ? "Show players" : "Hide players"}
       >
         <FontAwesomeIcon
           icon={isCollapsed ? faChevronLeft : faChevronRight}
-          className="text-gray-600"
+          className="text-lg"
         />
       </button>
 
       {/* Panel Content */}
       {!isCollapsed && (
-        <div className="flex flex-col gap-3 p-4 w-full">
+        <div className="flex flex-col gap-3 p-4 w-full h-full">
           <h3 className="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
             Players
           </h3>

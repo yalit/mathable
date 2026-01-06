@@ -32,17 +32,19 @@ export default function Game() {
               </div>
 
               {/* Right sidebar - Players list */}
-              <div
-                className={`border-l-2 border-gray-200 bg-white overflow-auto transition-all duration-300 ${
-                  isPlayersPanelCollapsed ? "w-0" : "w-64"
-                }`}
-              >
-                <PlayersPanel
-                  isCollapsed={isPlayersPanelCollapsed}
-                  onToggle={() =>
-                    setIsPlayersPanelCollapsed(!isPlayersPanelCollapsed)
-                  }
-                />
+              <div className="relative">
+                <div
+                  className={`border-l-2 border-gray-200 bg-white overflow-auto transition-all duration-300 ${
+                    isPlayersPanelCollapsed ? "w-0 border-0" : "w-64"
+                  }`}
+                >
+                  <PlayersPanel
+                    isCollapsed={isPlayersPanelCollapsed}
+                    onToggle={() =>
+                      setIsPlayersPanelCollapsed(!isPlayersPanelCollapsed)
+                    }
+                  />
+                </div>
               </div>
             </div>
           </div>
