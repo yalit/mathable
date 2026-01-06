@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useCreateGame } from "@hooks/convex/game/useCreateGame.tsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faGamepad } from "@fortawesome/free-solid-svg-icons";
+import { classnames } from "@libraries/helpers/dom";
 
 export const CreateGameCard = () => {
   const [playerName, setPlayerName] = useState("");
@@ -24,31 +27,52 @@ export const CreateGameCard = () => {
       document.location = `/game/${gameToken}/player/${playerToken}`;
     }
   };
+
   return (
-    <div className="flex flex-col gap-5">
-      <div className="text-center font-semibold text-xl">Create a new Game</div>
-      <form
-        className="flex flex-1 flex-col justify-between"
-        onSubmit={handleClickOnCreate}
-      >
-        <div className="flex gap-2 flex-col">
-          <label className="font-semibold" htmlFor="player_name">
-            Player Name
+    <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 p-6 max-w-md w-full">
+      {/* Title */}
+      <div className="text-center mb-6">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <FontAwesomeIcon icon={faGamepad} className="text-sky-600 text-2xl" />
+          <h2 className="text-3xl font-bold text-gray-900">
+            Create a New Game
+          </h2>
+          <FontAwesomeIcon icon={faGamepad} className="text-sky-600 text-2xl" />
+        </div>
+        <p className="text-gray-600">Start your mathematical adventure!</p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleClickOnCreate} className="space-y-6">
+        <div className="bg-sky-50 border-2 border-sky-200 rounded-lg p-4">
+          <label
+            className="block text-sm font-semibold text-gray-700 mb-2"
+            htmlFor="player_name"
+          >
+            Your Name
           </label>
           <input
-            className="focus:outline-none font-normal text-lg border-b border-inherit pb-1"
+            className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-sky-500 focus:outline-none text-lg transition-colors"
             id="player_name"
             name="player_name"
-            placeholder="What's your name..."
+            placeholder="Enter your name..."
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
           />
         </div>
+
         <button
           type="submit"
-          className="py-3 cursor-pointer font-semibold bg-sky-50/50"
+          className={classnames(
+            "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2",
+            playerName === ""
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-sky-600 text-white hover:bg-sky-700 cursor-pointer transform hover:scale-105",
+          )}
+          disabled={playerName === ""}
         >
-          Create
+          <FontAwesomeIcon icon={faPlus} />
+          Create Game
         </button>
       </form>
     </div>
