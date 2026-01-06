@@ -23,18 +23,18 @@ export function useFetchFromBackendGameActions(): ReturnGameFunctions {
 
   const toGame = async (convexGame: ConvexGame): Promise<Game> => {
     const gameId = convexGame.id;
-    const convexCells: ConvexCell[] = await convex.query(
+    const convexCells = (await convex.query(
       api.controllers.cell.queries.getForGame,
       { gameId: gameId },
-    );
-    const convexTiles: ConvexTile[] = await convex.query(
+    )) as unknown as ConvexCell[];
+    const convexTiles = (await convex.query(
       api.controllers.tile.queries.getForGame,
       { gameId: gameId },
-    );
-    const convexPlayers: ConvexPlayer[] = await convex.query(
+    )) as unknown as ConvexTile[];
+    const convexPlayers = (await convex.query(
       api.controllers.player.queries.getForGame,
       { gameId: gameId },
-    );
+    )) as unknown as ConvexPlayer[];
 
     const getTiles = (convexTiles: ConvexTile[]): Tile[] => {
       return convexTiles.map((convexTile: ConvexTile) =>

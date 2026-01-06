@@ -35,7 +35,7 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
         "bg-sky-800 text-white rounded-sm flex justify-center items-center gap-1 aspect-square",
         tileClass,
       )}
-      ref={drag}
+      ref={drag as unknown as React.RefObject<HTMLDivElement>}
     >
       {tileContent}
     </div>

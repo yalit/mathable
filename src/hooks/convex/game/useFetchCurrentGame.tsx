@@ -10,12 +10,9 @@ export function useFetchCurrentGame(): Game | null {
   const { gameToken } = useParams();
   const { toGame } = useFetchFromBackendGameActions();
   const [game, setGame] = useState<Game | null>(null);
-  const convexGame: ConvexGame | null | undefined = useSessionQuery(
-    api.controllers.game.queries.get,
-    {
-      gameToken: (gameToken as string) ?? "",
-    },
-  );
+  const convexGame = useSessionQuery(api.controllers.game.queries.get, {
+    gameToken: (gameToken as string) ?? "",
+  }) as ConvexGame | null | undefined;
 
   useEffect(() => {
     if (!convexGame) return;
@@ -25,4 +22,3 @@ export function useFetchCurrentGame(): Game | null {
 
   return game;
 }
-

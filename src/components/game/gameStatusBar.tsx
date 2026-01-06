@@ -31,15 +31,8 @@ const MainTitle = ({ player }: StatusBarPartProps) => (
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
-  const resetTurn = useSessionMutation(
-    api.controllers.play.mutations.resetTurn,
-  );
   const endTurn = useSessionMutation(api.controllers.play.mutations.endTurn);
   const [showRules, setShowRules] = useState<boolean>(false);
-
-  const handleResetTurn = () => {
-    resetTurn({ gameId: game.id as Id<"games"> });
-  };
 
   const handleEndTurn = () => {
     endTurn({ gameId: game.id as Id<"games"> });

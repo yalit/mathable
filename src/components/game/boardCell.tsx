@@ -107,7 +107,10 @@ export function BoardCell({ cell }: { cell: Cell }) {
   );
 
   return (
-    <div className={cellClass} ref={drop}>
+    <div
+      className={cellClass}
+      ref={drop as unknown as React.RefObject<HTMLDivElement>}
+    >
       <div className="relative flex items-end gap-1">{cellContent}</div>
       {cell.tile && (
         <PlayTile tile={cell.tile} tileClass="absolute inset-0.5" />

@@ -1,11 +1,12 @@
 import { classnames } from "@libraries/helpers/dom";
+import type React from "react";
 
 type NumberIconProps = {
   icon: number;
   className?: string;
 };
 export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
-  const icons = {
+  const icons: Record<number, React.JSX.Element> = {
     0: (
       <svg
         data-prefix="fas"
