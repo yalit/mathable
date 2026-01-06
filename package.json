@@ -12,6 +12,8 @@
     "dev:backend": "convex dev",
     "test": "vitest",
     "test:once": "vitest run",
+    "test:ui": "vitest --config vitest.config.ui.ts",
+    "test:ui:once": "vitest run --config vitest.config.ui.ts",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:coverage": "vitest run --coverage --coverage.reporter=text"
   },
@@ -37,6 +39,8 @@
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.39.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.7.0",
@@ -45,6 +49,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
     "globals": "^16.5.0",
+    "jsdom": "^27.4.0",
     "npm-run-all": "^4.1.5",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.50.1",
