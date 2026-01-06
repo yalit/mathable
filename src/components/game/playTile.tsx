@@ -32,7 +32,10 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
   return (
     <div
       className={classnames(
-        "bg-sky-800 text-white rounded-sm flex justify-center items-center gap-1 aspect-square",
+        "bg-gradient-to-br from-sky-700 to-sky-900 text-white rounded shadow flex justify-center items-center gap-1 aspect-square border border-sky-600 cursor-grab active:cursor-grabbing",
+        player.current &&
+          tile.location === "in_hand" &&
+          "hover:shadow-lg hover:border-sky-400",
         tileClass,
       )}
       ref={drag as unknown as React.RefObject<HTMLDivElement>}

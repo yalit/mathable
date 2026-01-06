@@ -16,8 +16,8 @@ export default function Game() {
       {isLoaded ? (
         <DndProvider backend={HTML5Backend}>
           <GameStatusBar />
-          <Board />
           <PlayerPlayArea />
+          <Board />
           {game.status === "waiting" && <StartGameModal />}
           {game.status === "ended" && <EndGameModal />}
         </DndProvider>

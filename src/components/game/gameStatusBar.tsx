@@ -9,15 +9,18 @@ import { useGame, usePlayer } from "@context/hooks";
 import type { Tile } from "@context/model/tile";
 import { Rules } from "@components/global/rules";
 import { useCurrentTurnScore } from "@hooks/convex/play/useCurrentTurnScore";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome } from "@fortawesome/free-solid-svg-icons";
 
 export function GameStatusBar() {
   const game = useGame();
   const player = usePlayer();
   return (
-    <nav className="w-screen shadow p-5 grid grid-cols-3 items-center">
-      <MainTitle game={game} player={player} />
+    <nav className="w-screen shadow-md bg-white border-b-2 border-gray-200 p-5 grid grid-cols-3 items-center gap-4">
+      <MainTitle />
       <GameActions game={game} player={player} />
-      <GameInformation game={game} player={player} />
+      <PlayersInfo game={game} player={player} />
     </nav>
   );
 }
@@ -26,8 +29,17 @@ type StatusBarPartProps = {
   game: Game;
   player: Player;
 };
-const MainTitle = ({ player }: StatusBarPartProps) => (
-  <div className="font-xl font-semibold">Mathable : {player.name}</div>
+
+const MainTitle = () => (
+  <div className="flex items-center gap-3">
+    <Link
+      to="/"
+      className="text-2xl font-bold text-sky-600 hover:text-sky-700 transition-colors flex items-center gap-2"
+    >
+      <FontAwesomeIcon icon={faHome} className="text-xl" />
+      <span>Mathable</span>
+    </Link>
+  </div>
 );
 
 const GameActions = ({ game, player }: StatusBarPartProps) => {
@@ -43,43 +55,51 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
     [game.tiles],
   );
 
+  const currentPlayerName = useMemo(() => {
+    const currentPlayer = game.players.find((p: Player) => p.current);
+    return currentPlayer?.name || "";
+  }, [game.players]);
+
   return (
-    <div className="flex justify-center items-center gap-3">
-      {game.status === "ongoing" && !player.current && (
-        <div className="font-semibold">Match ongoing...</div>
-      )}
-      {player.current && <div>Your turn !</div>}
-      {player.current && (
-        <>
+    <div className="flex flex-col justify-center items-center gap-2">
+      {/* Game State Info */}
+      <div className="text-sm font-semibold text-gray-700">
+        {game.status === "ongoing" && !player.current && (
+          <span className="text-amber-600">
+            Waiting for {currentPlayerName}...
+          </span>
+        )}
+        {player.current && <span className="text-emerald-600">Your turn!</span>}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {player.current && (
           <button
-            className="p-2 border rounded border-green-500 cursor-pointer bg-green-100/20"
+            className="px-4 py-2 border-2 rounded-lg border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             onClick={handleEndTurn}
           >
-            End turn
+            End Turn
           </button>
-          {/*<button
-            className="p-2 border rounded border-red-200 cursor-pointer bg-red-100/20"
-            onClick={handleResetTurn}
-          >
-            Reset turn
-          </button>
-		  */}
-        </>
-      )}
-      <button
-        className="p-2 border rounded border-gray-200 cursor-pointer bg-gray-100/20"
-        onClick={() => setShowRules(true)}
-      >
-        Show rules
-      </button>
-      <div className="">Remaining tiles : {remainingTiles.length}</div>
+        )}
+        <button
+          className="px-4 py-2 border-2 rounded-lg border-sky-500 bg-sky-50 text-sky-700 font-semibold hover:bg-sky-100 transition-colors cursor-pointer"
+          onClick={() => setShowRules(true)}
+        >
+          Show Rules
+        </button>
+        <div className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+          Tiles: {remainingTiles.length}
+        </div>
+      </div>
       {showRules && <Rules close={() => setShowRules(false)} />}
     </div>
   );
 };
 
-const GameInformation = ({ game, player }: StatusBarPartProps) => {
+const PlayersInfo = ({ game, player }: StatusBarPartProps) => {
   const turnScore = useCurrentTurnScore(game);
+
   const score = useCallback(
     (p: Player) => {
       if (!p.current || turnScore === undefined) {
@@ -89,7 +109,7 @@ const GameInformation = ({ game, player }: StatusBarPartProps) => {
       return (
         <>
           {p.score + (turnScore ?? 0)}
-          {turnScore > 0 && <span className="upperscript">*</span>}
+          {turnScore > 0 && <span className="text-xs align-super">*</span>}
         </>
       );
     },
@@ -97,13 +117,27 @@ const GameInformation = ({ game, player }: StatusBarPartProps) => {
   );
 
   return (
-    <div className="flex justify-end items-center gap-4">
+    <div className="flex justify-end items-center gap-3">
       {game.players.map((p: Player) => (
         <div
           key={p.id}
-          className={classnames("", player.id === p.id && "font-semibold")}
+          className={classnames(
+            "px-3 py-2 rounded-lg border-2 transition-all",
+            p.current
+              ? "bg-emerald-50 border-emerald-500 font-bold text-emerald-900"
+              : "bg-gray-50 border-gray-300 text-gray-700",
+          )}
         >
-          {p.name} - {score(p)}{" "}
+          <div className="flex items-center gap-2">
+            {player.id === p.id && (
+              <span className="text-xs font-semibold text-sky-600">(You)</span>
+            )}
+            <span className={classnames(p.current && "font-bold")}>
+              {p.name}
+            </span>
+            <span className="text-lg font-bold">·</span>
+            <span className="font-semibold">{score(p)}</span>
+          </div>
         </div>
       ))}
     </div>

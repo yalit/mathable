@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Modal } from "@components/includes/modal";
-import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
+import { faHandSparkles, faSquare } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "@hooks/useTranslation";
 import { useSessionMutation } from "convex-helpers/react/sessions";
 import { api } from "@cvx/_generated/api";
@@ -22,49 +22,82 @@ export const PickATileModal = ({ closeModal }: Props) => {
     closeModal();
   };
   return (
-    <Modal canClose={false} closeModal={closeModal}>
-      <div>
-        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-blue-100">
-          <FontAwesomeIcon
-            icon={faCircleQuestion}
-            aria-hidden="true"
-            className="size-6 text-blue-600"
-          />
-        </div>
-        <div className="mt-3 text-center sm:mt-5">
-          <div className="text-base font-semibold text-gray-900">
-            {t("Pick a Tile ?")}
+    <Modal canClose={false} closeModal={closeModal} classname="max-w-lg">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="text-center border-b-2 border-gray-200 pb-4">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <FontAwesomeIcon
+              icon={faHandSparkles}
+              className="text-purple-600 text-3xl"
+            />
           </div>
-          <div className="mt-2">
-            <p className="text-gray-500">
-              When using an <span className="font-semibold">Operator</span>{" "}
-              cell, you have the opportunity to pick a tile from the remaining
-              tiles in the bag.
-            </p>
-            <p className="text-gray-500">
-              Should you choose to{" "}
-              <span className="font-semibold">pick a tile</span>, this pick and
-              the previous moves of your turn would{" "}
-              <span className="font-semibold">not be resettable</span>
-            </p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {t("Pick a Tile?")}
+          </h2>
+        </div>
+
+        {/* Info Box - Operator Square */}
+        <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <FontAwesomeIcon
+                icon={faSquare}
+                className="text-pink-500 text-2xl"
+              />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Operator Square Bonus
+              </h3>
+              <p className="text-gray-700">
+                When using an{" "}
+                <span className="font-semibold text-pink-700">Operator</span>{" "}
+                cell, you have the opportunity to pick a tile from the remaining
+                tiles in the bag.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="mt-5 sm:mt-6 flex justify-center items-center gap-3">
-        <button
-          type="button"
-          onClick={handleNoPick}
-          className="inline-flex cursor-pointer w-full justify-center rounded-md bg-amber-600/70 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-        >
-          {t("Don't pick")}
-        </button>
-        <button
-          type="button"
-          onClick={handlePick}
-          className="inline-flex cursor-pointer w-full justify-center rounded-md bg-blue-600/70 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-        >
-          {t("Pick a tile")}
-        </button>
+
+        {/* Warning Box */}
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 text-2xl">⚠️</div>
+            <div>
+              <h3 className="font-semibold text-amber-900 mb-2">Important</h3>
+              <p className="text-gray-700">
+                Should you choose to{" "}
+                <span className="font-semibold text-amber-900">
+                  pick a tile
+                </span>
+                , this pick and the previous moves of your turn will{" "}
+                <span className="font-semibold text-amber-900">
+                  not be resettable
+                </span>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleNoPick}
+            className="flex-1 py-3 px-4 rounded-lg border-2 border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            {t("Don't pick")}
+          </button>
+          <button
+            type="button"
+            onClick={handlePick}
+            className="flex-1 py-3 px-4 rounded-lg border-2 border-purple-500 bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-colors cursor-pointer shadow-md"
+          >
+            {t("Pick a tile")}
+          </button>
+        </div>
       </div>
     </Modal>
   );
