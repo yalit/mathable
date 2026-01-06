@@ -93,7 +93,7 @@ const GameInformation = ({ game, player }: StatusBarPartProps) => {
         </>
       );
     },
-    [player, turnScore],
+    [turnScore],
   );
 
   return (

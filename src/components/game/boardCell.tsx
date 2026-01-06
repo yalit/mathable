@@ -96,7 +96,7 @@ export function BoardCell({ cell }: { cell: Cell }) {
           return <FontAwesomeIcon icon={faDivide} />;
       }
     }
-  }, [cell.type]);
+  }, [cell]);
 
   const cellClass = classnames(
     "board__cell relative bg-sky-200 aspect-square p-1 flex justify-center items-center",
