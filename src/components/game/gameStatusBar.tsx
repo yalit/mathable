@@ -17,10 +17,9 @@ export function GameStatusBar() {
   const game = useGame();
   const player = usePlayer();
   return (
-    <nav className="w-screen shadow-md bg-white border-b-2 border-gray-200 p-5 grid grid-cols-3 items-center gap-4">
+    <nav className="w-screen shadow-md bg-white border-b-2 border-gray-200 p-5 flex items-center justify-between gap-4">
       <MainTitle />
       <GameActions game={game} player={player} />
-      <PlayersInfo game={game} player={player} />
     </nav>
   );
 }

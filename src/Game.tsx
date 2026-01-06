@@ -3,6 +3,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Board } from "@components/game/board";
 import { GameStatusBar } from "@components/game/gameStatusBar";
 import { PlayerPlayArea } from "@components/game/playerPlayArea";
+import { PlayersPanel } from "@components/game/playersPanel";
 import { useGame, useLoaded } from "@context/hooks";
 import { StartGameModal } from "@components/game/startGameModal";
 import { EndGameModal } from "@components/game/endGameModal";
@@ -17,9 +18,21 @@ export default function Game() {
         <DndProvider backend={HTML5Backend}>
           <div className="flex flex-col min-h-[600px] max-h-screen overflow-hidden">
             <GameStatusBar />
-            <div className="flex-1 flex flex-col overflow-auto">
-              <PlayerPlayArea />
-              <Board />
+            <div className="flex-1 flex overflow-auto">
+              {/* Left sidebar - Player tiles */}
+              <div className="w-64 border-r-2 border-gray-200 bg-white overflow-auto">
+                <PlayerPlayArea />
+              </div>
+
+              {/* Center - Board */}
+              <div className="flex-1 flex justify-center items-start overflow-auto">
+                <Board />
+              </div>
+
+              {/* Right sidebar - Players list */}
+              <div className="w-64 border-l-2 border-gray-200 bg-white overflow-auto">
+                <PlayersPanel />
+              </div>
             </div>
           </div>
           {game.status === "waiting" && <StartGameModal />}
