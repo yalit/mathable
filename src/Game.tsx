@@ -15,9 +15,13 @@ export default function Game() {
     <>
       {isLoaded ? (
         <DndProvider backend={HTML5Backend}>
-          <GameStatusBar />
-          <PlayerPlayArea />
-          <Board />
+          <div className="flex flex-col min-h-[600px] max-h-screen overflow-hidden">
+            <GameStatusBar />
+            <div className="flex-1 flex flex-col overflow-auto">
+              <PlayerPlayArea />
+              <Board />
+            </div>
+          </div>
           {game.status === "waiting" && <StartGameModal />}
           {game.status === "ended" && <EndGameModal />}
         </DndProvider>
