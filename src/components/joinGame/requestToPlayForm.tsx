@@ -15,12 +15,12 @@ export const RequestToPlayForm = () => {
       playerName,
     });
 
-    if (!result.success) {
+    if (result.status !== "success") {
       return;
     }
 
     if (result.data.playerToken !== "") {
-      document.location = `/game/${game.token}/player/${result.token}`;
+      document.location = `/game/${game.token}/player/${result.data.playerToken}`;
     }
   };
 
