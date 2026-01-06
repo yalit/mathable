@@ -35,23 +35,23 @@ export const EndGameModal = () => {
 
           {/* Winner Announcement */}
           {winner && (
-            <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-400 rounded-lg">
+            <div className="mb-6 p-4 bg-emerald-50 border-2 border-emerald-400 rounded-lg">
               <div className="flex items-center justify-center gap-3">
                 <FontAwesomeIcon
                   icon={faTrophy}
-                  className="text-amber-500 text-2xl"
+                  className="text-emerald-500 text-2xl"
                 />
                 <div>
-                  <div className="text-lg font-semibold text-amber-900">
+                  <div className="text-lg font-semibold text-emerald-900">
                     {t("Winner")}: {winner.name}
                   </div>
-                  <div className="text-amber-700">
+                  <div className="text-emerald-700">
                     {t("Score")}: {winner.score}
                   </div>
                 </div>
                 <FontAwesomeIcon
                   icon={faTrophy}
-                  className="text-amber-500 text-2xl"
+                  className="text-emerald-500 text-2xl"
                 />
               </div>
             </div>
@@ -75,7 +75,7 @@ export const EndGameModal = () => {
                   className={classnames(
                     "flex items-center gap-4 p-3 rounded-lg border-2 transition-all",
                     isWinner
-                      ? "bg-amber-50 border-amber-400 shadow-md"
+                      ? "bg-emerald-50 border-emerald-400 shadow-md"
                       : "bg-gray-50 border-gray-200",
                   )}
                 >
@@ -84,7 +84,7 @@ export const EndGameModal = () => {
                     className={classnames(
                       "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg",
                       isWinner
-                        ? "bg-amber-400 text-white"
+                        ? "bg-emerald-400 text-white"
                         : "bg-gray-300 text-gray-700",
                     )}
                   >
@@ -98,7 +98,7 @@ export const EndGameModal = () => {
                   <div
                     className={classnames(
                       "flex-1 font-semibold text-lg",
-                      isWinner ? "text-amber-900" : "text-gray-800",
+                      isWinner ? "text-emerald-900" : "text-gray-800",
                     )}
                   >
                     {player.name}
@@ -108,7 +108,7 @@ export const EndGameModal = () => {
                   <div
                     className={classnames(
                       "text-2xl font-bold",
-                      isWinner ? "text-amber-600" : "text-gray-600",
+                      isWinner ? "text-emerald-600" : "text-gray-600",
                     )}
                   >
                     {player.score}
