@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { EndGameModal } from "../endGameModal";
+import { EndGameModal } from "@components/game/endGameModal";
 import type { Game } from "@context/model/game";
 
 // Mock the hooks
