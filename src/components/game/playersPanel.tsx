@@ -1,11 +1,21 @@
 import type { Player } from "@context/model/player";
 import { classnames } from "@libraries/helpers/dom";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { Game } from "@context/model/game";
 import { useGame, usePlayer } from "@context/hooks";
 import { useCurrentTurnScore } from "@hooks/convex/play/useCurrentTurnScore";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 
-export function PlayersPanel() {
+type PlayersPanelProps = {
+  isCollapsed: boolean;
+  onToggle: () => void;
+};
+
+export function PlayersPanel({ isCollapsed, onToggle }: PlayersPanelProps) {
   const game = useGame();
   const player = usePlayer();
   const turnScore = useCurrentTurnScore(game);
@@ -27,49 +37,66 @@ export function PlayersPanel() {
   );
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <h3 className="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
-        Players
-      </h3>
-      <div className="space-y-3">
-        {game.players.map((p: Player) => (
-          <div
-            key={p.id}
-            className={classnames(
-              "px-4 py-3 rounded-lg border-2 transition-all",
-              p.current
-                ? "bg-emerald-50 border-emerald-500 shadow-md"
-                : "bg-gray-50 border-gray-300",
-            )}
-          >
-            <div className="flex flex-col gap-1">
-              {player.id === p.id && (
-                <span className="text-xs font-semibold text-sky-600">
-                  (You)
-                </span>
-              )}
-              <div className="flex items-center justify-between">
-                <span
-                  className={classnames(
-                    "font-semibold",
-                    p.current && "text-emerald-900",
+    <div className="relative flex">
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={onToggle}
+        className="absolute left-0 top-4 -translate-x-full bg-white border-2 border-r-0 border-gray-200 rounded-l-lg px-2 py-3 hover:bg-gray-50 transition-colors z-10"
+        title={isCollapsed ? "Show players" : "Hide players"}
+      >
+        <FontAwesomeIcon
+          icon={isCollapsed ? faChevronLeft : faChevronRight}
+          className="text-gray-600"
+        />
+      </button>
+
+      {/* Panel Content */}
+      {!isCollapsed && (
+        <div className="flex flex-col gap-3 p-4 w-full">
+          <h3 className="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2">
+            Players
+          </h3>
+          <div className="space-y-3">
+            {game.players.map((p: Player) => (
+              <div
+                key={p.id}
+                className={classnames(
+                  "px-4 py-3 rounded-lg border-2 transition-all",
+                  p.current
+                    ? "bg-emerald-50 border-emerald-500 shadow-md"
+                    : "bg-gray-50 border-gray-300",
+                )}
+              >
+                <div className="flex flex-col gap-1">
+                  {player.id === p.id && (
+                    <span className="text-xs font-semibold text-sky-600">
+                      (You)
+                    </span>
                   )}
-                >
-                  {p.name}
-                </span>
-                <span
-                  className={classnames(
-                    "text-xl font-bold",
-                    p.current ? "text-emerald-900" : "text-gray-700",
-                  )}
-                >
-                  {score(p)}
-                </span>
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={classnames(
+                        "font-semibold",
+                        p.current && "text-emerald-900",
+                      )}
+                    >
+                      {p.name}
+                    </span>
+                    <span
+                      className={classnames(
+                        "text-xl font-bold",
+                        p.current ? "text-emerald-900" : "text-gray-700",
+                      )}
+                    >
+                      {score(p)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

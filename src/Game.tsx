@@ -7,10 +7,12 @@ import { PlayersPanel } from "@components/game/playersPanel";
 import { useGame, useLoaded } from "@context/hooks";
 import { StartGameModal } from "@components/game/startGameModal";
 import { EndGameModal } from "@components/game/endGameModal";
+import { useState } from "react";
 
 export default function Game() {
   const isLoaded = useLoaded();
   const game = useGame();
+  const [isPlayersPanelCollapsed, setIsPlayersPanelCollapsed] = useState(false);
 
   return (
     <>
@@ -30,8 +32,17 @@ export default function Game() {
               </div>
 
               {/* Right sidebar - Players list */}
-              <div className="w-64 border-l-2 border-gray-200 bg-white overflow-auto">
-                <PlayersPanel />
+              <div
+                className={`border-l-2 border-gray-200 bg-white overflow-auto transition-all duration-300 ${
+                  isPlayersPanelCollapsed ? "w-0" : "w-64"
+                }`}
+              >
+                <PlayersPanel
+                  isCollapsed={isPlayersPanelCollapsed}
+                  onToggle={() =>
+                    setIsPlayersPanelCollapsed(!isPlayersPanelCollapsed)
+                  }
+                />
               </div>
             </div>
           </div>
