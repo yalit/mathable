@@ -45,17 +45,11 @@ export const CreateGameCard = () => {
       {/* Form */}
       <form onSubmit={handleClickOnCreate} className="space-y-6">
         <div className="bg-sky-50 border-2 border-sky-200 rounded-lg p-4">
-          <label
-            className="block text-sm font-semibold text-gray-700 mb-2"
-            htmlFor="player_name"
-          >
-            Your Name
-          </label>
           <input
             className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-sky-500 focus:outline-none text-lg transition-colors"
             id="player_name"
             name="player_name"
-            placeholder="Enter your name..."
+            placeholder="Enter your name as creator/owner of the game..."
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
           />
@@ -64,15 +58,17 @@ export const CreateGameCard = () => {
         <button
           type="submit"
           className={classnames(
-            "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2",
+            "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2 whitespace-nowrap",
             playerName === ""
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-sky-600 text-white hover:bg-sky-700 cursor-pointer transform hover:scale-105",
           )}
           disabled={playerName === ""}
         >
-          <FontAwesomeIcon icon={faPlus} />
-          Create Game
+          <span>
+            <FontAwesomeIcon icon={faPlus} />
+          </span>
+          <span>Create Game</span>
         </button>
       </form>
     </div>

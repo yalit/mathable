@@ -65,8 +65,8 @@ function Home() {
 
         {/* Main Content */}
         <div className="flex flex-col items-center gap-12">
-          {/* Ongoing Games Section */}
-          <SelectGame />
+          {/* Create Game Section */}
+          <CreateGameCard />
 
           {/* Divider */}
           <div className="w-full max-w-4xl">
@@ -82,8 +82,8 @@ function Home() {
             </div>
           </div>
 
-          {/* Create Game Section */}
-          <CreateGameCard />
+          {/* Ongoing Games Section */}
+          <SelectGame />
         </div>
 
         {/* Footer */}

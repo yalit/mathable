@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGamepad,
   faUsers,
-  faTrophy,
   faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { classnames } from "@libraries/helpers/dom";
@@ -98,7 +97,7 @@ export const SelectGame = () => {
                     <div className="flex flex-wrap gap-2">
                       {g.players.map((p) => (
                         <div
-                          key={p.id}
+                          key={p.token}
                           className="px-2 py-1 bg-sky-50 border border-sky-300 rounded text-xs font-medium text-gray-700 flex items-center gap-1"
                         >
                           <span>{p.name}</span>
@@ -117,15 +116,17 @@ export const SelectGame = () => {
                     <FontAwesomeIcon icon={faArrowRight} />
                     Rejoin as:
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {g.players.map((p: OngoingGamePlayer) => (
                       <button
-                        key={p.id}
-                        className="w-full py-2 px-3 bg-purple-600 text-white rounded-lg font-semibold text-sm hover:bg-purple-700 cursor-pointer transition-colors flex items-center justify-center gap-2"
+                        key={p.token}
+                        className="py-2 px-3 bg-purple-600 text-white rounded-lg font-semibold text-sm hover:bg-purple-700 cursor-pointer transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                         onClick={() => rejoinGame(g, p)}
                       >
-                        <FontAwesomeIcon icon={faArrowRight} />
-                        {p.name}
+                        <span>
+                          <FontAwesomeIcon icon={faArrowRight} />
+                        </span>
+                        <span>{p.name}</span>
                       </button>
                     ))}
                   </div>

@@ -84,14 +84,8 @@ export const RequestToPlayForm = () => {
             {/* Join Form */}
             <form onSubmit={requestToPlay} className="space-y-6">
               <div className="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-4">
-                <label
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                  htmlFor="player_name"
-                >
-                  Your Name
-                </label>
                 <input
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-emerald-500 focus:outline-none text-lg transition-colors"
+                  className="w-full px-4 py-3 rounded-lg focus:border-emerald-500 focus:outline-none text-lg transition-colors"
                   id="player_name"
                   name="player_name"
                   placeholder="Enter your name..."
@@ -103,15 +97,17 @@ export const RequestToPlayForm = () => {
               <button
                 type="submit"
                 className={classnames(
-                  "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2",
+                  "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2 whitespace-nowrap",
                   playerName === ""
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer transform hover:scale-105",
                 )}
                 disabled={playerName === ""}
               >
-                <FontAwesomeIcon icon={faUserPlus} />
-                Join the Game
+                <span>
+                  <FontAwesomeIcon icon={faUserPlus} />
+                </span>
+                <span>Join the Game</span>
               </button>
             </form>
           </div>

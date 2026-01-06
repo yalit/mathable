@@ -46,7 +46,7 @@ export const StartGameModal = () => {
   };
 
   return (
-    <Modal canClose={false} closeModal={() => null} classname="min-w-[600px]">
+    <Modal canClose={false} closeModal={() => null} classname="min-w-150">
       <div>
         {/* Title */}
         <div className="text-center mb-6">
@@ -102,8 +102,8 @@ export const StartGameModal = () => {
           </div>
         </div>
 
-        {/* Share Link Section - Only shown to owner */}
-        {player.owner && (
+        {/* Share Link Section - Only shown to owner when game is not full */}
+        {player.owner && game.players.length < 4 && (
           <div className="mb-6 p-4 bg-sky-50 border-2 border-sky-200 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <FontAwesomeIcon icon={faShare} className="text-sky-600" />
@@ -170,7 +170,7 @@ export const StartGameModal = () => {
             <button
               type="button"
               className={classnames(
-                "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2",
+                "w-full py-3 px-6 rounded-lg font-semibold text-lg shadow-md transition-all flex items-center justify-center gap-2 whitespace-nowrap",
                 !canStart && "bg-gray-300 text-gray-500 cursor-not-allowed",
                 canStart &&
                   "bg-teal-600 text-white hover:bg-teal-700 cursor-pointer transform hover:scale-105",
@@ -178,8 +178,10 @@ export const StartGameModal = () => {
               onClick={handleStartGame}
               disabled={!canStart}
             >
-              <FontAwesomeIcon icon={faPlay} />
-              {t("Start Game")}
+              <span>
+                <FontAwesomeIcon icon={faPlay} />
+              </span>
+              <span>{t("Start Game")}</span>
             </button>
           ) : (
             <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-lg text-center">

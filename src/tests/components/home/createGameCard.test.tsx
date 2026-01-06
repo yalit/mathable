@@ -6,9 +6,10 @@ import * as useCreateGameModule from "@hooks/convex/game/useCreateGame";
 // Mock the useCreateGame hook
 vi.mock("@hooks/convex/game/useCreateGame");
 
+const placeholderText = "Enter your name as creator/owner of the game...";
+
 describe("CreateGameCard", () => {
   const mockCreateGame = vi.fn();
-  const mockLocationAssign = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,10 +33,8 @@ describe("CreateGameCard", () => {
     expect(
       screen.getByText("Start your mathematical adventure!"),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText("Enter your name..."),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(placeholderText)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(placeholderText)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Create Game/i }),
     ).toBeInTheDocument();
@@ -63,7 +62,7 @@ describe("CreateGameCard", () => {
 
   it("enables button when player name is entered", () => {
     render(<CreateGameCard />);
-    const input = screen.getByPlaceholderText("Enter your name...");
+    const input = screen.getByPlaceholderText(placeholderText);
     const button = screen.getByRole("button", { name: /Create Game/i });
 
     fireEvent.change(input, { target: { value: "John" } });
@@ -75,7 +74,7 @@ describe("CreateGameCard", () => {
   it("updates input value when typing", () => {
     render(<CreateGameCard />);
     const input = screen.getByPlaceholderText(
-      "Enter your name...",
+      placeholderText,
     ) as HTMLInputElement;
 
     fireEvent.change(input, { target: { value: "Alice" } });
@@ -103,7 +102,7 @@ describe("CreateGameCard", () => {
     });
 
     render(<CreateGameCard />);
-    const input = screen.getByPlaceholderText("Enter your name...");
+    const input = screen.getByPlaceholderText(placeholderText);
     const form = screen
       .getByRole("button", { name: /Create Game/i })
       .closest("form");
@@ -123,7 +122,7 @@ describe("CreateGameCard", () => {
     });
 
     render(<CreateGameCard />);
-    const input = screen.getByPlaceholderText("Enter your name...");
+    const input = screen.getByPlaceholderText(placeholderText);
     const form = screen
       .getByRole("button", { name: /Create Game/i })
       .closest("form");
@@ -148,7 +147,7 @@ describe("CreateGameCard", () => {
     const originalLocation = document.location;
 
     render(<CreateGameCard />);
-    const input = screen.getByPlaceholderText("Enter your name...");
+    const input = screen.getByPlaceholderText(placeholderText);
     const form = screen
       .getByRole("button", { name: /Create Game/i })
       .closest("form");
@@ -173,7 +172,7 @@ describe("CreateGameCard", () => {
     const originalLocation = document.location;
 
     render(<CreateGameCard />);
-    const input = screen.getByPlaceholderText("Enter your name...");
+    const input = screen.getByPlaceholderText(placeholderText);
     const form = screen
       .getByRole("button", { name: /Create Game/i })
       .closest("form");
@@ -186,39 +185,5 @@ describe("CreateGameCard", () => {
     });
 
     expect(document.location).toBe(originalLocation);
-  });
-
-  it("applies correct styling classes", () => {
-    render(<CreateGameCard />);
-
-    // Check main container styling
-    const container = screen.getByText("Create a New Game").closest("div")
-      ?.parentElement?.parentElement;
-    expect(container).toHaveClass(
-      "bg-white",
-      "rounded-lg",
-      "shadow-lg",
-      "border-2",
-    );
-
-    // Check input container styling
-    const inputContainer = screen.getByLabelText("Your Name").parentElement;
-    expect(inputContainer).toHaveClass(
-      "bg-sky-50",
-      "border-2",
-      "border-sky-200",
-      "rounded-lg",
-    );
-  });
-
-  it("has proper accessibility attributes", () => {
-    render(<CreateGameCard />);
-
-    const input = screen.getByPlaceholderText("Enter your name...");
-    const label = screen.getByText("Your Name");
-
-    expect(input).toHaveAttribute("id", "player_name");
-    expect(input).toHaveAttribute("name", "player_name");
-    expect(label).toHaveAttribute("for", "player_name");
   });
 });

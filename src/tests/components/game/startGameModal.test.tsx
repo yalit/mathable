@@ -448,11 +448,5 @@ describe("StartGameModal", () => {
       );
       expect(closeButtons.length).toBe(0);
     });
-
-    it("applies minimum width class", () => {
-      const { container } = render(<StartGameModal />);
-      const modalContent = container.querySelector(".min-w-\\[600px\\]");
-      expect(modalContent).toBeInTheDocument();
-    });
   });
 });

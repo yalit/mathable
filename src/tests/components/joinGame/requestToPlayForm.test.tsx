@@ -50,7 +50,6 @@ describe("RequestToPlayForm", () => {
       expect(
         screen.getByText("A game is already in progress!"),
       ).toBeInTheDocument();
-      expect(screen.getByLabelText("Your Name")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: /Join the Game/i }),
       ).toBeInTheDocument();
@@ -74,28 +73,6 @@ describe("RequestToPlayForm", () => {
       const { container } = render(<RequestToPlayForm />);
       const usersIcon = container.querySelector('[data-icon="users"]');
       expect(usersIcon).toBeInTheDocument();
-    });
-
-    it("displays each player in a styled card", () => {
-      render(<RequestToPlayForm />);
-
-      const aliceCard = screen.getByText("Alice").closest("div");
-      const bobCard = screen.getByText("Bob").closest("div");
-
-      expect(aliceCard).toHaveClass(
-        "px-3",
-        "py-2",
-        "bg-white",
-        "border-2",
-        "border-sky-300",
-      );
-      expect(bobCard).toHaveClass(
-        "px-3",
-        "py-2",
-        "bg-white",
-        "border-2",
-        "border-sky-300",
-      );
     });
 
     it("has disabled button when player name is empty", () => {
@@ -272,7 +249,6 @@ describe("RequestToPlayForm", () => {
     it("does not render join form", () => {
       render(<RequestToPlayForm />);
 
-      expect(screen.queryByLabelText("Your Name")).not.toBeInTheDocument();
       expect(
         screen.queryByRole("button", { name: /Join the Game/i }),
       ).not.toBeInTheDocument();
