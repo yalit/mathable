@@ -36,11 +36,11 @@ export function PlayersPanel({ isCollapsed, onToggle }: PlayersPanelProps) {
   );
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative w-full">
       {/* Collapse/Expand Button - Always visible */}
       <button
         onClick={onToggle}
-        className="absolute -left-10 top-4 bg-sky-600 hover:bg-sky-700 text-white rounded-l-lg px-3 py-4 shadow-md transition-colors z-50"
+        className="absolute cursor-pointer -left-9 top-4 bg-sky-600 hover:bg-sky-700 text-white rounded-l-lg px-3 py-4 shadow-md"
         title={isCollapsed ? "Show players" : "Hide players"}
       >
         <FontAwesomeIcon

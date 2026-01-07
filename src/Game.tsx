@@ -34,7 +34,7 @@ export default function Game() {
               {/* Right sidebar - Players list */}
               <div className="relative">
                 <div
-                  className={`border-l-2 border-gray-200 bg-white overflow-auto transition-all duration-300 ${
+                  className={`border-l-2 border-gray-200 h-full bg-white transition-all duration-300 ${
                     isPlayersPanelCollapsed ? "w-0 border-0" : "w-64"
                   }`}
                 >
