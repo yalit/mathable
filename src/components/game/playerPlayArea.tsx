@@ -17,7 +17,7 @@ export function PlayerPlayArea() {
               key={t.id}
               className="transform transition-transform hover:scale-105"
             >
-              <PlayTile tile={t} tileClass="p-2 text-sm player_tile" />
+              <PlayTile tile={t} tileClass="player_tile" />
             </div>
           ))
         ) : (

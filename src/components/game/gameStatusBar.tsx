@@ -1,14 +1,13 @@
 import type { Player } from "@context/model/player";
 import { api } from "@cvx/_generated/api";
 import type { Id } from "@cvx/_generated/dataModel";
-import { classnames } from "@libraries/helpers/dom";
 import { useSessionMutation } from "convex-helpers/react/sessions";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Game } from "@context/model/game";
 import { useGame, usePlayer } from "@context/hooks";
 import type { Tile } from "@context/model/tile";
 import { Rules } from "@components/global/rules";
-import { useCurrentTurnScore } from "@hooks/convex/play/useCurrentTurnScore";
+import { BagTilesModal } from "@components/game/bagTilesModal";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
@@ -44,6 +43,7 @@ const MainTitle = () => (
 const GameActions = ({ game, player }: StatusBarPartProps) => {
   const endTurn = useSessionMutation(api.controllers.play.mutations.endTurn);
   const [showRules, setShowRules] = useState<boolean>(false);
+  const [showBagTiles, setShowBagTiles] = useState<boolean>(false);
 
   const handleEndTurn = () => {
     endTurn({ gameId: game.id as Id<"games"> });
@@ -87,11 +87,20 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
         >
           Show Rules
         </button>
-        <div className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+        <button
+          className="px-3 py-2 border-2 rounded-lg text-sm border-gray-400 bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 hover:border-gray-500 transition-colors cursor-pointer"
+          onClick={() => setShowBagTiles(true)}
+        >
           Tiles: {remainingTiles.length}
-        </div>
+        </button>
       </div>
       {showRules && <Rules close={() => setShowRules(false)} />}
+      {showBagTiles && (
+        <BagTilesModal
+          tiles={game.tiles}
+          closeModal={() => setShowBagTiles(false)}
+        />
+      )}
     </div>
   );
 };
