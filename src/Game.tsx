@@ -4,6 +4,7 @@ import { Board } from "@components/game/board";
 import { GameStatusBar } from "@components/game/gameStatusBar";
 import { PlayerPlayArea } from "@components/game/playerPlayArea";
 import { PlayersPanel } from "@components/game/playersPanel";
+import { TileDragLayer } from "@components/game/tileDragLayer";
 import { useGame, useLoaded } from "@context/hooks";
 import { StartGameModal } from "@components/game/startGameModal";
 import { EndGameModal } from "@components/game/endGameModal";
@@ -18,6 +19,7 @@ export default function Game() {
     <>
       {isLoaded ? (
         <DndProvider backend={HTML5Backend}>
+          <TileDragLayer />
           <div className="flex flex-col overflow-hidden">
             <GameStatusBar />
             <div className="flex-1 flex overflow-auto">

@@ -1,6 +1,7 @@
 import type { Tile } from "@context/model/tile";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useDrag } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 import { DragItemTypes } from "@context/draganddrop/constants";
 import { classnames } from "@libraries/helpers/dom";
 import { usePlayer } from "@context/hooks";
@@ -20,14 +21,22 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
     ));
   }, [tile]);
 
-  const [_, drag] = useDrag(
+  const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: DragItemTypes.TILE,
       item: tile,
       canDrag: () => player.current && tile.location === "in_hand",
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging(),
+      }),
     }),
-    [player],
+    [player, tile],
   );
+
+  // Hide the native browser drag preview
+  useEffect(() => {
+    preview(getEmptyImage(), { captureDraggingState: true });
+  }, [preview]);
 
   return (
     <div
@@ -36,6 +45,7 @@ export function PlayTile({ tile, tileClass = "" }: TileProps) {
         player.current &&
           tile.location === "in_hand" &&
           "hover:shadow-lg hover:border-sky-400",
+        isDragging && "opacity-0",
         tileClass,
       )}
       ref={drag as unknown as React.RefObject<HTMLDivElement>}
