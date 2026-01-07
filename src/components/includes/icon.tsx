@@ -13,7 +13,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="0"
         className={classnames("svg-inline--fa fa-0 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -27,7 +27,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="1"
         className={classnames("svg-inline--fa fa-1 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -41,7 +41,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="2"
         className={classnames("svg-inline--fa fa-2 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -55,7 +55,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="3"
         className={classnames("svg-inline--fa fa-3 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -69,7 +69,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="4"
         className={classnames("svg-inline--fa fa-4 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -83,7 +83,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="5"
         className={classnames("svg-inline--fa fa-5 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -97,11 +97,11 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="6"
         className={classnames("svg-inline--fa fa-6 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
-          d="M256 32c17.7 0 32 14.3 32 32s-14.3 32-32 32l-88 0c-48.6 0-88 39.4-88 88l0 32.2c22.9-15.3 50.4-24.2 80-24.2l48 0c79.5 0 144 64.5 144 144S287.5 480 208 480l-48 0C80.5 480 16 415.5 16 336l0-152C16 100.1 84.1 32 168 32l88 0zM80 336c0 44.2 35.8 80 80 80l48 0c44.2 0 80-35.8 80-80s-35.8-80-80-80l-48 0c-44.2 0-80 35.8-80 80z"
+          d="M281 32c17.7 0 32 14.3 32 32s-14.3 32-32 32l-88 0c-48.6 0-88 39.4-88 88l0 32.2c22.9-15.3 50.4-24.2 80-24.2l48 0c79.5 0 144 64.5 144 144S287.5 480 208 480l-48 0C80.5 480 16 415.5 16 336l0-152C16 100.1 84.1 32 168 32l88 0zM80 336c0 44.2 35.8 80 80 80l48 0c44.2 0 80-35.8 80-80s-35.8-80-80-80l-48 0c-44.2 0-80 35.8-80 80z"
         />
       </svg>
     ),
@@ -111,11 +111,11 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="7"
         className={classnames("svg-inline--fa fa-7 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
-          d="M0 64C0 46.3 14.3 32 32 32l256 0c11.5 0 22 6.1 27.7 16.1s5.7 22.2-.1 32.1l-224 384c-8.9 15.3-28.5 20.4-43.8 11.5s-20.4-28.5-11.5-43.8L232.3 96 32 96C14.3 96 0 81.7 0 64z"
+          d="M0 64C0 46.3 14.3 32 32 32l281 0c11.5 0 22 6.1 27.7 16.1s5.7 22.2-.1 32.1l-224 384c-8.9 15.3-28.5 20.4-43.8 11.5s-20.4-28.5-11.5-43.8L232.3 96 32 96C14.3 96 0 81.7 0 64z"
         />
       </svg>
     ),
@@ -125,7 +125,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="8"
         className={classnames("svg-inline--fa fa-8 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"
@@ -139,7 +139,7 @@ export const NumberIcon = ({ icon, className = "" }: NumberIconProps) => {
         data-icon="9"
         className={classnames("svg-inline--fa fa-9 ", className)}
         role="img"
-        viewBox="0 0 256 512"
+        viewBox="0 0 281 563"
       >
         <path
           fill="currentColor"

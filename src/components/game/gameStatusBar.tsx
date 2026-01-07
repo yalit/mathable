@@ -75,70 +75,23 @@ const GameActions = ({ game, player }: StatusBarPartProps) => {
       <div className="flex items-center gap-2">
         {player.current && (
           <button
-            className="px-4 py-2 border-2 rounded-lg border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
+            className="px-3 py-2 border-2 rounded-lg text-sm border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             onClick={handleEndTurn}
           >
             End Turn
           </button>
         )}
         <button
-          className="px-4 py-2 border-2 rounded-lg border-sky-500 bg-sky-50 text-sky-700 font-semibold hover:bg-sky-100 transition-colors cursor-pointer"
+          className="px-3 py-2 border-2 rounded-lg text-sm border-sky-500 bg-sky-50 text-sky-700 font-semibold hover:bg-sky-100 transition-colors cursor-pointer"
           onClick={() => setShowRules(true)}
         >
           Show Rules
         </button>
-        <div className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+        <div className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
           Tiles: {remainingTiles.length}
         </div>
       </div>
       {showRules && <Rules close={() => setShowRules(false)} />}
-    </div>
-  );
-};
-
-const PlayersInfo = ({ game, player }: StatusBarPartProps) => {
-  const turnScore = useCurrentTurnScore(game);
-
-  const score = useCallback(
-    (p: Player) => {
-      if (!p.current || turnScore === undefined) {
-        return <span>{p.score}</span>;
-      }
-
-      return (
-        <>
-          {p.score + (turnScore ?? 0)}
-          {turnScore > 0 && <span className="text-xs align-super">*</span>}
-        </>
-      );
-    },
-    [turnScore],
-  );
-
-  return (
-    <div className="flex justify-end items-center gap-3">
-      {game.players.map((p: Player) => (
-        <div
-          key={p.id}
-          className={classnames(
-            "px-3 py-2 rounded-lg border-2 transition-all",
-            p.current
-              ? "bg-emerald-50 border-emerald-500 font-bold text-emerald-900"
-              : "bg-gray-50 border-gray-300 text-gray-700",
-          )}
-        >
-          <div className="flex items-center gap-2">
-            {player.id === p.id && (
-              <span className="text-xs font-semibold text-sky-600">(You)</span>
-            )}
-            <span className={classnames(p.current && "font-bold")}>
-              {p.name}
-            </span>
-            <span className="text-lg font-bold">·</span>
-            <span className="font-semibold">{score(p)}</span>
-          </div>
-        </div>
-      ))}
     </div>
   );
 };

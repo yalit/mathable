@@ -18,11 +18,11 @@ export default function Game() {
     <>
       {isLoaded ? (
         <DndProvider backend={HTML5Backend}>
-          <div className="flex flex-col min-h-[600px] max-h-screen overflow-hidden">
+          <div className="flex flex-col overflow-hidden">
             <GameStatusBar />
             <div className="flex-1 flex overflow-auto">
               {/* Left sidebar - Player tiles */}
-              <div className="w-64 border-r-2 border-gray-200 bg-white overflow-auto">
+              <div className="border-r-2 border-gray-200 bg-white overflow-auto">
                 <PlayerPlayArea />
               </div>
 
@@ -35,7 +35,7 @@ export default function Game() {
               <div className="relative">
                 <div
                   className={`border-l-2 border-gray-200 h-full bg-white transition-all duration-300 ${
-                    isPlayersPanelCollapsed ? "w-0 border-0" : "w-64"
+                    isPlayersPanelCollapsed ? "w-0 border-0" : ""
                   }`}
                 >
                   <PlayersPanel

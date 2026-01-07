@@ -72,10 +72,10 @@ export function PlayersPanel({ isCollapsed, onToggle }: PlayersPanelProps) {
                       (You)
                     </span>
                   )}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span
                       className={classnames(
-                        "font-semibold",
+                        "font-semibold max-w-30",
                         p.current && "text-emerald-900",
                       )}
                     >
